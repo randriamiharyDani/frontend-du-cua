@@ -14,6 +14,8 @@ import { ADMIN_NAV_ITEMS, AdminNavItem } from './admin-navigation';
 export class AdminSidebarComponent {
   /** Mode replié (icônes seules) sur écran large. */
   @Input() replie = false;
+  /** Tiroir ouvert sur petit écran. */
+  @Input() menuMobileOuvert = false;
   /** Émission du repli / dépli depuis le bouton dédié. */
   @Output() replierChange = new EventEmitter<void>();
   /** Émission d’un clic sur un lien (fermeture du menu mobile). */

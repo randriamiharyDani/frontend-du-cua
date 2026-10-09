@@ -38,7 +38,7 @@ export interface Contrevenant {
   nom: string;
   /** Prénom(s). */
   prenom: string;
-  /** Téléphone (optionnel, format +261 / 0). */
+  /** Téléphone (optionnel, format +224 / 0). */
   telephone: string;
   /** Adresse du contrevenant (domicile / siège). */
   adresse: string;

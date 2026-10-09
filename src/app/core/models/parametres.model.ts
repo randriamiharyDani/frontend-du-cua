@@ -51,10 +51,10 @@ export interface Parametres {
 export const PARAMETRES_DEFAUT: Parametres = {
   profil: {
     nom: 'Aminata Diallo',
-    email: 'aminata.diallo@du.gov',
+    email: 'aminata.diallo@du.gouv',
     service: 'DU',
     fonction: 'Administratrice',
-    telephone: '+261 34 00 000 00',
+    telephone: '+224 34 00 000 00',
   },
   preferences: {
     langue: 'fr',
@@ -67,9 +67,9 @@ export const PARAMETRES_DEFAUT: Parametres = {
     nomApplication: 'Gestion des constructions illicites',
     entite: 'Direction de l’Urbanisme',
     sigle: 'DU',
-    emailContact: 'contact@du.gov',
-    telephoneContact: '+261 20 00 000 00',
-    adresse: 'Antananarivo — Madagascar',
+    emailContact: 'contact@du.gouv',
+    telephoneContact: '+224 20 00 000 00',
+    adresse: 'Conakry — Guinée',
   },
   services: [
     {

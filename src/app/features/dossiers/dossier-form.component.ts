@@ -90,7 +90,7 @@ export class DossierFormComponent {
     contrevenant: this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
       prenom: ['', [Validators.required, Validators.minLength(2)]],
-      telephone: ['', Validators.pattern(/^(\+261|0)[\d\s]{8,13}$/)],
+      telephone: ['', Validators.pattern(/^(\+224|0)[\d\s]{8,13}$/)],
       adresse: [''],
       observations: [''],
     }),

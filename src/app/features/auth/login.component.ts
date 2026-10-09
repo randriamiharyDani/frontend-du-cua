@@ -62,7 +62,7 @@ export class LoginComponent {
     const { email } = this.form.getRawValue();
     window.setTimeout(() => {
       this.chargement.set(false);
-      if (email.trim().toLowerCase() === 'refuse@du.gov') {
+      if (email.trim().toLowerCase() === 'refuse@du.gouv') {
         this.erreurConnexion.set('Adresse e-mail ou mot de passe incorrect.');
         return;
       }

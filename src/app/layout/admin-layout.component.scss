@@ -28,16 +28,7 @@
     padding: 1rem;
   }
 
-  /* La sidebar devient un tiroir piloté par .shell--menu-ouvert. */
-  .shell du-admin-sidebar .sidebar {
-    transform: translateX(-100%);
-  }
-
-  .shell--menu-ouvert du-admin-sidebar .sidebar {
-    transform: translateX(0);
-    box-shadow: 0 0 60px rgba(12, 34, 67, 0.35);
-  }
-
+  /* La sidebar devient un tiroir piloté par .shell--menu-ouvert (styles dans le composant sidebar). */
   .shell--menu-ouvert .shell__voile {
     display: block;
     position: fixed;

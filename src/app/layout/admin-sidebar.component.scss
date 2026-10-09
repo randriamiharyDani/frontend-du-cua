@@ -169,6 +169,11 @@
     width: 270px;
   }
 
+  .sidebar--ouvert {
+    transform: translateX(0);
+    box-shadow: 0 0 60px rgba(12, 34, 67, 0.35);
+  }
+
   .sidebar--replie .sidebar__titres,
   .sidebar--replie .sidebar__label,
   .sidebar--replie .sidebar__footer {
