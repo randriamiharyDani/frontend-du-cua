@@ -32,8 +32,9 @@ export type TypeInfraction =
 
 export type ServiceDossier = 'DU' | 'DIS' | 'SCAD';
 
+/** Contrevenant : personne physique ou morale mise en cause. */
 export interface Contrevenant {
-  /** Nom de famille. */
+  /** Nom de famille (ou raison sociale). */
   nom: string;
   /** Prénom(s). */
   prenom: string;
@@ -45,6 +46,7 @@ export interface Contrevenant {
   observations: string;
 }
 
+/** Localisation du lieu de l’infraction. */
 export interface LocalisationDossier {
   /** Adresse du lieu de l’infraction. */
   adresse: string;
@@ -59,6 +61,7 @@ export interface LocalisationDossier {
   description: string;
 }
 
+/** Informations complémentaires au dossier. */
 export interface InfosComplementaires {
   /** Objet du dossier (titre). */
   objet: string;
@@ -70,6 +73,7 @@ export interface InfosComplementaires {
   observationsGenerales: string;
 }
 
+/** Informations administratives d’enregistrement du dossier. */
 export interface InfosDossier {
   /** Numéro affiché (temporaire en création, ex. « À attribuer »). */
   numero: string;
@@ -82,6 +86,7 @@ export interface InfosDossier {
   nature: NatureDossier;
 }
 
+/** Mouvement d’un dossier entre deux services. */
 export interface MouvementDossier {
   id: string;
   date: string;
@@ -94,25 +99,34 @@ export interface MouvementDossier {
   auteur: string;
 }
 
+/** Entrée de l’historique / journal d’un dossier. */
+export interface HistoriqueItem {
+  /** Date de l’événement (format ISO `yyyy-MM-dd`). */
+  date: string;
+  /** Libellé de l’action consignée. */
+  libelle: string;
+}
+
+/**
+ * Dossier de construction illicite.
+ * Les données métier sont regroupées par section du formulaire :
+ * { infos, contrevenant, localisation, complements } puis les champs de suivi.
+ */
 export interface Dossier {
   id: string;
   reference: string;
-  titre: string;
+  /** Section 1 — Informations du dossier. */
+  infos: InfosDossier;
+  /** Section 2 — Contrevenant. */
+  contrevenant: Contrevenant;
+  /** Section 3 — Localisation. */
+  localisation: LocalisationDossier;
+  /** Section 4 — Informations complémentaires. */
+  complements: InfosComplementaires;
+  /** Suivi — qualification et traitement. */
   type: TypeInfraction;
-  /** Origine : plainte, signalement ou ratissage. */
-  nature: NatureDossier;
-  /** Étape de traitement dans le circuit. */
-  etape: EtapeDossier;
-  description: string;
-  adresse: string;
-  quartier: string;
-  arrondissement: string;
-  proprietaire: string;
-  telephone: string;
-  dateSignalement: string;
-  /** Date d'enregistrement administratif (souvent = signalement, décalée pour la démo). */
-  dateEnregistrement: string;
   service: ServiceDossier;
+  etape: EtapeDossier;
   statut: StatutDossier;
   priorite: PrioriteDossier;
   /** Dossier à traiter en priorité (mise en demeure proche, pièce manquante…). */
@@ -123,7 +137,11 @@ export interface Dossier {
   historique: HistoriqueItem[];
 }
 
+/** Valeur du formulaire de création / modification (champs gérés par l’utilisateur). */
 export type DossierFormValue = Omit<Dossier, 'id' | 'reference' | 'historique'>;
+
+/** Numéro indicatif affiché lors de la création, remplacé à l’enregistrement. */
+export const NUMERO_TEMPORAIRE = 'À attribuer';
 
 export const STATUTS: readonly StatutDossier[] = [
   'signale',
@@ -221,3 +239,8 @@ export const SERVICE_LABEL: Record<ServiceDossier, string> = {
   DIS: 'Direction des Infrastructures Sociales',
   SCAD: 'Service du Cadastre',
 };
+
+/** Nom complet affiché d’un contrevenant (« Prénom Nom »). */
+export function nomContrevenant(c: Contrevenant): string {
+  return [c.prenom, c.nom].filter((v) => !!v && v.trim().length > 0).join(' ').trim();
+}

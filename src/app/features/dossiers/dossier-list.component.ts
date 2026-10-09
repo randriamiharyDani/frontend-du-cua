@@ -3,14 +3,14 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { RouterLink } from '@angular/router';
 import {
   ETAPE_LABEL, ETAPES, EtapeDossier, ETAT_LABEL, NATURE_LABEL, NATURES, NatureDossier,
-  SERVICES, ServiceDossier, STATUT_LABEL, STATUTS, StatutDossier, etatDossier,
+  nomContrevenant, SERVICES, ServiceDossier, STATUT_LABEL, STATUTS, StatutDossier, etatDossier,
 } from '../../core/models/dossier.model';
 import { DossierStore } from '../../core/state/dossier-store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 const normaliser = (s: string) =>
-  (s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  (s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
 /** Page « Gestion des dossiers » : recherche, filtres, pagination, actions. */
 @Component({
@@ -32,6 +32,7 @@ export class DossierListComponent {
   protected readonly etapeLabel = ETAPE_LABEL;
   protected readonly etatLabel = ETAT_LABEL;
   protected readonly etatDe = etatDossier;
+  protected readonly nomContrevenant = nomContrevenant;
 
   protected readonly recherche = signal('');
   protected readonly nature = signal<NatureDossier | ''>('');
@@ -48,15 +49,22 @@ export class DossierListComponent {
     const du = this.du();
     const au = this.au();
     return this.store.dossiers().filter((d) => {
-      if (this.nature() && d.nature !== this.nature()) return false;
+      if (this.nature() && d.infos.nature !== this.nature()) return false;
       if (this.service() && d.service !== this.service()) return false;
       if (this.statut() && d.statut !== this.statut()) return false;
       if (this.etape() && d.etape !== this.etape()) return false;
-      if (du && d.dateEnregistrement < du) return false;
-      if (au && d.dateEnregistrement > au) return false;
+      if (du && d.infos.dateEntree < du) return false;
+      if (au && d.infos.dateEntree > au) return false;
       if (!q) return true;
       const hay = normaliser(
-        [d.reference, d.titre, d.proprietaire, d.quartier, d.arrondissement, d.adresse].join(' '),
+        [
+          d.reference,
+          d.complements.objet,
+          nomContrevenant(d.contrevenant),
+          d.localisation.quartier,
+          d.localisation.arrondissement,
+          d.localisation.adresse,
+        ].join(' '),
       );
       return hay.includes(q);
     });

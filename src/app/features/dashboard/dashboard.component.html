@@ -87,10 +87,10 @@
       <ul class="liste">
         @for (d of recents(); track d.id) {
           <li>
-            <a [routerLink]="['/admin/dossiers', d.id]" class="liste__titre">{{ d.reference }} — {{ d.titre }}</a>
+            <a [routerLink]="['/admin/dossiers', d.id]" class="liste__titre">{{ d.reference }} — {{ d.complements.objet }}</a>
             <div class="liste__meta">
               <du-status-badge [statut]="d.statut" />
-              <span class="muted small">{{ serviceLabel[d.service] }} · {{ d.dateEnregistrement | date: 'dd/MM/yyyy' }}</span>
+              <span class="muted small">{{ serviceLabel[d.service] }} · {{ d.infos.dateEntree | date: 'dd/MM/yyyy' }}</span>
             </div>
           </li>
         }

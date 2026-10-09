@@ -1,5 +1,5 @@
 @if (dossier(); as d) {
-  <du-page-header [title]="d.reference" [subtitle]="d.titre">
+  <du-page-header [title]="d.reference" [subtitle]="d.complements.objet">
     <a routerLink="/admin/dossiers" class="btn btn--secondary"><du-icon name="back" [size]="16" /> Retour</a>
     <a [routerLink]="['/admin/dossiers', d.id, 'modifier']" class="btn btn--primary"><du-icon name="edit" [size]="16" /> Modifier</a>
   </du-page-header>
@@ -7,36 +7,73 @@
   <div class="detail-grid">
     <div class="stack">
       <section class="card">
-        <div class="card__header"><h2>Informations générales</h2></div>
+        <div class="card__header"><h2>Informations du dossier</h2></div>
         <div class="card__body">
           <dl class="dl">
+            <div><dt>Numéro</dt><dd>{{ d.infos.numero }}</dd></div>
+            <div><dt>Date d’entrée</dt><dd>{{ d.infos.dateEntree | date: 'd MMMM y' }}</dd></div>
+            <div><dt>Référence d’arrivée</dt><dd>{{ d.infos.referenceArrivee || '—' }}</dd></div>
+            <div><dt>Référence d’étude</dt><dd>{{ d.infos.referenceEtude || '—' }}</dd></div>
+            <div><dt>Date d’étude</dt><dd>{{ d.infos.dateEtude ? (d.infos.dateEtude | date: 'd MMMM y') : '—' }}</dd></div>
+            <div><dt>Provenance</dt><dd>{{ d.infos.provenance || '—' }}</dd></div>
+            <div><dt>Nature</dt><dd>{{ natureLabel[d.infos.nature] }}</dd></div>
             <div><dt>Type d’infraction</dt><dd>{{ typeLabel[d.type] }}</dd></div>
-            <div><dt>Date de signalement</dt><dd>{{ d.dateSignalement | date: 'd MMMM y' }}</dd></div>
-            <div><dt>Adresse</dt><dd>{{ d.adresse }}</dd></div>
-            <div><dt>Quartier</dt><dd>{{ d.quartier }} — {{ d.arrondissement }}</dd></div>
-            <div><dt>Propriétaire</dt><dd>{{ d.proprietaire }}</dd></div>
-            <div><dt>Téléphone</dt><dd>{{ d.telephone || 'Non renseigné' }}</dd></div>
-            <div><dt>Nature</dt><dd>{{ natureLabel[d.nature] }}</dd></div>
-            <div><dt>Etape actuelle</dt><dd>{{ etapeLabel[d.etape] }}</dd></div>
-            <div><dt>Service actuel</dt><dd>{{ d.service }}</dd></div>
-            <div><dt>Date d�entree</dt><dd>{{ d.dateEnregistrement | date: 'd MMMM y' }}</dd></div>
-            <div><dt>Agent responsable</dt><dd>{{ d.agent || 'Non affecté' }}</dd></div>
-            <div><dt>Priorité</dt><dd><du-priority-badge [priorite]="d.priorite" /></dd></div>
           </dl>
         </div>
       </section>
 
       <section class="card">
-        <div class="card__header"><h2>Description des faits</h2></div>
-        <div class="card__body"><p class="description">{{ d.description }}</p></div>
+        <div class="card__header"><h2>Contrevenant</h2></div>
+        <div class="card__body">
+          <dl class="dl">
+            <div><dt>Nom complet</dt><dd>{{ nomContrevenant(d.contrevenant) || '—' }}</dd></div>
+            <div><dt>Téléphone</dt><dd>{{ d.contrevenant.telephone || 'Non renseigné' }}</dd></div>
+            <div class="full"><dt>Adresse</dt><dd>{{ d.contrevenant.adresse || '—' }}</dd></div>
+            <div class="full"><dt>Observations</dt><dd>{{ d.contrevenant.observations || '—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header"><h2>Localisation</h2></div>
+        <div class="card__body">
+          <dl class="dl">
+            <div class="full"><dt>Adresse</dt><dd>{{ d.localisation.adresse }}</dd></div>
+            <div><dt>Quartier</dt><dd>{{ d.localisation.quartier }}</dd></div>
+            <div><dt>Arrondissement</dt><dd>{{ d.localisation.arrondissement }}</dd></div>
+            <div><dt>Coordonnée X</dt><dd>{{ d.localisation.coordX || '—' }}</dd></div>
+            <div><dt>Coordonnée Y</dt><dd>{{ d.localisation.coordY || '—' }}</dd></div>
+            <div><dt>Latitude</dt><dd>{{ d.localisation.latitude || '—' }}</dd></div>
+            <div><dt>Longitude</dt><dd>{{ d.localisation.longitude || '—' }}</dd></div>
+            <div class="full"><dt>Description</dt><dd>{{ d.localisation.description || '—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header"><h2>Informations complémentaires</h2></div>
+        <div class="card__body">
+          <dl class="dl">
+            <div class="full"><dt>Objet</dt><dd>{{ d.complements.objet }}</dd></div>
+            <div><dt>Emplacement</dt><dd>{{ d.complements.emplacement || '—' }}</dd></div>
+            <div><dt>Dossier relatif</dt><dd>{{ d.complements.dossierRelatif || '—' }}</dd></div>
+            <div class="full"><dt>Observations générales</dt><dd>{{ d.complements.observationsGenerales || '—' }}</dd></div>
+          </dl>
+        </div>
       </section>
     </div>
 
     <div class="stack">
       <section class="card">
-        <div class="card__header"><h2>Statut</h2><du-status-badge [statut]="d.statut" /></div>
+        <div class="card__header"><h2>Suivi</h2><du-status-badge [statut]="d.statut" /></div>
         <div class="card__body">
-          <div class="field">
+          <dl class="dl">
+            <div><dt>Service</dt><dd>{{ d.service }}</dd></div>
+            <div><dt>Étape actuelle</dt><dd>{{ etapeLabel[d.etape] }}</dd></div>
+            <div><dt>Agent responsable</dt><dd>{{ d.agent || 'Non affecté' }}</dd></div>
+            <div><dt>Priorité</dt><dd><du-priority-badge [priorite]="d.priorite" /></dd></div>
+          </dl>
+          <div class="field" style="margin-top: 1rem;">
             <label for="nouveau-statut">Modifier le statut</label>
             <select #s id="nouveau-statut" class="input" [value]="d.statut" (change)="changerStatut(s.value)">
               @for (x of statuts; track x) { <option [value]="x">{{ statutLabel[x] }}</option> }

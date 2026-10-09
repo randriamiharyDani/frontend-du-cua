@@ -71,11 +71,11 @@
           @for (d of affiches(); track d.id) {
             <tr>
               <td class="ref"><a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference }}</a></td>
-              <td class="nowrap">{{ d.dateEnregistrement | date: 'dd/MM/yyyy' }}</td>
-              <td>{{ natureLabel[d.nature] }}</td>
-              <td>{{ d.proprietaire }}</td>
-              <td class="objet">{{ d.titre }}</td>
-              <td class="hide-lg">{{ d.quartier }}<div class="muted small">{{ d.arrondissement }}</div></td>
+              <td class="nowrap">{{ d.infos.dateEntree | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ natureLabel[d.infos.nature] }}</td>
+              <td>{{ nomContrevenant(d.contrevenant) }}</td>
+              <td class="objet">{{ d.complements.objet }}</td>
+              <td class="hide-lg">{{ d.localisation.quartier }}<div class="muted small">{{ d.localisation.arrondissement }}</div></td>
               <td><span class="badge badge--neutral">{{ d.service }}</span></td>
               <td class="hide-lg">{{ etapeLabel[d.etape] }}</td>
               <td>

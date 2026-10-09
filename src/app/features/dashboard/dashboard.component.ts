@@ -56,7 +56,7 @@ export class DashboardComponent {
 
   /** Dossiers recemment enregistres (5 derniers). */
   protected readonly recents = computed(() =>
-    [...this.dossiers()].sort((a, b) => b.dateEnregistrement.localeCompare(a.dateEnregistrement)).slice(0, 5),
+    [...this.dossiers()].sort((a, b) => b.infos.dateEntree.localeCompare(a.infos.dateEntree)).slice(0, 5),
   );
 
   /** Dossiers necessitant une attention particuliere. */

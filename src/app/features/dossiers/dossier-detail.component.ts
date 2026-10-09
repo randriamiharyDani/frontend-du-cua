@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
-import { ETAPE_LABEL, NATURE_LABEL, STATUT_LABEL, STATUTS, StatutDossier, TYPE_LABEL } from '../../core/models/dossier.model';
+import { ETAPE_LABEL, NATURE_LABEL, nomContrevenant, STATUT_LABEL, STATUTS, StatutDossier, TYPE_LABEL } from '../../core/models/dossier.model';
 import { DossierStore } from '../../core/state/dossier-store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
@@ -34,6 +34,7 @@ export class DossierDetailComponent {
   protected readonly typeLabel = TYPE_LABEL;
   protected readonly natureLabel = NATURE_LABEL;
   protected readonly etapeLabel = ETAPE_LABEL;
+  protected readonly nomContrevenant = nomContrevenant;
 
   protected changerStatut(valeur: string): void {
     const d = this.dossier();

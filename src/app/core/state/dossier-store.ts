@@ -1,5 +1,11 @@
 import { Injectable, signal } from '@angular/core';
-import { Dossier, DossierFormValue, MouvementDossier, StatutDossier } from '../models/dossier.model';
+import {
+  Dossier,
+  DossierFormValue,
+  MouvementDossier,
+  NUMERO_TEMPORAIRE,
+  StatutDossier,
+} from '../models/dossier.model';
 import { DOSSIERS_MOCK, MOUVEMENTS_MOCK } from '../data/dossiers.mock';
 
 @Injectable({ providedIn: 'root' })
@@ -17,10 +23,15 @@ export class DossierStore {
 
   add(valeur: DossierFormValue): Dossier {
     const count = this._dossiers().length + 1;
+    const reference = `DU-2026-${String(count).padStart(4, '0')}`;
+    /** Numéro temporaire remplacé par la référence définitive à l’enregistrement. */
+    const numeroSaisi = valeur.infos.numero.trim();
+    const numero = !numeroSaisi || numeroSaisi === NUMERO_TEMPORAIRE ? reference : numeroSaisi;
     const dossier: Dossier = {
       ...valeur,
       id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
-      reference: `DU-2026-${String(count).padStart(4, '0')}`,
+      reference,
+      infos: { ...valeur.infos, numero },
       historique: [{ date: new Date().toISOString().slice(0, 10), libelle: 'Dossier créé' }],
     };
     this._dossiers.update((list) => [dossier, ...list]);
