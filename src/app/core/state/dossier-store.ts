@@ -3,24 +3,29 @@ import {
   DocumentDossier,
   Dossier,
   DossierFormValue,
+  Localisation,
+  LocalisationFormValue,
   MouvementDossier,
   MouvementFormValue,
   NUMERO_TEMPORAIRE,
   StatutDossier,
 } from '../models/dossier.model';
-import { DOCUMENTS_MOCK, DOSSIERS_MOCK, MOUVEMENTS_MOCK } from '../data/dossiers.mock';
+import { DOCUMENTS_MOCK, DOSSIERS_MOCK, LOCALISATIONS_MOCK, MOUVEMENTS_MOCK } from '../data/dossiers.mock';
 
 @Injectable({ providedIn: 'root' })
 export class DossierStore {
   private readonly _dossiers = signal<Dossier[]>([...DOSSIERS_MOCK]);
   private readonly _mouvements = signal<MouvementDossier[]>([...MOUVEMENTS_MOCK]);
   private readonly _documents = signal<DocumentDossier[]>([...DOCUMENTS_MOCK]);
+  private readonly _localisations = signal<Localisation[]>([...LOCALISATIONS_MOCK]);
 
   readonly dossiers = this._dossiers.asReadonly();
   /** Derniers mouvements entre services (données de démonstration). */
   readonly mouvements = this._mouvements.asReadonly();
   /** Pièces jointes (données de démonstration). */
   readonly documents = this._documents.asReadonly();
+  /** Référentiel des localisations (données de démonstration). */
+  readonly localisations = this._localisations.asReadonly();
 
   getById(id: string): Dossier | undefined {
     return this._dossiers().find((d) => d.id === id);
@@ -118,5 +123,27 @@ export class DossierStore {
       );
     }
     return mouvement;
+  }
+
+  /** Ajoute une localisation locale (démonstration). */
+  addLocalisation(valeur: LocalisationFormValue): Localisation {
+    const localisation: Localisation = {
+      ...valeur,
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
+    };
+    this._localisations.update((list) => [localisation, ...list]);
+    return localisation;
+  }
+
+  /** Modifie une localisation existante (démonstration). */
+  updateLocalisation(id: string, valeur: LocalisationFormValue): void {
+    this._localisations.update((list) =>
+      list.map((l) => (l.id === id ? { ...l, ...valeur } : l)),
+    );
+  }
+
+  /** Supprime une localisation (démonstration). */
+  supprimerLocalisation(id: string): void {
+    this._localisations.update((list) => list.filter((l) => l.id !== id));
   }
 }

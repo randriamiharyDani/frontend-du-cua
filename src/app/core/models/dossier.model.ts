@@ -150,6 +150,21 @@ export interface DocumentDossier {
   deposePar: string;
 }
 
+/** Localisation référencée dans l’espace administrateur (coordonnées textuelles). */
+export interface Localisation {
+  id: string;
+  adresse: string;
+  quartier: string;
+  arrondissement: string;
+  coordX: string;
+  coordY: string;
+  latitude: string;
+  longitude: string;
+}
+
+/** Valeur du formulaire d’ajout / modification d’une localisation. */
+export type LocalisationFormValue = Omit<Localisation, 'id'>;
+
 /**
  * Dossier de construction illicite.
  * Les données métier sont regroupées par section du formulaire :

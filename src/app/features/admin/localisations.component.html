@@ -1,0 +1,187 @@
+<du-page-header
+  title="Localisations"
+  subtitle="Référentiel des zones et coordonnées des dossiers (coordonnées présentées textuellement)."
+>
+  <button type="button" class="btn btn--primary" (click)="ouvrirAjout()">
+    <du-icon name="plus" [size]="16" /> Ajouter une localisation
+  </button>
+</du-page-header>
+
+<p class="demo-note" role="note">
+  <du-icon name="alert" [size]="15" />
+  Données locales de démonstration — l’ajout et la modification sont simulés et ne sont pas enregistrés de façon permanente.
+  Les coordonnées sont affichées sous forme textuelle, sans carte interactive.
+</p>
+
+@if (messageSucces()) {
+  <div class="succes" role="status">{{ messageSucces() }}</div>
+}
+
+<section class="card">
+  <div class="card__body">
+    <div class="filtres">
+      <div class="field champ-recherche">
+        <label for="recherche">Recherche</label>
+        <input #q id="recherche" class="input" type="search" placeholder="Adresse, quartier, arrondissement…"
+               [value]="recherche()" (input)="setRecherche(q.value)" />
+      </div>
+      <div class="field">
+        <label for="arrondissement">Arrondissement</label>
+        <select #a id="arrondissement" class="input" [value]="arrondissement()" (change)="setArrondissement(a.value)">
+          <option value="">Tous</option>
+          @for (x of arrondissements; track x) { <option [value]="x">{{ x }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="association">Dossiers associés</label>
+        <select #d id="association" class="input" [value]="association()" (change)="setAssociation(d.value)">
+          <option value="">Tous</option>
+          <option value="avec">Avec dossiers</option>
+          <option value="sans">Sans dossier</option>
+        </select>
+      </div>
+      <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
+    </div>
+  </div>
+
+  @if (affiches().length) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Adresse</th>
+            <th class="hide-md">Quartier</th>
+            <th>Arrondissement</th>
+            <th class="hide-lg">Coord. X / Y</th>
+            <th class="hide-lg">Latitude / Longitude</th>
+            <th class="centered">Dossiers</th>
+            <th><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of affiches(); track l.id) {
+            <tr>
+              <td>
+                {{ l.adresse }}
+                <span class="muted small ligne-detail">{{ l.quartier }}</span>
+              </td>
+              <td class="hide-md">{{ l.quartier }}</td>
+              <td><span class="badge badge--info">{{ l.arrondissement }}</span></td>
+              <td class="hide-lg nowrap mono">{{ l.coordX }} / {{ l.coordY }}</td>
+              <td class="hide-lg nowrap mono">{{ l.latitude }} / {{ l.longitude }}</td>
+              <td class="centered">
+                <span class="badge" [class.badge--neutral]="l.nombre === 0" [class.badge--info]="l.nombre > 0">{{ l.nombre }}</span>
+              </td>
+              <td class="actions">
+                <button type="button" class="btn btn--secondary btn--sm" (click)="ouvrirEdition(l)">
+                  <du-icon name="edit" [size]="15" /> Modifier
+                </button>
+                <button type="button" class="btn btn--danger btn--sm" (click)="supprimer(l)">
+                  <du-icon name="x" [size]="15" /> Supprimer
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span class="muted small">{{ filtres().length }} localisation(s) · page {{ pageCourante() }} sur {{ totalPages() }}</span>
+      <div class="pagination__nav">
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <du-icon name="pin" [size]="28" />
+      <p><strong>Aucune localisation trouvée.</strong></p>
+      <p class="muted small">Modifiez la recherche ou réinitialisez les filtres.</p>
+      <button type="button" class="btn btn--secondary btn--sm" (click)="reinitialiser()">Réinitialiser les filtres</button>
+    </div>
+  }
+</section>
+
+<!-- Fenêtre d’ajout / modification d’une localisation -->
+@if (formulaireOuvert()) {
+  <div class="modal">
+    <div class="modal__voile" (click)="fermerFormulaire()" aria-hidden="true"></div>
+    <div class="modal__boite" role="dialog" aria-modal="true" aria-labelledby="t-localisation">
+      <form [formGroup]="form" (ngSubmit)="enregistrer()" novalidate>
+        <div class="modal__entete">
+          <h2 id="t-localisation">{{ editionId() ? 'Modifier une localisation' : 'Ajouter une localisation' }}</h2>
+          <button type="button" class="modal__fermer" (click)="fermerFormulaire()" aria-label="Fermer">
+            <du-icon name="close" [size]="18" />
+          </button>
+        </div>
+
+        <div class="modal__corps">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="adresse">Adresse *</label>
+              <input id="adresse" class="input" formControlName="adresse" placeholder="Ex. Rue KA-012, Carrefour Kipe"
+                     [class.is-invalid]="invalide('adresse')" />
+              @if (invalide('adresse')) { <span class="error">{{ message('adresse') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="quartier">Quartier *</label>
+              <input id="quartier" class="input" formControlName="quartier" placeholder="Ex. Kipe"
+                     [class.is-invalid]="invalide('quartier')" />
+              @if (invalide('quartier')) { <span class="error">{{ message('quartier') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="arrondissementForm">Arrondissement *</label>
+              <select id="arrondissementForm" class="input" formControlName="arrondissement" [class.is-invalid]="invalide('arrondissement')">
+                <option value="">Sélectionner…</option>
+                @for (x of arrondissements; track x) { <option [value]="x">{{ x }}</option> }
+              </select>
+              @if (invalide('arrondissement')) { <span class="error">{{ message('arrondissement') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="coordX">Coordonnée X</label>
+              <input id="coordX" class="input" formControlName="coordX" placeholder="Ex. 742118"
+                     [class.is-invalid]="invalide('coordX')" />
+              @if (invalide('coordX')) { <span class="error">{{ message('coordX') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="coordY">Coordonnée Y</label>
+              <input id="coordY" class="input" formControlName="coordY" placeholder="Ex. 1058340"
+                     [class.is-invalid]="invalide('coordY')" />
+              @if (invalide('coordY')) { <span class="error">{{ message('coordY') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="latitude">Latitude</label>
+              <input id="latitude" class="input" formControlName="latitude" placeholder="Ex. 9.5654"
+                     [class.is-invalid]="invalide('latitude')" />
+              @if (invalide('latitude')) { <span class="error">{{ message('latitude') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="longitude">Longitude</label>
+              <input id="longitude" class="input" formControlName="longitude" placeholder="Ex. -13.6352"
+                     [class.is-invalid]="invalide('longitude')" />
+              @if (invalide('longitude')) { <span class="error">{{ message('longitude') }}</span> }
+            </div>
+          </div>
+
+          <p class="muted small" style="margin: 0.5rem 0 0;">
+            Enregistrement simulé localement — aucune carte interactive, coordonnées textuelles uniquement.
+          </p>
+        </div>
+
+        <div class="modal__pied">
+          <button type="button" class="btn btn--secondary" (click)="fermerFormulaire()">Annuler</button>
+          <button type="submit" class="btn btn--primary">
+            {{ editionId() ? 'Enregistrer les modifications' : 'Ajouter la localisation' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

@@ -2,6 +2,7 @@ import {
   DocumentDossier,
   Dossier,
   EtapeDossier,
+  Localisation,
   MouvementDossier,
   NatureDossier,
   PrioriteDossier,
@@ -123,4 +124,22 @@ export const DOCUMENTS_MOCK: DocumentDossier[] = [
   { id: 'doc-8', dossierId: '7', nom: 'Plan de structure (à réclamer).pdf', type: 'plan', dateDepot: '2026-10-04', taille: '—', deposePar: 'Agent K. Diallo' },
   { id: 'doc-9', dossierId: '9', nom: 'Procès-verbal de bornage.pdf', type: 'rapport', dateDepot: '2026-10-06', taille: '640 Ko', deposePar: 'Service du Cadastre' },
   { id: 'doc-10', dossierId: '10', nom: 'Demande d’avis technique.pdf', type: 'courrier', dateDepot: '2026-10-07', taille: '230 Ko', deposePar: 'Agent K. Diallo' },
+];
+
+/**
+ * Référentiel de localisations (zones) — données locales de démonstration.
+ * Le nombre de dossiers associés est calculé à partir du quartier des dossiers.
+ */
+export const LOCALISATIONS_MOCK: Localisation[] = [
+  { id: 'loc-1', adresse: 'Rue KA-012, Carrefour Kipe', quartier: 'Kipe', arrondissement: 'Arrondissement 1', coordX: '742 118', coordY: '1 058 340', latitude: '9.5654', longitude: '-13.6352' },
+  { id: 'loc-2', adresse: 'Rue TA-077, Taouyah Centre', quartier: 'Taouyah', arrondissement: 'Arrondissement 1', coordX: '744 902', coordY: '1 061 220', latitude: '9.5731', longitude: '-13.6290' },
+  { id: 'loc-3', adresse: 'Rue NO-214, Nongo Marché', quartier: 'Nongo', arrondissement: 'Arrondissement 2', coordX: '751 340', coordY: '1 070 118', latitude: '9.6012', longitude: '-13.6128' },
+  { id: 'loc-4', adresse: 'Rue SO-009, Sonfonia Gare', quartier: 'Sonfonia', arrondissement: 'Arrondissement 2', coordX: '753 002', coordY: '1 083 447', latitude: '9.6380', longitude: '-13.5841' },
+  { id: 'loc-5', adresse: 'Avenue du marché, Madina', quartier: 'Madina', arrondissement: 'Arrondissement 3', coordX: '738 660', coordY: '1 063 990', latitude: '9.5820', longitude: '-13.6480' },
+  { id: 'loc-6', adresse: 'Rue MA-055, Matam Centre', quartier: 'Matam', arrondissement: 'Arrondissement 3', coordX: '740 015', coordY: '1 061 002', latitude: '9.5740', longitude: '-13.6421' },
+  { id: 'loc-7', adresse: 'Rue CO-087, Coleah Carrière', quartier: 'Coleah', arrondissement: 'Arrondissement 4', coordX: '734 512', coordY: '1 060 887', latitude: '9.5690', longitude: '-13.6602' },
+  { id: 'loc-8', adresse: 'Rue SI-118, Simbaya 2', quartier: 'Simbaya', arrondissement: 'Arrondissement 4', coordX: '731 240', coordY: '1 058 130', latitude: '9.5598', longitude: '-13.6674' },
+  { id: 'loc-9', adresse: 'Rue HE-033, Heremakono', quartier: 'Heremakono', arrondissement: 'Arrondissement 5', coordX: '745 889', coordY: '1 050 776', latitude: '9.5390', longitude: '-13.6250' },
+  { id: 'loc-10', adresse: 'Rue ECO-02, Ratoma Village', quartier: 'Ratoma', arrondissement: 'Arrondissement 5', coordX: '748 220', coordY: '1 047 331', latitude: '9.5290', longitude: '-13.6180' },
+  { id: 'loc-11', adresse: 'Zone de recensement, Lambanyi', quartier: 'Lambanyi', arrondissement: 'Arrondissement 2', coordX: '749 870', coordY: '1 076 512', latitude: '9.6150', longitude: '-13.6055' },
 ];
