@@ -13,40 +13,46 @@
     <div class="card__body">
       <div class="form-grid" formGroupName="infos">
         <div class="field">
-          <label for="numero">Numéro du dossier *</label>
+          <label for="numero">NUM_BD — Numéro du dossier *</label>
           <input id="numero" class="input" formControlName="numero" [class.is-invalid]="invalide('infos.numero')" />
           <span class="hint">Numéro temporaire pour la démonstration (ex. « À attribuer »).</span>
           @if (invalide('infos.numero')) { <span class="error">{{ message('infos.numero') }}</span> }
         </div>
 
         <div class="field">
-          <label for="dateEntree">Date d’entrée *</label>
+          <label for="dateEntree">DATE_ENTREE — Date d’entrée *</label>
           <input id="dateEntree" type="date" class="input" formControlName="dateEntree" [class.is-invalid]="invalide('infos.dateEntree')" />
           @if (invalide('infos.dateEntree')) { <span class="error">{{ message('infos.dateEntree') }}</span> }
         </div>
 
         <div class="field">
-          <label for="referenceArrivee">Référence d’arrivée</label>
-          <input id="referenceArrivee" class="input" formControlName="referenceArrivee" />
-        </div>
-
-        <div class="field">
-          <label for="referenceEtude">Référence d’étude</label>
+          <label for="referenceEtude">Ref_ETUDE — Référence d’étude</label>
           <input id="referenceEtude" class="input" formControlName="referenceEtude" />
         </div>
 
         <div class="field">
-          <label for="dateEtude">Date d’étude</label>
+          <label for="idemEtude">idem_ETUDE — Signalement antérieur</label>
+          <input id="idemEtude" class="input" formControlName="idemEtude" placeholder="Référence d’un signalement antérieur (facultatif)" />
+          <span class="hint">Facultatif : à renseigner uniquement si un signalement antérieur existe.</span>
+        </div>
+
+        <div class="field">
+          <label for="dateEtude">DATE_ETUDE — Date d’étude</label>
           <input id="dateEtude" type="date" class="input" formControlName="dateEtude" />
         </div>
 
         <div class="field">
-          <label for="provenance">Provenance</label>
+          <label for="referenceArrivee">REF ARRIVEE — Référence d’arrivée</label>
+          <input id="referenceArrivee" class="input" formControlName="referenceArrivee" />
+        </div>
+
+        <div class="field">
+          <label for="provenance">PROVENANCE — Provenance</label>
           <input id="provenance" class="input" formControlName="provenance" placeholder="Ex. mairie, service, courrier…" />
         </div>
 
         <div class="field full">
-          <label for="nature">Nature *</label>
+          <label for="nature">NATURE — Nature *</label>
           <select id="nature" class="input" formControlName="nature" [class.is-invalid]="invalide('infos.nature')">
             @for (n of natures; track n) { <option [value]="n">{{ natureLabel[n] }}</option> }
           </select>
@@ -118,14 +124,20 @@
           @if (invalide('localisation.arrondissement')) { <span class="error">{{ message('localisation.arrondissement') }}</span> }
         </div>
 
+        <div class="field full">
+          <label for="localisation">Localisation</label>
+          <input id="localisation" class="input" formControlName="localisation" placeholder="Saisir « OK » si la localisation est valide" />
+          <span class="hint">Champ textuel libre — saisir « OK » lorsque la localisation est validée (aucune carte).</span>
+        </div>
+
         <div class="field">
-          <label for="coordX">Coordonnée X</label>
+          <label for="coordX">COORDONNEES (X) — Coordonnée X</label>
           <input id="coordX" class="input" formControlName="coordX" [class.is-invalid]="invalide('localisation.coordX')" />
           @if (invalide('localisation.coordX')) { <span class="error">{{ message('localisation.coordX') }}</span> }
         </div>
 
         <div class="field">
-          <label for="coordY">Coordonnée Y</label>
+          <label for="coordY">COORDONNEES (Y) — Coordonnée Y</label>
           <input id="coordY" class="input" formControlName="coordY" [class.is-invalid]="invalide('localisation.coordY')" />
           @if (invalide('localisation.coordY')) { <span class="error">{{ message('localisation.coordY') }}</span> }
         </div>
@@ -174,6 +186,42 @@
         <div class="field full">
           <label for="observationsGenerales">Observations générales</label>
           <textarea id="observationsGenerales" class="input" formControlName="observationsGenerales"></textarea>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Arrêté et exécution -->
+  <section class="card">
+    <div class="card__header"><h2>5. Arrêté et exécution</h2></div>
+    <div class="card__body">
+      <p class="hint" style="margin: 0 0 0.75rem;">
+        Ces informations restent vides tant qu’elles ne sont pas disponibles — ne rien inventer.
+      </p>
+      <div class="form-grid" formGroupName="arretes">
+        <div class="field">
+          <label for="refArrete">REF_ARRETE — Référence de l’arrêté</label>
+          <input id="refArrete" class="input" formControlName="refArrete" />
+        </div>
+
+        <div class="field">
+          <label for="dateArrete">DATE_ARRETE — Date de l’arrêté</label>
+          <input id="dateArrete" type="date" class="input" formControlName="dateArrete" />
+        </div>
+
+        <div class="field full">
+          <label for="objetArrete">OBJET_ARRETE — Objet de l’arrêté</label>
+          <textarea id="objetArrete" class="input" formControlName="objetArrete" placeholder="Ex. interruption des travaux de construction illicite…"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="dateScellage">DATE_SCELLAGE — Date de scellage</label>
+          <input id="dateScellage" type="date" class="input" formControlName="dateScellage" />
+        </div>
+
+        <div class="field">
+          <label for="dateDemolOuEnlevement">DATE DEMOL OU ENLEVEMENT — Démolition / enlèvement</label>
+          <input id="dateDemolOuEnlevement" type="date" class="input" formControlName="dateDemolOuEnlevement" />
         </div>
       </div>
     </div>

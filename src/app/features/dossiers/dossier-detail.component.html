@@ -42,6 +42,7 @@
             <div><dt>Date d’entrée</dt><dd>{{ d.infos.dateEntree ? (d.infos.dateEntree | date: 'd MMMM y') : '—' }}</dd></div>
             <div><dt>Référence d’arrivée</dt><dd>{{ d.infos.referenceArrivee || '—' }}</dd></div>
             <div><dt>Référence d’étude</dt><dd>{{ d.infos.referenceEtude || '—' }}</dd></div>
+            <div><dt>idem_ÉTUDE (signalement antérieur)</dt><dd>{{ d.infos.idemEtude || '—' }}</dd></div>
             <div><dt>Date d’étude</dt><dd>{{ d.infos.dateEtude ? (d.infos.dateEtude | date: 'd MMMM y') : '—' }}</dd></div>
             <div><dt>Provenance</dt><dd>{{ d.infos.provenance || '—' }}</dd></div>
             <div><dt>Nature</dt><dd>{{ natureLabel[d.infos.nature] }}</dd></div>
@@ -92,6 +93,9 @@
             <div class="full"><dt>Adresse</dt>
               <dd>@if (d.localisation.adresse) { {{ d.localisation.adresse }} } @else { <span class="absent">Non renseignée</span> }</dd>
             </div>
+            <div class="full"><dt>Localisation</dt>
+              <dd>@if (d.localisation.localisation) { {{ d.localisation.localisation }} } @else { <span class="absent">Non renseignée</span> }</dd>
+            </div>
             <div><dt>Quartier</dt>
               <dd>@if (d.localisation.quartier) { {{ d.localisation.quartier }} } @else { <span class="absent">—</span> }</dd>
             </div>
@@ -112,7 +116,23 @@
         </div>
       </section>
 
-      <!-- 4. Historique des mouvements -->
+      <!-- 4. Arrêté et exécution -->
+      <section class="card">
+        <div class="card__header"><h2>Arrêté et exécution</h2></div>
+        <div class="card__body">
+          <dl class="dl">
+            <div><dt>Référence de l’arrêté</dt><dd>{{ d.arretes.refArrete || '—' }}</dd></div>
+            <div><dt>Date de l’arrêté</dt><dd>{{ d.arretes.dateArrete ? (d.arretes.dateArrete | date: 'd MMMM y') : '—' }}</dd></div>
+            <div class="full"><dt>Objet de l’arrêté</dt>
+              <dd>@if (d.arretes.objetArrete) { {{ d.arretes.objetArrete }} } @else { <span class="absent">Non renseigné</span> }</dd>
+            </div>
+            <div><dt>Date de scellage</dt><dd>{{ d.arretes.dateScellage ? (d.arretes.dateScellage | date: 'd MMMM y') : '—' }}</dd></div>
+            <div><dt>Démolition / enlèvement</dt><dd>{{ d.arretes.dateDemolOuEnlevement ? (d.arretes.dateDemolOuEnlevement | date: 'd MMMM y') : '—' }}</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <!-- Historique des mouvements -->
       <section class="card">
         <div class="card__header">
           <h2>Historique des mouvements</h2>

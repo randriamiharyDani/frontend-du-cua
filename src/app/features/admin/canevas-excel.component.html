@@ -69,9 +69,7 @@
               @for (col of colonnes; track col.cle; let i = $index) {
                 <td [class.col-fixe]="i === 0" [class.nowrap]="col.cle === 'numero' || col.cle === 'dateEntree'">
                   @switch (col.cle) {
-                    @case ('service') { <span class="badge badge--info">{{ l[col.cle] }}</span> }
                     @case ('nature') { <span class="badge badge--neutral">{{ l[col.cle] }}</span> }
-                    @case ('etape') { <span class="badge badge--warning">{{ l[col.cle] }}</span> }
                     @default {
                       @if (l[col.cle]) { {{ l[col.cle] } } @else { <span class="vide">—</span> }
                     }
@@ -85,7 +83,7 @@
     </div>
 
     <div class="pagination">
-      <span class="muted small">{{ lignes().length }} ligne(s) · page {{ pageCourante() }} sur {{ totalPages() }} · 21 colonnes</span>
+      <span class="muted small">{{ lignes().length }} ligne(s) · page {{ pageCourante() }} sur {{ totalPages() }} · 20 colonnes</span>
       <div class="pagination__nav">
         <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
         <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>

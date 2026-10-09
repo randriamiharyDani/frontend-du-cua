@@ -79,9 +79,10 @@ export class DossierFormComponent {
     infos: this.fb.group({
       numero: [NUMERO_TEMPORAIRE, [Validators.required, Validators.maxLength(40)]],
       dateEntree: [aujourdHui(), Validators.required],
-      referenceArrivee: [''],
       referenceEtude: [''],
+      idemEtude: [''],
       dateEtude: [''],
+      referenceArrivee: [''],
       provenance: [''],
       nature: ['plainte' as NatureDossier, Validators.required],
     }),
@@ -98,6 +99,7 @@ export class DossierFormComponent {
     // 3. Localisation.
     localisation: this.fb.group({
       adresse: ['', Validators.required],
+      localisation: [''],
       quartier: ['', Validators.required],
       arrondissement: ['', Validators.required],
       coordX: ['', coordonneeValide],
@@ -113,6 +115,15 @@ export class DossierFormComponent {
       emplacement: [''],
       dossierRelatif: [''],
       observationsGenerales: [''],
+    }),
+
+    // 5. Arrêté d’interruption et suites (scellage, démolition / enlèvement).
+    arretes: this.fb.group({
+      refArrete: [''],
+      dateArrete: [''],
+      objetArrete: [''],
+      dateScellage: [''],
+      dateDemolOuEnlevement: [''],
     }),
   });
 

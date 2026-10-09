@@ -50,6 +50,11 @@ export interface Contrevenant {
 export interface LocalisationDossier {
   /** Adresse du lieu de l’infraction. */
   adresse: string;
+  /**
+   * Colonne « Localisation » du canevas : champ textuel libre.
+   * Saisir « OK » lorsque le lieu est validé (jamais remplacé par une carte).
+   */
+  localisation: string;
   quartier: string;
   arrondissement: string;
   /** Coordonnées plan (X / Y) — texte libre pour la démo, pas de carte. */
@@ -81,9 +86,32 @@ export interface InfosDossier {
   dateEntree: string;
   referenceArrivee: string;
   referenceEtude: string;
+  /**
+   * Colonne « idem_ETUDE » : référence à un signalement antérieur lorsqu’il existe.
+   * Champ facultatif.
+   */
+  idemEtude: string;
   dateEtude: string;
   provenance: string;
   nature: NatureDossier;
+}
+
+/**
+ * Arrêté d’interruption et suites administratives (colonnes REF_ARRETE,
+ * DATE_ARRETE, OBJET_ARRETE, DATE_SCELLAGE, DATE DEMOL OU ENLEVEMENT).
+ * Tous les champs restent vides tant que l’information n’est pas disponible.
+ */
+export interface ArretesDossier {
+  /** Référence de l’arrêté. */
+  refArrete: string;
+  /** Date de l’arrêté (ISO `yyyy-MM-dd`). */
+  dateArrete: string;
+  /** Objet de l’arrêté. */
+  objetArrete: string;
+  /** Date de scellage (ISO `yyyy-MM-dd`). */
+  dateScellage: string;
+  /** Date de démolition ou d’enlèvement (ISO `yyyy-MM-dd`). */
+  dateDemolOuEnlevement: string;
 }
 
 /** Mouvement d’un dossier entre deux services. */
@@ -217,6 +245,8 @@ export interface Dossier {
   localisation: LocalisationDossier;
   /** Section 4 — Informations complémentaires. */
   complements: InfosComplementaires;
+  /** Section 5 — Arrêté d’interruption et suites (scellage, démolition). */
+  arretes: ArretesDossier;
   /** Suivi — qualification et traitement. */
   type: TypeInfraction;
   service: ServiceDossier;

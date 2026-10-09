@@ -5,7 +5,6 @@ import {
   ETAPE_LABEL,
   ETAPES,
   EtapeDossier,
-  MouvementDossier,
   NATURE_LABEL,
   NATURES,
   NatureDossier,
@@ -31,6 +30,7 @@ type CleColonne =
   | 'numero'
   | 'dateEntree'
   | 'referenceEtude'
+  | 'idemEtude'
   | 'dateEtude'
   | 'referenceArrivee'
   | 'provenance'
@@ -44,11 +44,9 @@ type CleColonne =
   | 'observations'
   | 'refArrete'
   | 'dateArrete'
+  | 'objetArrete'
   | 'dateScellage'
-  | 'dateDemolition'
-  | 'service'
-  | 'etape'
-  | 'derniereAction';
+  | 'dateDemolition';
 
 interface ColonneCanevas {
   cle: CleColonne;
@@ -78,29 +76,28 @@ export class CanevasExcelComponent {
   protected readonly etapes = ETAPES;
   protected readonly etapeLabel = ETAPE_LABEL;
 
-  /** Colonnes du canevas, dans l’ordre demandé. */
+  /** Les 20 colonnes officielles du canevas, dans l’ordre exact du fichier Excel. */
   protected readonly colonnes: readonly ColonneCanevas[] = [
-    { cle: 'numero', libelle: 'N° / BD' },
-    { cle: 'dateEntree', libelle: 'Date d’entrée' },
-    { cle: 'referenceEtude', libelle: 'Réf. d’étude' },
-    { cle: 'dateEtude', libelle: 'Date d’étude' },
-    { cle: 'referenceArrivee', libelle: 'Réf. d’arrivée' },
-    { cle: 'provenance', libelle: 'Provenance' },
-    { cle: 'nature', libelle: 'Nature' },
-    { cle: 'coordonnees', libelle: 'Coordonnées X / Y' },
+    { cle: 'numero', libelle: 'NUM_BD' },
+    { cle: 'dateEntree', libelle: 'DATE_ENTREE' },
+    { cle: 'referenceEtude', libelle: 'Ref_ETUDE' },
+    { cle: 'idemEtude', libelle: 'idem_ETUDE' },
+    { cle: 'dateEtude', libelle: 'DATE_ETUDE' },
+    { cle: 'referenceArrivee', libelle: 'REF ARRIVEE' },
+    { cle: 'provenance', libelle: 'PROVENANCE' },
+    { cle: 'nature', libelle: 'NATURE' },
+    { cle: 'coordonnees', libelle: 'COORDONNEES (X/Y)' },
     { cle: 'localisation', libelle: 'Localisation' },
-    { cle: 'contrevenant', libelle: 'Nom du contrevenant' },
-    { cle: 'objet', libelle: 'Objet' },
+    { cle: 'contrevenant', libelle: 'Nom contrevenant' },
+    { cle: 'objet', libelle: 'OBJET' },
     { cle: 'emplacement', libelle: 'Emplacement' },
-    { cle: 'dossierRelatif', libelle: 'Dossier relatif' },
-    { cle: 'observations', libelle: 'Observations' },
-    { cle: 'refArrete', libelle: 'Réf. de l’arrêté' },
-    { cle: 'dateArrete', libelle: 'Date de l’arrêté' },
-    { cle: 'dateScellage', libelle: 'Date de scellage' },
-    { cle: 'dateDemolition', libelle: 'Date de démolition / enlèvement' },
-    { cle: 'service', libelle: 'Service actuel' },
-    { cle: 'etape', libelle: 'Étape actuelle' },
-    { cle: 'derniereAction', libelle: 'Dernière action' },
+    { cle: 'dossierRelatif', libelle: 'DOSSIER RELATIF' },
+    { cle: 'observations', libelle: 'OBS' },
+    { cle: 'refArrete', libelle: 'REF_ARRETE' },
+    { cle: 'dateArrete', libelle: 'DATE_ARRETE' },
+    { cle: 'objetArrete', libelle: 'OBJET_ARRETE' },
+    { cle: 'dateScellage', libelle: 'DATE_SCELLAGE' },
+    { cle: 'dateDemolition', libelle: 'DATE DEMOL OU ENLEVEMENT' },
   ];
 
   // --- Filtres ---
@@ -144,10 +141,7 @@ export class CanevasExcelComponent {
   /** Lignes du canevas issues des dossiers temporaires (aucune donnée ajoutée). */
   protected readonly lignes = computed<LigneCanevas[]>(() => {
     const docs = this.store.documents();
-    const mvts = this.store.mouvements();
-    return this.dossiersFiltres().map((d) =>
-      this.versLigne(d, docs, mvts),
-    );
+    return this.dossiersFiltres().map((d) => this.versLigne(d, docs));
   });
 
   protected readonly totalPages = computed(() =>
@@ -168,17 +162,8 @@ export class CanevasExcelComponent {
       .sort((a, b) => b.dateDepot.localeCompare(a.dateDepot))[0];
   }
 
-  private derniereAction(dossier: Dossier, mvts: MouvementDossier[]): string {
-    const propres = mvts
-      .filter((m) => m.dossierId === dossier.id)
-      .sort((a, b) => b.date.localeCompare(a.date));
-    if (propres.length) return propres[0].action;
-    const histo = dossier.historique;
-    return histo.length ? histo[histo.length - 1].libelle : '';
-  }
-
-  /** Projette un dossier sur une ligne du canevas. */
-  private versLigne(d: Dossier, docs: DocumentDossier[], mvts: MouvementDossier[]): LigneCanevas {
+  /** Projette un dossier sur une ligne du canevas (20 colonnes, ordre Excel). */
+  private versLigne(d: Dossier, docs: DocumentDossier[]): LigneCanevas {
     const arrete =
       this.documentDeType(d.id, docs, 'arrete_interruptif') ??
       this.documentDeType(d.id, docs, 'arrete_scelles');
@@ -186,29 +171,29 @@ export class CanevasExcelComponent {
     const demolition = this.documentDeType(d.id, docs, 'document_demolition');
     const etude = this.documentDeType(d.id, docs, 'document_etude');
     const loc = d.localisation;
+    const a = d.arretes;
 
     return {
       numero: d.infos.numero || d.reference,
       dateEntree: formatDate(d.infos.dateEntree),
       referenceEtude: d.infos.referenceEtude || etude?.reference || '',
+      idemEtude: d.infos.idemEtude || '',
       dateEtude: formatDate(d.infos.dateEtude || etude?.dateDepot || ''),
       referenceArrivee: d.infos.referenceArrivee || '',
       provenance: d.infos.provenance || '',
       nature: NATURE_LABEL[d.infos.nature],
       coordonnees: [loc.coordX, loc.coordY].filter(Boolean).join(' / '),
-      localisation: [loc.adresse, loc.quartier].filter(Boolean).join(', '),
+      localisation: loc.localisation || [loc.adresse, loc.quartier].filter(Boolean).join(', '),
       contrevenant: nomContrevenant(d.contrevenant),
       objet: d.complements.objet,
       emplacement: d.complements.emplacement || '',
       dossierRelatif: d.complements.dossierRelatif || '',
       observations: d.complements.observationsGenerales || d.motifAttention || '',
-      refArrete: arrete?.reference || '',
-      dateArrete: formatDate(arrete?.dateDepot || ''),
-      dateScellage: formatDate(scellage?.dateDepot || ''),
-      dateDemolition: formatDate(demolition?.dateDepot || ''),
-      service: d.service,
-      etape: ETAPE_LABEL[d.etape],
-      derniereAction: this.derniereAction(d, mvts),
+      refArrete: a.refArrete || arrete?.reference || '',
+      dateArrete: formatDate(a.dateArrete || arrete?.dateDepot || ''),
+      objetArrete: a.objetArrete || '',
+      dateScellage: formatDate(a.dateScellage || scellage?.dateDepot || ''),
+      dateDemolition: formatDate(a.dateDemolOuEnlevement || demolition?.dateDepot || ''),
     };
   }
 
