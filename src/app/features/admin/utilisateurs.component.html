@@ -1,0 +1,192 @@
+<du-page-header
+  title="Utilisateurs"
+  subtitle="Comptes, services, rôles et états — données fictives de démonstration."
+>
+  <button type="button" class="btn btn--primary" (click)="ouvrirAjout()">
+    <du-icon name="plus" [size]="16" /> Nouvel utilisateur
+  </button>
+</du-page-header>
+
+<p class="demo-note" role="note">
+  <du-icon name="alert" [size]="15" />
+  Démonstration : aucune authentification réelle, aucun backend ni base de données. L’ajout et la
+  modification sont simulés localement et ne sont pas enregistrés de façon permanente.
+</p>
+
+@if (messageSucces()) {
+  <div class="succes" role="status">{{ messageSucces() }}</div>
+}
+
+<section class="card">
+  <div class="card__body">
+    <div class="filtres">
+      <div class="field champ-recherche">
+        <label for="recherche">Recherche</label>
+        <input #q id="recherche" class="input" type="search" placeholder="Nom, prénom, e-mail…"
+               [value]="recherche()" (input)="setRecherche(q.value)" />
+      </div>
+      <div class="field">
+        <label for="service">Service</label>
+        <select #s id="service" class="input" [value]="service()" (change)="setService(s.value)">
+          <option value="">Tous</option>
+          @for (x of services; track x) { <option [value]="x">{{ x }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="role">Rôle</label>
+        <select #r id="role" class="input" [value]="role()" (change)="setRole(r.value)">
+          <option value="">Tous</option>
+          @for (x of roles; track x) { <option [value]="x">{{ roleLabel[x] }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="etat">État du compte</label>
+        <select #e id="etat" class="input" [value]="etat()" (change)="setEtat(e.value)">
+          <option value="">Tous</option>
+          @for (x of etats; track x) { <option [value]="x">{{ etatLabel[x] }}</option> }
+        </select>
+      </div>
+      <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
+    </div>
+  </div>
+
+  @if (affiches().length) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nom complet</th>
+            <th class="hide-md">Adresse e-mail</th>
+            <th>Service</th>
+            <th class="hide-md">Rôle</th>
+            <th>État du compte</th>
+            <th><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (u of affiches(); track u.id) {
+            <tr>
+              <td>
+                <div class="user-nom">
+                  <span class="user-initiales">{{ u.prenom.charAt(0) }}{{ u.nom.charAt(0) }}</span>
+                  <span>{{ nomComplet(u) }}</span>
+                </div>
+                <span class="muted small user-email-mobile">{{ u.email }}</span>
+              </td>
+              <td class="hide-md">{{ u.email }}</td>
+              <td><span class="badge badge--neutral">{{ u.service }}</span></td>
+              <td class="hide-md">{{ roleLabel[u.role] }}</td>
+              <td>
+                <span class="badge"
+                      [class.badge--success]="u.etat === 'actif'"
+                      [class.badge--neutral]="u.etat === 'inactif'"
+                      [class.badge--warning]="u.etat === 'suspendu'">
+                  {{ etatLabel[u.etat] }}
+                </span>
+              </td>
+              <td class="actions">
+                <button type="button" class="btn btn--secondary btn--sm" (click)="ouvrirEdition(u)">
+                  <du-icon name="edit" [size]="15" /> Modifier
+                </button>
+                <button type="button" class="btn btn--danger btn--sm" (click)="supprimer(u)">
+                  <du-icon name="x" [size]="15" /> Supprimer
+                </button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span class="muted small">{{ filtres().length }} utilisateur(s) · page {{ pageCourante() }} sur {{ totalPages() }}</span>
+      <div class="pagination__nav">
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <du-icon name="users" [size]="28" />
+      <p><strong>Aucun utilisateur trouvé.</strong></p>
+      <p class="muted small">Modifiez la recherche ou réinitialisez les filtres.</p>
+      <button type="button" class="btn btn--secondary btn--sm" (click)="reinitialiser()">Réinitialiser les filtres</button>
+    </div>
+  }
+</section>
+
+<!-- Fenêtre d’ajout / modification d’un utilisateur -->
+@if (formulaireOuvert()) {
+  <div class="modal">
+    <div class="modal__voile" (click)="fermerFormulaire()" aria-hidden="true"></div>
+    <div class="modal__boite" role="dialog" aria-modal="true" aria-labelledby="t-utilisateur">
+      <form [formGroup]="form" (ngSubmit)="enregistrer()" novalidate>
+        <div class="modal__entete">
+          <h2 id="t-utilisateur">{{ editionId() ? 'Modifier un utilisateur' : 'Nouvel utilisateur' }}</h2>
+          <button type="button" class="modal__fermer" (click)="fermerFormulaire()" aria-label="Fermer">
+            <du-icon name="close" [size]="18" />
+          </button>
+        </div>
+
+        <div class="modal__corps">
+          <div class="form-grid">
+            <div class="field">
+              <label for="nom">Nom *</label>
+              <input id="nom" class="input" formControlName="nom" autocomplete="family-name"
+                     [class.is-invalid]="invalide('nom')" />
+              @if (invalide('nom')) { <span class="error">{{ message('nom') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="prenom">Prénom *</label>
+              <input id="prenom" class="input" formControlName="prenom" autocomplete="given-name"
+                     [class.is-invalid]="invalide('prenom')" />
+              @if (invalide('prenom')) { <span class="error">{{ message('prenom') }}</span> }
+            </div>
+
+            <div class="field full">
+              <label for="email">Adresse e-mail *</label>
+              <input id="email" type="email" class="input" formControlName="email" autocomplete="email"
+                     placeholder="prenom.nom@service.gouv"
+                     [class.is-invalid]="invalide('email') || !!erreurEmail()" />
+              @if (invalide('email')) { <span class="error">{{ message('email') }}</span> }
+              @if (erreurEmail()) { <span class="error">{{ erreurEmail() }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="serviceForm">Service *</label>
+              <select id="serviceForm" class="input" formControlName="service">
+                @for (x of services; track x) { <option [value]="x">{{ x }}</option> }
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="roleForm">Rôle *</label>
+              <select id="roleForm" class="input" formControlName="role">
+                @for (x of roles; track x) { <option [value]="x">{{ roleLabel[x] }}</option> }
+              </select>
+            </div>
+
+            <div class="field full">
+              <label for="etatForm">État du compte *</label>
+              <select id="etatForm" class="input" formControlName="etat">
+                @for (x of etats; track x) { <option [value]="x">{{ etatLabel[x] }}</option> }
+              </select>
+            </div>
+          </div>
+
+          <p class="muted small" style="margin: 0.5rem 0 0;">
+            Formulaire de démonstration — aucune authentification réelle, aucune donnée conservée.
+          </p>
+        </div>
+
+        <div class="modal__pied">
+          <button type="button" class="btn btn--secondary" (click)="fermerFormulaire()">Annuler</button>
+          <button type="submit" class="btn btn--primary">
+            {{ editionId() ? 'Enregistrer les modifications' : 'Créer le compte' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

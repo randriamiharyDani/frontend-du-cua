@@ -12,6 +12,8 @@ import {
   StatutDossier,
 } from '../models/dossier.model';
 import { DOCUMENTS_MOCK, DOSSIERS_MOCK, LOCALISATIONS_MOCK, MOUVEMENTS_MOCK } from '../data/dossiers.mock';
+import { UTILISATEURS_MOCK } from '../data/utilisateurs.mock';
+import { Utilisateur, UtilisateurFormValue } from '../models/utilisateur.model';
 
 @Injectable({ providedIn: 'root' })
 export class DossierStore {
@@ -19,6 +21,7 @@ export class DossierStore {
   private readonly _mouvements = signal<MouvementDossier[]>([...MOUVEMENTS_MOCK]);
   private readonly _documents = signal<DocumentDossier[]>([...DOCUMENTS_MOCK]);
   private readonly _localisations = signal<Localisation[]>([...LOCALISATIONS_MOCK]);
+  private readonly _utilisateurs = signal<Utilisateur[]>([...UTILISATEURS_MOCK]);
 
   readonly dossiers = this._dossiers.asReadonly();
   /** Derniers mouvements entre services (données de démonstration). */
@@ -27,6 +30,8 @@ export class DossierStore {
   readonly documents = this._documents.asReadonly();
   /** Référentiel des localisations (données de démonstration). */
   readonly localisations = this._localisations.asReadonly();
+  /** Comptes utilisateurs (données de démonstration). */
+  readonly utilisateurs = this._utilisateurs.asReadonly();
 
   getById(id: string): Dossier | undefined {
     return this._dossiers().find((d) => d.id === id);
@@ -156,5 +161,28 @@ export class DossierStore {
     };
     this._documents.update((list) => [document, ...list]);
     return document;
+  }
+
+  /** Ajoute un utilisateur local (démonstration). */
+  addUtilisateur(valeur: UtilisateurFormValue): Utilisateur {
+    const utilisateur: Utilisateur = {
+      ...valeur,
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
+      dateCreation: new Date().toISOString().slice(0, 10),
+    };
+    this._utilisateurs.update((list) => [utilisateur, ...list]);
+    return utilisateur;
+  }
+
+  /** Modifie un utilisateur existant (démonstration). */
+  updateUtilisateur(id: string, valeur: UtilisateurFormValue): void {
+    this._utilisateurs.update((list) =>
+      list.map((u) => (u.id === id ? { ...u, ...valeur } : u)),
+    );
+  }
+
+  /** Supprime un utilisateur (démonstration). */
+  supprimerUtilisateur(id: string): void {
+    this._utilisateurs.update((list) => list.filter((u) => u.id !== id));
   }
 }
