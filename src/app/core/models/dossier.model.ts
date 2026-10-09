@@ -128,16 +128,47 @@ export interface HistoriqueItem {
 }
 
 /** Nature d’une pièce jointe rattachée à un dossier. */
-export type TypeDocument = 'plan' | 'rapport' | 'courrier' | 'photo' | 'decision' | 'autre';
+export type TypeDocument =
+  | 'plainte_signalement'
+  | 'avertissement'
+  | 'rapport_descente'
+  | 'arrete_interruptif'
+  | 'lettre_notification'
+  | 'document_etude'
+  | 'pv_scellage'
+  | 'document_demolition'
+  | 'document_regularisation'
+  | 'arrete_scelles'
+  | 'autre';
 
 export const TYPE_DOCUMENT_LABEL: Record<TypeDocument, string> = {
-  plan: 'Plan',
-  rapport: 'Rapport',
-  courrier: 'Courrier',
-  photo: 'Photo',
-  decision: 'Décision',
-  autre: 'Autre',
+  plainte_signalement: 'Plainte ou signalement',
+  avertissement: 'Avertissement',
+  rapport_descente: 'Rapport de descente',
+  arrete_interruptif: 'Arrêté interruptif',
+  lettre_notification: 'Lettre de notification',
+  document_etude: 'Document d’étude',
+  pv_scellage: 'Procès-verbal de scellage',
+  document_demolition: 'Document de démolition',
+  document_regularisation: 'Document de régularisation',
+  arrete_scelles: 'Arrêté d’ouverture ou de levée des scellés',
+  autre: 'Autre document',
 };
+
+/** Ordre officiel des types de documents (formulaires et filtres). */
+export const DOCUMENT_TYPES: readonly TypeDocument[] = [
+  'plainte_signalement',
+  'avertissement',
+  'rapport_descente',
+  'arrete_interruptif',
+  'lettre_notification',
+  'document_etude',
+  'pv_scellage',
+  'document_demolition',
+  'document_regularisation',
+  'arrete_scelles',
+  'autre',
+];
 
 /** Pièce jointe associée à un dossier (données locales de démonstration). */
 export interface DocumentDossier {
@@ -145,10 +176,15 @@ export interface DocumentDossier {
   dossierId: string;
   nom: string;
   type: TypeDocument;
+  reference: string;
   dateDepot: string;
-  taille: string;
-  deposePar: string;
+  observations?: string;
+  taille?: string;
+  deposePar?: string;
 }
+
+/** Valeur du formulaire d’ajout d’un document. */
+export type DocumentFormValue = Omit<DocumentDossier, 'id'>;
 
 /** Localisation référencée dans l’espace administrateur (coordonnées textuelles). */
 export interface Localisation {

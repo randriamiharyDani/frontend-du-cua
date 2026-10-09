@@ -1,0 +1,200 @@
+<du-page-header
+  title="Documents"
+  subtitle="Pièces et courriers fictifs associés aux dossiers (plainte, rapport, arrêté, scellés…)."
+>
+  <button type="button" class="btn btn--primary" (click)="ouvrirFormulaire()">
+    <du-icon name="plus" [size]="16" /> Ajouter un document
+  </button>
+</du-page-header>
+
+<p class="demo-note" role="note">
+  <du-icon name="alert" [size]="15" />
+  Données et fichiers de démonstration — l’ajout est simulé localement ; aucun fichier n’est téléversé
+  et rien n’est enregistré de façon permanente.
+</p>
+
+@if (messageSucces()) {
+  <div class="succes" role="status">{{ messageSucces() }}</div>
+}
+
+<section class="card">
+  <div class="card__body">
+    <div class="filtres">
+      <div class="field champ-recherche">
+        <label for="recherche">Recherche</label>
+        <input #q id="recherche" class="input" type="search" placeholder="Nom, référence, n° dossier…"
+               [value]="recherche()" (input)="setRecherche(q.value)" />
+      </div>
+      <div class="field">
+        <label for="type">Type de document</label>
+        <select #t id="type" class="input" [value]="type()" (change)="setType(t.value)">
+          <option value="">Tous</option>
+          @for (x of types; track x) { <option [value]="x">{{ typeLabel[x] }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="dossier">Dossier</label>
+        <select #d id="dossier" class="input" [value]="dossierId()" (change)="setDossier(d.value)">
+          <option value="">Tous</option>
+          @for (x of dossiers(); track x.id) { <option [value]="x.id">{{ x.reference }}</option> }
+        </select>
+      </div>
+      <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
+    </div>
+  </div>
+
+  @if (affiches().length) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nom du document</th>
+            <th>Type</th>
+            <th>N° dossier</th>
+            <th class="hide-md">Référence</th>
+            <th>Date</th>
+            <th><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (doc of affiches(); track doc.id) {
+            <tr>
+              <td>
+                <div class="doc-nom">
+                  <span class="doc-icone"><du-icon name="file" [size]="16" /></span>
+                  <span>{{ doc.nom }}</span>
+                </div>
+                @if (doc.objetDossier) {
+                  <span class="muted small doc-objet">{{ doc.objetDossier }}</span>
+                }
+              </td>
+              <td><span class="badge badge--info">{{ typeLabel[doc.type] }}</span></td>
+              <td><a [routerLink]="['/admin/dossiers', doc.dossierId]">{{ doc.numeroDossier }}</a></td>
+              <td class="hide-md mono">{{ doc.reference || '—' }}</td>
+              <td class="nowrap">{{ doc.dateDepot | date: 'dd/MM/yyyy' }}</td>
+              <td class="actions">
+                <button type="button" class="btn btn--secondary btn--sm" (click)="basculerDetails(doc.id)">
+                  {{ documentOuvert() === doc.id ? 'Fermer' : 'Détails' }}
+                </button>
+                <a [routerLink]="['/admin/dossiers', doc.dossierId]" class="btn btn--secondary btn--sm">
+                  <du-icon name="eye" [size]="15" /> Dossier
+                </a>
+              </td>
+            </tr>
+            @if (documentOuvert() === doc.id) {
+              <tr class="details-row">
+                <td colspan="6">
+                  <div class="details">
+                    <div><span class="details__cle">Observations</span><span>{{ doc.observations || 'Aucune observation.' }}</span></div>
+                    <div><span class="details__cle">Taille</span><span>{{ doc.taille || '—' }}</span></div>
+                    <div><span class="details__cle">Déposé par</span><span>{{ doc.deposePar || 'Non renseigné' }}</span></div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span class="muted small">{{ filtres().length }} document(s) · page {{ pageCourante() }} sur {{ totalPages() }}</span>
+      <div class="pagination__nav">
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <du-icon name="file" [size]="28" />
+      <p><strong>Aucun document trouvé.</strong></p>
+      <p class="muted small">Modifiez la recherche ou réinitialisez les filtres.</p>
+      <button type="button" class="btn btn--secondary btn--sm" (click)="reinitialiser()">Réinitialiser les filtres</button>
+    </div>
+  }
+</section>
+
+<!-- Fenêtre d’ajout d’un document -->
+@if (formulaireOuvert()) {
+  <div class="modal">
+    <div class="modal__voile" (click)="fermerFormulaire()" aria-hidden="true"></div>
+    <div class="modal__boite" role="dialog" aria-modal="true" aria-labelledby="t-document">
+      <form [formGroup]="form" (ngSubmit)="enregistrer()" novalidate>
+        <div class="modal__entete">
+          <h2 id="t-document">Ajouter un document</h2>
+          <button type="button" class="modal__fermer" (click)="fermerFormulaire()" aria-label="Fermer">
+            <du-icon name="close" [size]="18" />
+          </button>
+        </div>
+
+        <div class="modal__corps">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="dossierId">Dossier concerné *</label>
+              <select id="dossierId" class="input" formControlName="dossierId" [class.is-invalid]="invalide('dossierId')">
+                <option value="">Sélectionner un dossier…</option>
+                @for (d of dossiers(); track d.id) {
+                  <option [value]="d.id">{{ d.reference }} — {{ d.complements.objet }}</option>
+                }
+              </select>
+              @if (invalide('dossierId')) { <span class="error">{{ message('dossierId') }}</span> }
+            </div>
+
+            <div class="field full">
+              <label for="nom">Nom du document *</label>
+              <input id="nom" class="input" formControlName="nom" placeholder="Ex. Rapport de descente"
+                     [class.is-invalid]="invalide('nom')" />
+              @if (invalide('nom')) { <span class="error">{{ message('nom') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="typeForm">Type de document *</label>
+              <select id="typeForm" class="input" formControlName="type" [class.is-invalid]="invalide('type')">
+                <option value="">Sélectionner un type…</option>
+                @for (x of types; track x) { <option [value]="x">{{ typeLabel[x] }}</option> }
+              </select>
+              @if (invalide('type')) { <span class="error">{{ message('type') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="dateDepot">Date *</label>
+              <input id="dateDepot" type="date" class="input" formControlName="dateDepot" [class.is-invalid]="invalide('dateDepot')" />
+              @if (invalide('dateDepot')) { <span class="error">{{ message('dateDepot') }}</span> }
+            </div>
+
+            <div class="field full">
+              <label for="reference">Référence</label>
+              <input id="reference" class="input" formControlName="reference" placeholder="Ex. RD-2026-0031" />
+            </div>
+
+            <div class="field full">
+              <label for="observations">Observations</label>
+              <textarea id="observations" class="input" formControlName="observations" placeholder="Précisions, remarques…"></textarea>
+            </div>
+
+            <div class="field full">
+              <label for="fichier">Fichier (démonstration)</label>
+              <input id="fichier" type="file" class="input fichier" (change)="onFichier($event)" />
+              @if (fichier(); as f) {
+                <span class="fichier__info muted small">
+                  <du-icon name="file" [size]="14" /> {{ f.nom }} · {{ f.taille }} (non téléversé)
+                </span>
+              } @else {
+                <span class="muted small">Aucun fichier sélectionné — facultatif pour la démonstration.</span>
+              }
+            </div>
+          </div>
+
+          <p class="muted small" style="margin: 0.5rem 0 0;">
+            Déposé par : <strong>{{ utilisateur.nom }}</strong> · Ajout simulé localement, aucune donnée ni fichier conservé.
+          </p>
+        </div>
+
+        <div class="modal__pied">
+          <button type="button" class="btn btn--secondary" (click)="fermerFormulaire()">Annuler</button>
+          <button type="submit" class="btn btn--primary">Ajouter le document</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

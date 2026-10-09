@@ -114,16 +114,22 @@ export const MOUVEMENTS_MOCK: MouvementDossier[] = [
 ];
 
 export const DOCUMENTS_MOCK: DocumentDossier[] = [
-  { id: 'doc-1', dossierId: '1', nom: 'Rapport de constat.pdf', type: 'rapport', dateDepot: '2026-10-02', taille: '820 Ko', deposePar: 'Agent K. Diallo' },
-  { id: 'doc-2', dossierId: '1', nom: 'Photos du site.zip', type: 'photo', dateDepot: '2026-10-02', taille: '3,4 Mo', deposePar: 'Agent K. Diallo' },
-  { id: 'doc-3', dossierId: '1', nom: 'Courrier de plainte.pdf', type: 'courrier', dateDepot: '2026-10-01', taille: '210 Ko', deposePar: 'Bureau d’ordre' },
-  { id: 'doc-4', dossierId: '2', nom: 'Plan cadastral.pdf', type: 'plan', dateDepot: '2026-09-30', taille: '1,1 Mo', deposePar: 'Service du Cadastre' },
-  { id: 'doc-5', dossierId: '3', nom: 'Avis de mise en demeure.pdf', type: 'decision', dateDepot: '2026-09-22', taille: '180 Ko', deposePar: 'Agent K. Diallo' },
-  { id: 'doc-6', dossierId: '3', nom: 'Photos occupation.jpg', type: 'photo', dateDepot: '2026-09-21', taille: '540 Ko', deposePar: 'Agent S. Camara' },
-  { id: 'doc-7', dossierId: '4', nom: 'Rapport technique DIS.pdf', type: 'rapport', dateDepot: '2026-09-25', taille: '960 Ko', deposePar: 'Agent M. Sow' },
-  { id: 'doc-8', dossierId: '7', nom: 'Plan de structure (à réclamer).pdf', type: 'plan', dateDepot: '2026-10-04', taille: '—', deposePar: 'Agent K. Diallo' },
-  { id: 'doc-9', dossierId: '9', nom: 'Procès-verbal de bornage.pdf', type: 'rapport', dateDepot: '2026-10-06', taille: '640 Ko', deposePar: 'Service du Cadastre' },
-  { id: 'doc-10', dossierId: '10', nom: 'Demande d’avis technique.pdf', type: 'courrier', dateDepot: '2026-10-07', taille: '230 Ko', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-1', dossierId: '1', nom: 'Courrier de plainte.pdf', type: 'plainte_signalement', reference: 'PL-2026-0012', dateDepot: '2026-10-01', observations: 'Plainte d’un riverain pour construction sans permis.', taille: '210 Ko', deposePar: 'Bureau d’ordre' },
+  { id: 'doc-2', dossierId: '1', nom: 'Rapport de constat.pdf', type: 'rapport_descente', reference: 'RD-2026-0031', dateDepot: '2026-10-02', observations: 'Descente sur site, constat de la construction R+1.', taille: '820 Ko', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-3', dossierId: '1', nom: 'Avertissement préalable.pdf', type: 'avertissement', reference: 'AV-2026-0058', dateDepot: '2026-10-03', observations: 'Avertissement remis au contrevenant.', taille: '190 Ko', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-4', dossierId: '2', nom: 'Plan cadastral.pdf', type: 'document_etude', reference: 'ET-2026-0044', dateDepot: '2026-09-30', taille: '1,1 Mo', deposePar: 'Service du Cadastre' },
+  { id: 'doc-5', dossierId: '3', nom: 'Arrêté interruptif n°A-2026-07.pdf', type: 'arrete_interruptif', reference: 'AI-2026-0007', dateDepot: '2026-09-22', observations: 'Arrêt des travaux d’occupation du domaine public.', taille: '260 Ko', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-6', dossierId: '3', nom: 'Lettre de notification.pdf', type: 'lettre_notification', reference: 'LN-2026-0021', dateDepot: '2026-09-23', observations: 'Notification de l’arrêté à l’intéressé.', taille: '150 Ko', deposePar: 'Agent S. Camara' },
+  { id: 'doc-7', dossierId: '4', nom: 'Rapport technique DIS.pdf', type: 'rapport_descente', reference: 'RD-2026-0027', dateDepot: '2026-09-25', taille: '960 Ko', deposePar: 'Agent M. Sow' },
+  { id: 'doc-8', dossierId: '5', nom: 'Dossier de régularisation.pdf', type: 'document_regularisation', reference: 'RG-2026-0014', dateDepot: '2026-09-19', observations: 'Pièces de régularisation transmises.', taille: '1,3 Mo', deposePar: 'Agent S. Camara' },
+  { id: 'doc-9', dossierId: '6', nom: 'Mise en demeure – alignement.pdf', type: 'avertissement', reference: 'AV-2026-0052', dateDepot: '2026-09-15', observations: 'Alignement non conforme au plan d’urbanisme.', taille: '200 Ko', deposePar: 'Agent S. Camara' },
+  { id: 'doc-10', dossierId: '7', nom: 'Étude de structure (à réclamer).pdf', type: 'document_etude', reference: 'ET-2026-0039', dateDepot: '2026-10-04', observations: 'Étude technique manquante, à réclamer au pétitionnaire.', taille: '—', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-11', dossierId: '8', nom: 'Procès-verbal de scellage.pdf', type: 'pv_scellage', reference: 'PV-2026-0009', dateDepot: '2026-09-11', observations: 'Scellés apposés sur le hangar métallique.', taille: '540 Ko', deposePar: 'Agent S. Camara' },
+  { id: 'doc-12', dossierId: '9', nom: 'Procès-verbal de bornage.pdf', type: 'rapport_descente', reference: 'RD-2026-0029', dateDepot: '2026-10-06', taille: '640 Ko', deposePar: 'Service du Cadastre' },
+  { id: 'doc-13', dossierId: '10', nom: 'Demande d’avis technique.pdf', type: 'document_etude', reference: 'ET-2026-0041', dateDepot: '2026-10-07', observations: 'Avis technique demandé pour la réhabilitation de l’école.', taille: '230 Ko', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-14', dossierId: '11', nom: 'Quittance de régularisation.pdf', type: 'document_regularisation', reference: 'RG-2026-0018', dateDepot: '2026-08-29', observations: 'Taxe de régularisation soldée.', taille: '175 Ko', deposePar: 'Agent M. Sow' },
+  { id: 'doc-15', dossierId: '12', nom: 'Constat de clôture provisoire.pdf', type: 'document_demolition', reference: 'DM-2026-0004', dateDepot: '2026-08-21', observations: 'Clôture provisoire non démontée après travaux.', taille: '480 Ko', deposePar: 'Agent M. Sow' },
+  { id: 'doc-16', dossierId: '12', nom: 'Arrêté d’ouverture des scellés.pdf', type: 'arrete_scelles', reference: 'AS-2026-0003', dateDepot: '2026-08-24', observations: 'Levée des scellés autorisée.', taille: '240 Ko', deposePar: 'Agent M. Sow' },
 ];
 
 /**

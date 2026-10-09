@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import {
   DocumentDossier,
+  DocumentFormValue,
   Dossier,
   DossierFormValue,
   Localisation,
@@ -145,5 +146,15 @@ export class DossierStore {
   /** Supprime une localisation (démonstration). */
   supprimerLocalisation(id: string): void {
     this._localisations.update((list) => list.filter((l) => l.id !== id));
+  }
+
+  /** Ajoute un document local (démonstration). */
+  addDocument(valeur: DocumentFormValue): DocumentDossier {
+    const document: DocumentDossier = {
+      ...valeur,
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
+    };
+    this._documents.update((list) => [document, ...list]);
+    return document;
   }
 }
