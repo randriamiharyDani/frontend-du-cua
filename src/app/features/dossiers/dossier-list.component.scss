@@ -1,0 +1,102 @@
+.toolbar--dossiers {
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+}
+
+.toolbar--dossiers .field:nth-child(5),
+.toolbar--dossiers .field:nth-child(6),
+.toolbar--dossiers .field:nth-child(7) {
+  align-self: end;
+}
+
+.table--dossiers .ref a {
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.table--dossiers .ref a:hover {
+  text-decoration: underline;
+}
+
+.table--dossiers .objet {
+  min-width: 180px;
+  max-width: 280px;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+td.actions {
+  white-space: nowrap;
+}
+
+td.actions .btn + .btn {
+  margin-left: 0.4rem;
+}
+
+.pagination__nav {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.empty-state {
+  display: grid;
+  justify-items: center;
+  gap: 0.4rem;
+  color: var(--du-muted);
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+@media (max-width: 1200px) {
+  .hide-lg {
+    display: none;
+  }
+}
+
+@media (max-width: 1000px) {
+  .toolbar--dossiers {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .toolbar--dossiers {
+    grid-template-columns: 1fr;
+  }
+
+  /* Tableau → cartes sur mobile : chaque ligne devient un bloc lisible. */
+  .table--dossiers thead {
+    display: none;
+  }
+
+  .table--dossiers,
+  .table--dossiers tbody,
+  .table--dossiers tr,
+  .table--dossiers td {
+    display: block;
+    width: 100%;
+  }
+
+  .table--dossiers tbody tr {
+    border-bottom: 2px solid var(--du-border);
+    padding: 0.4rem 0;
+  }
+
+  .table--dossiers td {
+    border-bottom: 0;
+    padding: 0.3rem 1rem;
+  }
+
+  .table--dossiers td.actions {
+    padding-bottom: 0.9rem;
+  }
+
+  .table--dossiers .objet {
+    max-width: none;
+    font-weight: 600;
+  }
+}

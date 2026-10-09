@@ -1,35 +1,50 @@
-<du-page-header title="Dossiers" subtitle="Liste des dossiers de constructions illicites">
+<du-page-header title="Gestion des dossiers" subtitle="Constructions illicites — données de démonstration">
   <a routerLink="/admin/dossiers/nouveau" class="btn btn--primary"><du-icon name="plus" [size]="16" /> Nouveau dossier</a>
 </du-page-header>
 
 <section class="card">
   <div class="card__body">
-    <div class="toolbar">
+    <div class="toolbar toolbar--dossiers">
       <div class="field">
         <label for="recherche">Recherche</label>
-        <input #q id="recherche" class="input" type="search" placeholder="Référence, adresse, propriétaire…"
+        <input #q id="recherche" class="input" type="search" placeholder="N°, objet, contrevenant, lieu…"
                [value]="recherche()" (input)="setRecherche(q.value)" />
       </div>
       <div class="field">
+        <label for="nature">Nature</label>
+        <select #n id="nature" class="input" [value]="nature()" (change)="setNature(n.value)">
+          <option value="">Toutes</option>
+          @for (x of natures; track x) { <option [value]="x">{{ natureLabel[x] }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="service">Service actuel</label>
+        <select #s id="service" class="input" [value]="service()" (change)="setService(s.value)">
+          <option value="">Tous</option>
+          @for (x of services; track x) { <option [value]="x">{{ x }}</option> }
+        </select>
+      </div>
+      <div class="field">
         <label for="statut">Statut</label>
-        <select #s id="statut" class="input" [value]="statut()" (change)="setStatut(s.value)">
+        <select #st id="statut" class="input" [value]="statut()" (change)="setStatut(st.value)">
           <option value="">Tous</option>
           @for (x of statuts; track x) { <option [value]="x">{{ statutLabel[x] }}</option> }
         </select>
       </div>
       <div class="field">
-        <label for="priorite">Priorité</label>
-        <select #p id="priorite" class="input" [value]="priorite()" (change)="setPriorite(p.value)">
+        <label for="etape">Étape actuelle</label>
+        <select #e id="etape" class="input" [value]="etape()" (change)="setEtape(e.value)">
           <option value="">Toutes</option>
-          @for (x of priorites; track x) { <option [value]="x">{{ prioriteLabel[x] }}</option> }
+          @for (x of etapes; track x) { <option [value]="x">{{ etapeLabel[x] }}</option> }
         </select>
       </div>
       <div class="field">
-        <label for="arr">Arrondissement</label>
-        <select #a id="arr" class="input" [value]="arrondissement()" (change)="setArrondissement(a.value)">
-          <option value="">Tous</option>
-          @for (x of arrondissements; track x) { <option [value]="x">{{ x }}</option> }
-        </select>
+        <label for="du">Du</label>
+        <input #d1 id="du" type="date" class="input" [value]="du()" (change)="setDu(d1.value)" />
+      </div>
+      <div class="field">
+        <label for="au">Au</label>
+        <input #d2 id="au" type="date" class="input" [value]="au()" (change)="setAu(d2.value)" />
       </div>
       <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
     </div>
@@ -37,29 +52,39 @@
 
   @if (affiches().length) {
     <div class="table-wrap">
-      <table class="table">
+      <table class="table table--dossiers">
         <thead>
           <tr>
-            <th>Référence</th>
-            <th>Dossier</th>
-            <th class="hide-md">Arrondissement</th>
+            <th>N° dossier</th>
+            <th>Date d’entrée</th>
+            <th>Nature</th>
+            <th>Contrevenant</th>
+            <th>Objet</th>
+            <th class="hide-lg">Localisation</th>
+            <th>Service</th>
+            <th class="hide-lg">Étape</th>
             <th>Statut</th>
-            <th class="hide-md">Priorité</th>
-            <th class="hide-sm">Signalé le</th>
             <th><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>
           @for (d of affiches(); track d.id) {
             <tr>
-              <td><a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference }}</a></td>
-              <td>{{ d.titre }}<div class="muted small">{{ d.adresse }} · {{ d.quartier }}</div></td>
-              <td class="hide-md">{{ d.arrondissement }}</td>
-              <td><du-status-badge [statut]="d.statut" /></td>
-              <td class="hide-md"><du-priority-badge [priorite]="d.priorite" /></td>
-              <td class="hide-sm">{{ d.dateSignalement | date: 'dd/MM/yyyy' }}</td>
+              <td class="ref"><a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference }}</a></td>
+              <td class="nowrap">{{ d.dateEnregistrement | date: 'dd/MM/yyyy' }}</td>
+              <td>{{ natureLabel[d.nature] }}</td>
+              <td>{{ d.proprietaire }}</td>
+              <td class="objet">{{ d.titre }}</td>
+              <td class="hide-lg">{{ d.quartier }}<div class="muted small">{{ d.arrondissement }}</div></td>
+              <td><span class="badge badge--neutral">{{ d.service }}</span></td>
+              <td class="hide-lg">{{ etapeLabel[d.etape] }}</td>
+              <td>
+                @let etat = etatDe(d.statut);
+                <span class="badge" [class.badge--success]="etat === 'cloture'" [class.badge--warning]="etat === 'ouvert'" [class.badge--info]="etat === 'en_cours'">{{ etatLabel[etat] }}</span>
+              </td>
               <td class="actions">
-                <a [routerLink]="['/admin/dossiers', d.id]" class="btn btn--secondary btn--sm"><du-icon name="eye" [size]="15" /> Voir</a>
+                <a [routerLink]="['/admin/dossiers', d.id]" class="btn btn--secondary btn--sm"><du-icon name="eye" [size]="15" /> Consulter</a>
+                <a [routerLink]="['/admin/dossiers', d.id, 'modifier']" class="btn btn--secondary btn--sm"><du-icon name="edit" [size]="15" /> Modifier</a>
               </td>
             </tr>
           }
@@ -69,12 +94,17 @@
 
     <div class="pagination">
       <span class="muted small">{{ filtres().length }} dossier(s) · page {{ pageCourante() }} sur {{ totalPages() }}</span>
-      <div style="display: flex; gap: 0.5rem">
+      <div class="pagination__nav">
         <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
         <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
       </div>
     </div>
   } @else {
-    <div class="empty-state">Aucun dossier ne correspond à votre recherche.</div>
+    <div class="empty-state">
+      <du-icon name="search" [size]="28" />
+      <p><strong>Aucun dossier trouvé.</strong></p>
+      <p class="muted small">Modifiez la recherche ou réinitialisez les filtres.</p>
+      <button type="button" class="btn btn--secondary btn--sm" (click)="reinitialiser()">Réinitialiser les filtres</button>
+    </div>
   }
 </section>

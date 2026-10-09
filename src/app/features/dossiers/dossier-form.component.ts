@@ -4,6 +4,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   ARRONDISSEMENTS, DossierFormValue, PRIORITE_LABEL, PRIORITES, PrioriteDossier, SERVICE_LABEL,
   SERVICES, ServiceDossier, STATUT_LABEL, STATUTS, StatutDossier,
+  ETAPE_LABEL, ETAPES, EtapeDossier, NATURE_LABEL, NATURES, NatureDossier,
   TYPE_LABEL, TYPES, TypeInfraction,
 } from '../../core/models/dossier.model';
 import { DossierStore } from '../../core/state/dossier-store';
@@ -28,14 +29,20 @@ export class DossierFormComponent {
   protected readonly priorites = PRIORITES;
   protected readonly arrondissements = ARRONDISSEMENTS;
   protected readonly services = SERVICES;
+  protected readonly natures = NATURES;
+  protected readonly etapes = ETAPES;
   protected readonly typeLabel = TYPE_LABEL;
   protected readonly statutLabel = STATUT_LABEL;
   protected readonly prioriteLabel = PRIORITE_LABEL;
   protected readonly serviceLabel = SERVICE_LABEL;
+  protected readonly natureLabel = NATURE_LABEL;
+  protected readonly etapeLabel = ETAPE_LABEL;
 
   protected readonly form = this.fb.group({
     titre: ['', [Validators.required, Validators.minLength(5)]],
     type: ['construction_sans_permis' as TypeInfraction, Validators.required],
+    nature: ['signalement' as NatureDossier, Validators.required],
+    etape: ['constat' as EtapeDossier, Validators.required],
     adresse: ['', Validators.required],
     quartier: ['', Validators.required],
     arrondissement: ['', Validators.required],

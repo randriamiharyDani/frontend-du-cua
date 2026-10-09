@@ -8,6 +8,20 @@ export type StatutDossier =
 
 export type PrioriteDossier = 'basse' | 'moyenne' | 'haute';
 
+/** Origine du dossier : plainte d’un tiers, signalement interne ou ratissage. */
+export type NatureDossier = 'plainte' | 'signalement' | 'ratissage';
+
+/** Étape de traitement dans le circuit administratif. */
+export type EtapeDossier =
+  | 'constat'
+  | 'instruction'
+  | 'mise_en_demeure'
+  | 'regularisation'
+  | 'cloture';
+
+/** État d’avancement affiché en badge : ouvert, en cours ou clôturé. */
+export type EtatDossier = 'ouvert' | 'en_cours' | 'cloture';
+
 export type TypeInfraction =
   | 'construction_sans_permis'
   | 'non_conformite_permis'
@@ -18,9 +32,54 @@ export type TypeInfraction =
 
 export type ServiceDossier = 'DU' | 'DIS' | 'SCAD';
 
-export interface HistoriqueItem {
-  date: string;
-  libelle: string;
+export interface Contrevenant {
+  /** Nom de famille. */
+  nom: string;
+  /** Prénom(s). */
+  prenom: string;
+  /** Téléphone (optionnel, format +261 / 0). */
+  telephone: string;
+  /** Adresse du contrevenant (domicile / siège). */
+  adresse: string;
+  /** Observations sur le contrevenant. */
+  observations: string;
+}
+
+export interface LocalisationDossier {
+  /** Adresse du lieu de l’infraction. */
+  adresse: string;
+  quartier: string;
+  arrondissement: string;
+  /** Coordonnées plan (X / Y) — texte libre pour la démo, pas de carte. */
+  coordX: string;
+  coordY: string;
+  latitude: string;
+  longitude: string;
+  /** Description du lieu (accès, repères…). */
+  description: string;
+}
+
+export interface InfosComplementaires {
+  /** Objet du dossier (titre). */
+  objet: string;
+  /** Précision d’emplacement (parcelle, repère…). */
+  emplacement: string;
+  /** Référence d’un dossier lié. */
+  dossierRelatif: string;
+  /** Observations générales. */
+  observationsGenerales: string;
+}
+
+export interface InfosDossier {
+  /** Numéro affiché (temporaire en création, ex. « À attribuer »). */
+  numero: string;
+  /** Date d’entrée = date d’enregistrement administratif. */
+  dateEntree: string;
+  referenceArrivee: string;
+  referenceEtude: string;
+  dateEtude: string;
+  provenance: string;
+  nature: NatureDossier;
 }
 
 export interface MouvementDossier {
@@ -40,6 +99,10 @@ export interface Dossier {
   reference: string;
   titre: string;
   type: TypeInfraction;
+  /** Origine : plainte, signalement ou ratissage. */
+  nature: NatureDossier;
+  /** Étape de traitement dans le circuit. */
+  etape: EtapeDossier;
   description: string;
   adresse: string;
   quartier: string;
@@ -115,6 +178,43 @@ export const ARRONDISSEMENTS: readonly string[] = [
 ];
 
 export const SERVICES: readonly ServiceDossier[] = ['DU', 'DIS', 'SCAD'];
+
+export const NATURES: readonly NatureDossier[] = ['plainte', 'signalement', 'ratissage'];
+
+export const NATURE_LABEL: Record<NatureDossier, string> = {
+  plainte: 'Plainte',
+  signalement: 'Signalement',
+  ratissage: 'Ratissage',
+};
+
+export const ETAPES: readonly EtapeDossier[] = [
+  'constat',
+  'instruction',
+  'mise_en_demeure',
+  'regularisation',
+  'cloture',
+];
+
+export const ETAPE_LABEL: Record<EtapeDossier, string> = {
+  constat: 'Constat',
+  instruction: 'Instruction',
+  mise_en_demeure: 'Mise en demeure',
+  regularisation: 'Régularisation',
+  cloture: 'Clôture',
+};
+
+/** Dérive l’état badge depuis le statut métier. */
+export function etatDossier(statut: StatutDossier): EtatDossier {
+  if (statut === 'regularise' || statut === 'cloture') return 'cloture';
+  if (statut === 'signale') return 'ouvert';
+  return 'en_cours';
+}
+
+export const ETAT_LABEL: Record<EtatDossier, string> = {
+  ouvert: 'Ouvert',
+  en_cours: 'En cours',
+  cloture: 'Clôturé',
+};
 
 export const SERVICE_LABEL: Record<ServiceDossier, string> = {
   DU: 'Direction de l’Urbanisme',

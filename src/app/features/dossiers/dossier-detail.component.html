@@ -16,6 +16,10 @@
             <div><dt>Quartier</dt><dd>{{ d.quartier }} — {{ d.arrondissement }}</dd></div>
             <div><dt>Propriétaire</dt><dd>{{ d.proprietaire }}</dd></div>
             <div><dt>Téléphone</dt><dd>{{ d.telephone || 'Non renseigné' }}</dd></div>
+            <div><dt>Nature</dt><dd>{{ natureLabel[d.nature] }}</dd></div>
+            <div><dt>Etape actuelle</dt><dd>{{ etapeLabel[d.etape] }}</dd></div>
+            <div><dt>Service actuel</dt><dd>{{ d.service }}</dd></div>
+            <div><dt>Date d�entree</dt><dd>{{ d.dateEnregistrement | date: 'd MMMM y' }}</dd></div>
             <div><dt>Agent responsable</dt><dd>{{ d.agent || 'Non affecté' }}</dd></div>
             <div><dt>Priorité</dt><dd><du-priority-badge [priorite]="d.priorite" /></dd></div>
           </dl>
