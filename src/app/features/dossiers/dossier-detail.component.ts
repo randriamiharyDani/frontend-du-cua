@@ -204,9 +204,8 @@ export class DossierDetailComponent {
     return liste.map((m, i) => ({
       ...m,
       action:
-        m.de === m.vers
-          ? `Traitement au service ${m.de}`
-          : `Transfert de ${m.de} vers ${m.vers}`,
+        m.action ||
+        (m.de === m.vers ? `Traitement au service ${m.de}` : `Transfert de ${m.de} vers ${m.vers}`),
       dernier: i === liste.length - 1,
     }));
   });

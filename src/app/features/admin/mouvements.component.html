@@ -1,0 +1,194 @@
+<du-page-header title="Mouvements" subtitle="Circulation des dossiers entre les services DU, DIS et SCAD">
+  <button type="button" class="btn btn--primary" (click)="ouvrirFormulaire()">
+    <du-icon name="plus" [size]="16" /> Nouveau mouvement
+  </button>
+</du-page-header>
+
+<p class="demo-note" role="note">
+  <du-icon name="alert" [size]="15" />
+  Données locales de démonstration — l’ajout d’un mouvement est simulé et n’est pas enregistré de façon permanente.
+</p>
+
+@if (messageSucces()) {
+  <div class="succes" role="status">{{ messageSucces() }}</div>
+}
+
+<section class="card">
+  <div class="card__body">
+    <div class="filtres">
+      <div class="field champ-recherche">
+        <label for="recherche">Recherche</label>
+        <input #q id="recherche" class="input" type="search" placeholder="N° dossier, action, agent, référence…"
+               [value]="recherche()" (input)="setRecherche(q.value)" />
+      </div>
+      <div class="field">
+        <label for="service">Service</label>
+        <select #s id="service" class="input" [value]="service()" (change)="setService(s.value)">
+          <option value="">Tous</option>
+          @for (x of services; track x) { <option [value]="x">{{ x }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="action">Action</label>
+        <select #a id="action" class="input" [value]="action()" (change)="setAction(a.value)">
+          <option value="">Toutes</option>
+          @for (x of actionsDisponibles(); track x) { <option [value]="x">{{ x }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="du">Du</label>
+        <input #d1 id="du" type="date" class="input" [value]="du()" (change)="setDu(d1.value)" />
+      </div>
+      <div class="field">
+        <label for="au">Au</label>
+        <input #d2 id="au" type="date" class="input" [value]="au()" (change)="setAu(d2.value)" />
+      </div>
+      <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
+    </div>
+  </div>
+
+  @if (affiches().length) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>N° dossier</th>
+            <th>Départ</th>
+            <th>Arrivée</th>
+            <th class="hide-lg">Étape</th>
+            <th>Action</th>
+            <th class="hide-md">Agent</th>
+            <th class="hide-lg">Réf. document</th>
+            <th class="hide-lg">Observations</th>
+            <th><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of affiches(); track m.id) {
+            <tr>
+              <td class="nowrap">{{ m.date | date: 'dd/MM/yyyy' }}</td>
+              <td><a [routerLink]="['/admin/dossiers', m.dossierId]">{{ m.reference }}</a></td>
+              <td><span class="badge badge--neutral">{{ m.de }}</span></td>
+              <td><span class="badge badge--info">{{ m.vers }}</span></td>
+              <td class="hide-lg">{{ etapeLabel[m.etape] }}</td>
+              <td>{{ m.action }}</td>
+              <td class="hide-md">{{ m.auteur || '—' }}</td>
+              <td class="hide-lg">{{ m.referenceDocument || '—' }}</td>
+              <td class="hide-lg obs">{{ m.motif || '—' }}</td>
+              <td class="actions">
+                <a [routerLink]="['/admin/dossiers', m.dossierId]" class="btn btn--secondary btn--sm">
+                  <du-icon name="eye" [size]="15" /> Consulter
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span class="muted small">{{ filtres().length }} mouvement(s) · page {{ pageCourante() }} sur {{ totalPages() }}</span>
+      <div class="pagination__nav">
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <du-icon name="swap" [size]="28" />
+      <p><strong>Aucun mouvement trouvé.</strong></p>
+      <p class="muted small">Modifiez la recherche ou réinitialisez les filtres.</p>
+      <button type="button" class="btn btn--secondary btn--sm" (click)="reinitialiser()">Réinitialiser les filtres</button>
+    </div>
+  }
+</section>
+
+<!-- Fenêtre de saisie d’un nouveau mouvement -->
+@if (formulaireOuvert()) {
+  <div class="modal">
+    <div class="modal__voile" (click)="fermerFormulaire()" aria-hidden="true"></div>
+    <div class="modal__boite" role="dialog" aria-modal="true" aria-labelledby="t-nouveau-mouvement">
+      <form [formGroup]="form" (ngSubmit)="enregistrer()" novalidate>
+        <div class="modal__entete">
+          <h2 id="t-nouveau-mouvement">Nouveau mouvement</h2>
+          <button type="button" class="modal__fermer" (click)="fermerFormulaire()" aria-label="Fermer">
+            <du-icon name="close" [size]="18" />
+          </button>
+        </div>
+
+        <div class="modal__corps">
+          <div class="form-grid">
+            <div class="field full">
+              <label for="dossierId">Dossier concerné *</label>
+              <select id="dossierId" class="input" formControlName="dossierId" [class.is-invalid]="invalide('dossierId')">
+                <option value="">Sélectionner un dossier…</option>
+                @for (d of dossiers(); track d.id) {
+                  <option [value]="d.id">{{ d.reference }} — {{ d.complements.objet }}</option>
+                }
+              </select>
+              @if (invalide('dossierId')) { <span class="error">Sélectionnez le dossier concerné.</span> }
+            </div>
+
+            <div class="field">
+              <label for="date">Date du mouvement *</label>
+              <input id="date" type="date" class="input" formControlName="date" [class.is-invalid]="invalide('date')" />
+              @if (invalide('date')) { <span class="error">La date est obligatoire.</span> }
+            </div>
+
+            <div class="field">
+              <label for="etape">Étape *</label>
+              <select id="etape" class="input" formControlName="etape">
+                @for (e of etapes; track e) { <option [value]="e">{{ etapeLabel[e] }}</option> }
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="de">Service de départ *</label>
+              <select id="de" class="input" formControlName="de">
+                @for (x of services; track x) { <option [value]="x">{{ x }}</option> }
+              </select>
+            </div>
+
+            <div class="field">
+              <label for="vers">Service d’arrivée *</label>
+              <select id="vers" class="input" formControlName="vers" [class.is-invalid]="invalide('vers') || form.hasError('memeService')">
+                @for (x of services; track x) { <option [value]="x">{{ x }}</option> }
+              </select>
+            </div>
+
+            @if (form.hasError('memeService')) {
+              <div class="field full">
+                <span class="error">Le service d’arrivée doit être différent du service de départ.</span>
+              </div>
+            }
+
+            <div class="field full">
+              <label for="actionMouvement">Action *</label>
+              <input id="actionMouvement" list="actions-suggestions" class="input" formControlName="action"
+                     placeholder="Ex. Demande d’avis technique" [class.is-invalid]="invalide('action')" />
+              <datalist id="actions-suggestions">
+                @for (x of actionsDisponibles(); track x) { <option [value]="x"></option> }
+              </datalist>
+              @if (invalide('action')) { <span class="error">Indiquez l’action (3 caractères minimum).</span> }
+            </div>
+
+            <div class="field full">
+              <label for="observations">Observations</label>
+              <textarea id="observations" class="input" formControlName="observations" placeholder="Motif, précisions du transfert…"></textarea>
+            </div>
+          </div>
+
+          <p class="muted small" style="margin: 0.5rem 0 0;">
+            Agent enregistré : <strong>{{ utilisateur.nom }}</strong> · Ajout simulé localement, non permanent.
+          </p>
+        </div>
+
+        <div class="modal__pied">
+          <button type="button" class="btn btn--secondary" (click)="fermerFormulaire()">Annuler</button>
+          <button type="submit" class="btn btn--primary">Ajouter le mouvement</button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

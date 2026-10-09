@@ -95,8 +95,28 @@ export interface MouvementDossier {
   titre: string;
   de: ServiceDossier;
   vers: ServiceDossier;
+  /** Étape du dossier au moment du mouvement. */
+  etape: EtapeDossier;
+  /** Libellé court de l’action réalisée. */
+  action: string;
+  /** Référence du document justificatif (facultatif). */
+  referenceDocument: string;
+  /** Observations / motif du mouvement. */
   motif: string;
   auteur: string;
+}
+
+/** Valeur du formulaire de saisie d’un nouveau mouvement. */
+export interface MouvementFormValue {
+  dossierId: string;
+  date: string;
+  de: ServiceDossier;
+  vers: ServiceDossier;
+  etape: EtapeDossier;
+  action: string;
+  observations: string;
+  auteur: string;
+  referenceDocument: string;
 }
 
 /** Entrée de l’historique / journal d’un dossier. */

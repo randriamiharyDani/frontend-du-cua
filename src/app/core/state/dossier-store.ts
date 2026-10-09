@@ -4,6 +4,7 @@ import {
   Dossier,
   DossierFormValue,
   MouvementDossier,
+  MouvementFormValue,
   NUMERO_TEMPORAIRE,
   StatutDossier,
 } from '../models/dossier.model';
@@ -75,5 +76,47 @@ export class DossierStore {
           : d,
       ),
     );
+  }
+
+  /**
+   * Enregistre un mouvement local (démonstration) et met à jour le dossier concerné :
+   * service actuel = service d’arrivée, étape, et une entrée d’historique.
+   */
+  addMouvement(valeur: MouvementFormValue): MouvementDossier {
+    const dossier = this.getById(valeur.dossierId);
+    const mouvement: MouvementDossier = {
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
+      date: valeur.date,
+      dossierId: valeur.dossierId,
+      reference: dossier?.reference ?? '',
+      titre: dossier?.complements.objet ?? '',
+      de: valeur.de,
+      vers: valeur.vers,
+      etape: valeur.etape,
+      action: valeur.action,
+      referenceDocument: valeur.referenceDocument,
+      motif: valeur.observations,
+      auteur: valeur.auteur,
+    };
+    this._mouvements.update((list) => [mouvement, ...list]);
+
+    if (dossier) {
+      this._dossiers.update((list) =>
+        list.map((d) =>
+          d.id === valeur.dossierId
+            ? {
+                ...d,
+                service: valeur.vers,
+                etape: valeur.etape,
+                historique: [
+                  ...d.historique,
+                  { date: valeur.date, libelle: `${valeur.action} (${valeur.de} → ${valeur.vers})` },
+                ],
+              }
+            : d,
+        ),
+      );
+    }
+    return mouvement;
   }
 }
