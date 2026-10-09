@@ -1,0 +1,102 @@
+<du-page-header
+  title="Canevas Excel"
+  subtitle="Tableau de synthèse du suivi des dossiers de constructions illicites — données de démonstration."
+>
+  <button type="button" class="btn btn--secondary" (click)="exporterExcel()">
+    <du-icon name="sheet" [size]="16" /> Exporter Excel
+  </button>
+  <button type="button" class="btn btn--primary" (click)="imprimer()">
+    <du-icon name="sheet" [size]="16" /> Imprimer
+  </button>
+</du-page-header>
+
+<p class="demo-note" role="note">
+  <du-icon name="alert" [size]="15" />
+  Démonstration : le tableau réutilise les dossiers temporaires déjà présents dans le frontend.
+  L’export (CSV compatible Excel) et l’impression sont générés côté navigateur — aucun fichier ni donnée n’est enregistré.
+</p>
+
+@if (messageExport()) {
+  <div class="succes" role="status">{{ messageExport() }}</div>
+}
+
+<section class="card">
+  <div class="card__body">
+    <div class="filtres">
+      <div class="field champ-recherche">
+        <label for="recherche">Recherche</label>
+        <input #q id="recherche" class="input" type="search" placeholder="N°, objet, contrevenant, localisation…"
+               [value]="recherche()" (input)="setRecherche(q.value)" />
+      </div>
+      <div class="field">
+        <label for="nature">Nature</label>
+        <select #n id="nature" class="input" [value]="nature()" (change)="setNature(n.value)">
+          <option value="">Toutes</option>
+          @for (x of natures; track x) { <option [value]="x">{{ natureLabel[x] }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="service">Service actuel</label>
+        <select #s id="service" class="input" [value]="service()" (change)="setService(s.value)">
+          <option value="">Tous</option>
+          @for (x of services; track x) { <option [value]="x">{{ x }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="etape">Étape actuelle</label>
+        <select #e id="etape" class="input" [value]="etape()" (change)="setEtape(e.value)">
+          <option value="">Toutes</option>
+          @for (x of etapes; track x) { <option [value]="x">{{ etapeLabel[x] }}</option> }
+        </select>
+      </div>
+      <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
+    </div>
+  </div>
+
+  @if (affiches().length) {
+    <div class="table-scroll">
+      <table class="canevas">
+        <thead>
+          <tr>
+            @for (col of colonnes; track col.cle; let i = $index) {
+              <th [class.col-fixe]="i === 0">{{ col.libelle }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (l of affiches(); track l.numero + l.objet) {
+            <tr>
+              @for (col of colonnes; track col.cle; let i = $index) {
+                <td [class.col-fixe]="i === 0" [class.nowrap]="col.cle === 'numero' || col.cle === 'dateEntree'">
+                  @switch (col.cle) {
+                    @case ('service') { <span class="badge badge--info">{{ l[col.cle] }}</span> }
+                    @case ('nature') { <span class="badge badge--neutral">{{ l[col.cle] }}</span> }
+                    @case ('etape') { <span class="badge badge--warning">{{ l[col.cle] }}</span> }
+                    @default {
+                      @if (l[col.cle]) { {{ l[col.cle] } } @else { <span class="vide">—</span> }
+                    }
+                  }
+                </td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span class="muted small">{{ lignes().length }} ligne(s) · page {{ pageCourante() }} sur {{ totalPages() }} · 21 colonnes</span>
+      <div class="pagination__nav">
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <du-icon name="sheet" [size]="28" />
+      <p><strong>Aucun dossier pour ces filtres.</strong></p>
+      <p class="muted small">Modifiez la recherche ou réinitialisez les filtres.</p>
+      <button type="button" class="btn btn--secondary btn--sm" (click)="reinitialiser()">Réinitialiser les filtres</button>
+    </div>
+  }
+</section>
