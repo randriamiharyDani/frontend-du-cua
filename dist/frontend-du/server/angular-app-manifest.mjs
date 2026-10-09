@@ -71,16 +71,16 @@ export default {
 ],
   entryPointToBrowserMapping: undefined,
   assets: {
-    'index.csr.html': {size: 1344, hash: '7bde1ee9381c9de0', text: () => import('./assets-chunks/index_csr_html.mjs').then(m => m.default)},
-    'index.server.html': {size: 948, hash: '0b218bf19673dbf1', text: () => import('./assets-chunks/index_server_html.mjs').then(m => m.default)},
-    'admin/dossiers/index.html': {size: 47651, hash: '028ee913a96d5840', text: () => import('./assets-chunks/admin_dossiers_index_html.mjs').then(m => m.default)},
-    'admin/utilisateurs/index.html': {size: 22386, hash: '3b5fbdff7b5af9fc', text: () => import('./assets-chunks/admin_utilisateurs_index_html.mjs').then(m => m.default)},
-    'admin/parametres/index.html': {size: 22414, hash: '6c1527637e1c5e2a', text: () => import('./assets-chunks/admin_parametres_index_html.mjs').then(m => m.default)},
-    'admin/localisations/index.html': {size: 22425, hash: '58caa690497e5248', text: () => import('./assets-chunks/admin_localisations_index_html.mjs').then(m => m.default)},
-    'admin/canevas-excel/index.html': {size: 22419, hash: '408f82526ca6e39d', text: () => import('./assets-chunks/admin_canevas-excel_index_html.mjs').then(m => m.default)},
-    'admin/dashboard/index.html': {size: 43926, hash: '5c9e81830e1bb1cc', text: () => import('./assets-chunks/admin_dashboard_index_html.mjs').then(m => m.default)},
-    'admin/documents/index.html': {size: 22408, hash: '7941d48e69dd0d29', text: () => import('./assets-chunks/admin_documents_index_html.mjs').then(m => m.default)},
-    'admin/mouvements/index.html': {size: 22415, hash: 'f5d5885a6b8b2b3b', text: () => import('./assets-chunks/admin_mouvements_index_html.mjs').then(m => m.default)},
-    'connexion/index.html': {size: 11321, hash: '6071f4c34475f5cd', text: () => import('./assets-chunks/connexion_index_html.mjs').then(m => m.default)}
+    'index.csr.html': {size: 1344, hash: 'fc262ab182f544e8', text: () => import('./assets-chunks/index_csr_html.mjs').then(m => m.default)},
+    'index.server.html': {size: 948, hash: '008dd9f0e1753a4e', text: () => import('./assets-chunks/index_server_html.mjs').then(m => m.default)},
+    'admin/dashboard/index.html': {size: 50606, hash: '5bd54d892ea29104', text: () => import('./assets-chunks/admin_dashboard_index_html.mjs').then(m => m.default)},
+    'connexion/index.html': {size: 11321, hash: '4e92bb3294886954', text: () => import('./assets-chunks/connexion_index_html.mjs').then(m => m.default)},
+    'admin/utilisateurs/index.html': {size: 22386, hash: '1349c315b40b23d1', text: () => import('./assets-chunks/admin_utilisateurs_index_html.mjs').then(m => m.default)},
+    'admin/dossiers/index.html': {size: 47651, hash: '2f6ca26e58656b81', text: () => import('./assets-chunks/admin_dossiers_index_html.mjs').then(m => m.default)},
+    'admin/parametres/index.html': {size: 22412, hash: '57db20bf4bb64236', text: () => import('./assets-chunks/admin_parametres_index_html.mjs').then(m => m.default)},
+    'admin/localisations/index.html': {size: 22425, hash: '7f2fecde2f444776', text: () => import('./assets-chunks/admin_localisations_index_html.mjs').then(m => m.default)},
+    'admin/documents/index.html': {size: 22406, hash: '4da2ca61dcf3f666', text: () => import('./assets-chunks/admin_documents_index_html.mjs').then(m => m.default)},
+    'admin/canevas-excel/index.html': {size: 22419, hash: 'dbf115b5dd1f0643', text: () => import('./assets-chunks/admin_canevas-excel_index_html.mjs').then(m => m.default)},
+    'admin/mouvements/index.html': {size: 22415, hash: 'd3ea05f99f1959b9', text: () => import('./assets-chunks/admin_mouvements_index_html.mjs').then(m => m.default)}
   },
 };

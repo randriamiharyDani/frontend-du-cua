@@ -107,6 +107,29 @@ export interface HistoriqueItem {
   libelle: string;
 }
 
+/** Nature d’une pièce jointe rattachée à un dossier. */
+export type TypeDocument = 'plan' | 'rapport' | 'courrier' | 'photo' | 'decision' | 'autre';
+
+export const TYPE_DOCUMENT_LABEL: Record<TypeDocument, string> = {
+  plan: 'Plan',
+  rapport: 'Rapport',
+  courrier: 'Courrier',
+  photo: 'Photo',
+  decision: 'Décision',
+  autre: 'Autre',
+};
+
+/** Pièce jointe associée à un dossier (données locales de démonstration). */
+export interface DocumentDossier {
+  id: string;
+  dossierId: string;
+  nom: string;
+  type: TypeDocument;
+  dateDepot: string;
+  taille: string;
+  deposePar: string;
+}
+
 /**
  * Dossier de construction illicite.
  * Les données métier sont regroupées par section du formulaire :

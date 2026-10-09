@@ -1,4 +1,5 @@
 import {
+  DocumentDossier,
   Dossier,
   EtapeDossier,
   MouvementDossier,
@@ -100,4 +101,26 @@ export const MOUVEMENTS_MOCK: MouvementDossier[] = [
   { id: 'mv-3', date: '2026-10-06', dossierId: '9', reference: 'DU-2026-0009', titre: 'Fondation sans implantation bornée', de: 'DU', vers: 'SCAD', motif: 'Bornage contradictoire à organiser', auteur: 'Agent K. Diallo' },
   { id: 'mv-4', date: '2026-10-04', dossierId: '7', reference: 'DU-2026-0007', titre: 'Étage supplémentaire sans permis', de: 'DU', vers: 'DIS', motif: 'Vérification de la structure', auteur: 'Agent M. Sow' },
   { id: 'mv-5', date: '2026-10-02', dossierId: '3', reference: 'DU-2026-0003', titre: 'Occupation du domaine public au marché', de: 'DIS', vers: 'DU', motif: 'Retour après avis', auteur: 'Agent M. Sow' },
+  { id: 'mv-6', date: '2026-09-30', dossierId: '2', reference: 'DU-2026-0002', titre: 'Extension non déclarée à Nongo', de: 'DU', vers: 'SCAD', motif: 'Étude du bornage cadastral', auteur: 'Agent S. Camara' },
+  { id: 'mv-7', date: '2026-09-25', dossierId: '4', reference: 'DU-2026-0004', titre: 'Dalle non conforme au plan approuvé', de: 'DIS', vers: 'DU', motif: 'Retour après avis technique', auteur: 'Agent M. Sow' },
+  { id: 'mv-8', date: '2026-09-18', dossierId: '4', reference: 'DU-2026-0004', titre: 'Dalle non conforme au plan approuvé', de: 'DU', vers: 'DIS', motif: 'Transmission pour avis technique', auteur: 'Agent K. Diallo' },
+  { id: 'mv-9', date: '2026-09-20', dossierId: '5', reference: 'DU-2026-0005', titre: 'Garage transformé en boutique', de: 'SCAD', vers: 'DU', motif: 'Dossier régularisé, clôture', auteur: 'Agent S. Camara' },
+  { id: 'mv-10', date: '2026-09-12', dossierId: '5', reference: 'DU-2026-0005', titre: 'Garage transformé en boutique', de: 'DU', vers: 'SCAD', motif: 'Vérification cadastrale', auteur: 'Agent K. Diallo' },
+  { id: 'mv-11', date: '2026-09-08', dossierId: '6', reference: 'DU-2026-0006', titre: 'Mur de clôture sur alignement', de: 'DU', vers: 'SCAD', motif: 'Contrôle d’alignement', auteur: 'Agent S. Camara' },
+  { id: 'mv-12', date: '2026-09-24', dossierId: '8', reference: 'DU-2026-0008', titre: 'Hangar métallique en zone habitation', de: 'SCAD', vers: 'DU', motif: 'Retour après constat sur site', auteur: 'Agent K. Diallo' },
+  { id: 'mv-13', date: '2026-08-30', dossierId: '11', reference: 'DU-2026-0011', titre: 'Taxe de régularisation soldée', de: 'DIS', vers: 'DU', motif: 'Dossier régularisé, retour au DU', auteur: 'Agent K. Diallo' },
+  { id: 'mv-14', date: '2026-08-22', dossierId: '12', reference: 'DU-2026-0012', titre: 'Clôture provisoire non démontée', de: 'DU', vers: 'DIS', motif: 'Clôture administrative', auteur: 'Agent M. Sow' },
+];
+
+export const DOCUMENTS_MOCK: DocumentDossier[] = [
+  { id: 'doc-1', dossierId: '1', nom: 'Rapport de constat.pdf', type: 'rapport', dateDepot: '2026-10-02', taille: '820 Ko', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-2', dossierId: '1', nom: 'Photos du site.zip', type: 'photo', dateDepot: '2026-10-02', taille: '3,4 Mo', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-3', dossierId: '1', nom: 'Courrier de plainte.pdf', type: 'courrier', dateDepot: '2026-10-01', taille: '210 Ko', deposePar: 'Bureau d’ordre' },
+  { id: 'doc-4', dossierId: '2', nom: 'Plan cadastral.pdf', type: 'plan', dateDepot: '2026-09-30', taille: '1,1 Mo', deposePar: 'Service du Cadastre' },
+  { id: 'doc-5', dossierId: '3', nom: 'Avis de mise en demeure.pdf', type: 'decision', dateDepot: '2026-09-22', taille: '180 Ko', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-6', dossierId: '3', nom: 'Photos occupation.jpg', type: 'photo', dateDepot: '2026-09-21', taille: '540 Ko', deposePar: 'Agent S. Camara' },
+  { id: 'doc-7', dossierId: '4', nom: 'Rapport technique DIS.pdf', type: 'rapport', dateDepot: '2026-09-25', taille: '960 Ko', deposePar: 'Agent M. Sow' },
+  { id: 'doc-8', dossierId: '7', nom: 'Plan de structure (à réclamer).pdf', type: 'plan', dateDepot: '2026-10-04', taille: '—', deposePar: 'Agent K. Diallo' },
+  { id: 'doc-9', dossierId: '9', nom: 'Procès-verbal de bornage.pdf', type: 'rapport', dateDepot: '2026-10-06', taille: '640 Ko', deposePar: 'Service du Cadastre' },
+  { id: 'doc-10', dossierId: '10', nom: 'Demande d’avis technique.pdf', type: 'courrier', dateDepot: '2026-10-07', taille: '230 Ko', deposePar: 'Agent K. Diallo' },
 ];
