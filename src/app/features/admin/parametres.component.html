@@ -1,0 +1,293 @@
+<du-page-header
+  title="Paramètres"
+  subtitle="Configuration de l’espace administrateur — données de démonstration."
+>
+  <button type="button" class="btn btn--secondary" (click)="reinitialiser()">
+    <du-icon name="swap" [size]="16" /> Rétablir les valeurs par défaut
+  </button>
+</du-page-header>
+
+<p class="demo-note" role="note">
+  <du-icon name="alert" [size]="15" />
+  Démonstration : les paramètres sont conservés uniquement dans le stockage local du navigateur. Ils
+  ne sont pas encore synchronisés avec un serveur. Aucune API, base de données ni gestion réelle des
+  permissions n’est utilisée.
+</p>
+
+<!-- 1. Profil de l’utilisateur -->
+<section class="card parametres__section">
+  <div class="card__header">
+    <h2><du-icon name="user" [size]="18" /> Profil de l’utilisateur</h2>
+    <span class="badge badge--neutral">{{ serviceLabel[formProfil.controls.service.value] }}</span>
+  </div>
+
+  <form [formGroup]="formProfil" (ngSubmit)="enregistrerProfil()" novalidate>
+    <div class="card__body">
+      @if (messageProfil()) {
+        <div class="succes" role="status">{{ messageProfil() }}</div>
+      }
+
+      <div class="form-grid">
+        <div class="field full">
+          <label for="p-nom">Nom complet *</label>
+          <input id="p-nom" class="input" formControlName="nom" autocomplete="name"
+                 [class.is-invalid]="invalide('profil', 'nom')" />
+          @if (invalide('profil', 'nom')) { <span class="error">{{ message('profil', 'nom') }}</span> }
+        </div>
+
+        <div class="field">
+          <label for="p-email">Adresse e-mail *</label>
+          <input id="p-email" type="email" class="input" formControlName="email" autocomplete="email"
+                 [class.is-invalid]="invalide('profil', 'email')" />
+          @if (invalide('profil', 'email')) { <span class="error">{{ message('profil', 'email') }}</span> }
+        </div>
+
+        <div class="field">
+          <label for="p-fonction">Fonction</label>
+          <input id="p-fonction" class="input" formControlName="fonction" placeholder="Ex. Administratrice" />
+        </div>
+
+        <div class="field">
+          <label for="p-service">Service *</label>
+          <select id="p-service" class="input" formControlName="service">
+            @for (s of servicesDisponibles; track s) {
+              <option [value]="s">{{ s }} — {{ serviceLabel[s] }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="p-tel">Téléphone</label>
+          <input id="p-tel" type="tel" class="input" formControlName="telephone" autocomplete="tel" />
+        </div>
+      </div>
+    </div>
+
+    <div class="parametres__pied">
+      <button type="button" class="btn btn--secondary" (click)="annulerProfil()">Annuler</button>
+      <button type="submit" class="btn btn--primary">
+        <du-icon name="check" [size]="16" /> Enregistrer
+      </button>
+    </div>
+  </form>
+</section>
+
+<!-- 2. Préférences d’affichage -->
+<section class="card parametres__section">
+  <div class="card__header">
+    <h2><du-icon name="eye" [size]="18" /> Préférences d’affichage</h2>
+  </div>
+
+  <form [formGroup]="formPreferences" (ngSubmit)="enregistrerPreferences()" novalidate>
+    <div class="card__body">
+      @if (messagePreferences()) {
+        <div class="succes" role="status">{{ messagePreferences() }}</div>
+      }
+
+      <div class="form-grid">
+        <div class="field">
+          <label for="pref-langue">Langue de l’interface</label>
+          <select id="pref-langue" class="input" formControlName="langue">
+            <option value="fr">Français</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="pref-date">Format des dates</label>
+          <select id="pref-date" class="input" formControlName="formatDate">
+            @for (f of formatsDate; track f) {
+              <option [value]="f">{{ formatDateExemple(f) }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="pref-page">Éléments par page</label>
+          <input id="pref-page" type="number" class="input" formControlName="elementsParPage"
+                 min="5" max="50" step="1"
+                 [class.is-invalid]="invalide('preferences', 'elementsParPage')" />
+          @if (invalide('preferences', 'elementsParPage')) {
+            <span class="error">{{ message('preferences', 'elementsParPage') }}</span>
+          }
+        </div>
+
+        <div class="field full">
+          <div class="pref-options">
+            <label class="check">
+              <input type="checkbox" formControlName="afficherPriorites" />
+              Afficher les badges de priorité dans les listes
+            </label>
+            <label class="check">
+              <input type="checkbox" formControlName="notificationsEmail" />
+              Recevoir des notifications par e-mail (démonstration)
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="parametres__pied">
+      <button type="button" class="btn btn--secondary" (click)="annulerPreferences()">Annuler</button>
+      <button type="submit" class="btn btn--primary">
+        <du-icon name="check" [size]="16" /> Enregistrer
+      </button>
+    </div>
+  </form>
+</section>
+
+<!-- 3. Informations générales de l’application -->
+<section class="card parametres__section">
+  <div class="card__header">
+    <h2><du-icon name="building" [size]="18" /> Informations générales de l’application</h2>
+  </div>
+
+  <form [formGroup]="formApplication" (ngSubmit)="enregistrerApplication()" novalidate>
+    <div class="card__body">
+      @if (messageApplication()) {
+        <div class="succes" role="status">{{ messageApplication() }}</div>
+      }
+
+      <div class="form-grid">
+        <div class="field full">
+          <label for="app-nom">Nom de l’application *</label>
+          <input id="app-nom" class="input" formControlName="nomApplication"
+                 [class.is-invalid]="invalide('application', 'nomApplication')" />
+          @if (invalide('application', 'nomApplication')) {
+            <span class="error">{{ message('application', 'nomApplication') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="app-entite">Entité *</label>
+          <input id="app-entite" class="input" formControlName="entite"
+                 [class.is-invalid]="invalide('application', 'entite')" />
+          @if (invalide('application', 'entite')) {
+            <span class="error">{{ message('application', 'entite') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="app-sigle">Sigle *</label>
+          <input id="app-sigle" class="input" formControlName="sigle"
+                 [class.is-invalid]="invalide('application', 'sigle')" />
+          @if (invalide('application', 'sigle')) {
+            <span class="error">{{ message('application', 'sigle') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="app-email">E-mail de contact</label>
+          <input id="app-email" type="email" class="input" formControlName="emailContact"
+                 [class.is-invalid]="invalide('application', 'emailContact')" />
+          @if (invalide('application', 'emailContact')) {
+            <span class="error">{{ message('application', 'emailContact') }}</span>
+          }
+        </div>
+
+        <div class="field">
+          <label for="app-tel">Téléphone de contact</label>
+          <input id="app-tel" type="tel" class="input" formControlName="telephoneContact" />
+        </div>
+
+        <div class="field full">
+          <label for="app-adresse">Adresse</label>
+          <input id="app-adresse" class="input" formControlName="adresse" />
+        </div>
+      </div>
+
+      <p class="muted small parametres__version">Version de la démonstration : 0.1.0 — frontend local.</p>
+    </div>
+
+    <div class="parametres__pied">
+      <button type="button" class="btn btn--secondary" (click)="annulerApplication()">Annuler</button>
+      <button type="submit" class="btn btn--primary">
+        <du-icon name="check" [size]="16" /> Enregistrer
+      </button>
+    </div>
+  </form>
+</section>
+
+<!-- 4. Services disponibles -->
+<section class="card parametres__section">
+  <div class="card__header">
+    <h2><du-icon name="users" [size]="18" /> Services disponibles</h2>
+    <span class="muted small">DU, DIS et SCAD</span>
+  </div>
+
+  <div class="card__body">
+    @if (messageServices()) {
+      <div class="succes" role="status">{{ messageServices() }}</div>
+    }
+
+    <ul class="services">
+      @for (s of parametres().services; track s.code) {
+        <li class="service-item">
+          <span class="service-item__code">{{ s.code }}</span>
+          <div class="service-item__infos">
+            <strong>{{ s.libelle }}</strong>
+            <span class="muted small">{{ s.description }}</span>
+          </div>
+          <span class="badge" [class.badge--success]="s.actif" [class.badge--neutral]="!s.actif">
+            {{ s.actif ? 'Actif' : 'Inactif' }}
+          </span>
+          <button type="button" class="btn btn--secondary btn--sm" (click)="basculerService(s.code, s.libelle)">
+            {{ s.actif ? 'Désactiver' : 'Activer' }}
+          </button>
+        </li>
+      }
+    </ul>
+
+    <p class="muted small parametres__note">
+      L’activation d’un service est indicative et n’affecte aucune permission réelle.
+    </p>
+  </div>
+</section>
+
+<!-- 5. Types de dossiers et statuts -->
+<section class="card parametres__section">
+  <div class="card__header">
+    <h2><du-icon name="folder" [size]="18" /> Types de dossiers et statuts</h2>
+    <span class="muted small">Référentiels utilisés dans la démonstration</span>
+  </div>
+
+  <div class="card__body referentiels">
+    <div class="referentiel">
+      <h3>Types d’infraction</h3>
+      <ul class="chips">
+        @for (t of types; track t) { <li class="chip">{{ typeLabel[t] }}</li> }
+      </ul>
+    </div>
+
+    <div class="referentiel">
+      <h3>Statuts des dossiers</h3>
+      <ul class="chips">
+        @for (s of statuts; track s) { <li class="chip">{{ statutLabel[s] }}</li> }
+      </ul>
+    </div>
+
+    <div class="referentiel">
+      <h3>Natures</h3>
+      <ul class="chips">
+        @for (n of natures; track n) { <li class="chip">{{ natureLabel[n] }}</li> }
+      </ul>
+    </div>
+
+    <div class="referentiel">
+      <h3>Priorités</h3>
+      <ul class="chips">
+        @for (p of priorites; track p) { <li class="chip">{{ prioriteLabel[p] }}</li> }
+      </ul>
+    </div>
+
+    <div class="referentiel">
+      <h3>Étapes de traitement</h3>
+      <ul class="chips">
+        @for (e of etapes; track e) { <li class="chip">{{ etapeLabel[e] }}</li> }
+      </ul>
+    </div>
+
+    <p class="muted small referentiel__note">
+      Ces listes sont fixées pour la démonstration et ne peuvent pas être modifiées depuis cette page.
+    </p>
+  </div>
+</section>
