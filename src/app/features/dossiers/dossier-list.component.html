@@ -1,0 +1,80 @@
+<du-page-header title="Dossiers" subtitle="Liste des dossiers de constructions illicites">
+  <a routerLink="/admin/dossiers/nouveau" class="btn btn--primary"><du-icon name="plus" [size]="16" /> Nouveau dossier</a>
+</du-page-header>
+
+<section class="card">
+  <div class="card__body">
+    <div class="toolbar">
+      <div class="field">
+        <label for="recherche">Recherche</label>
+        <input #q id="recherche" class="input" type="search" placeholder="Référence, adresse, propriétaire…"
+               [value]="recherche()" (input)="setRecherche(q.value)" />
+      </div>
+      <div class="field">
+        <label for="statut">Statut</label>
+        <select #s id="statut" class="input" [value]="statut()" (change)="setStatut(s.value)">
+          <option value="">Tous</option>
+          @for (x of statuts; track x) { <option [value]="x">{{ statutLabel[x] }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="priorite">Priorité</label>
+        <select #p id="priorite" class="input" [value]="priorite()" (change)="setPriorite(p.value)">
+          <option value="">Toutes</option>
+          @for (x of priorites; track x) { <option [value]="x">{{ prioriteLabel[x] }}</option> }
+        </select>
+      </div>
+      <div class="field">
+        <label for="arr">Arrondissement</label>
+        <select #a id="arr" class="input" [value]="arrondissement()" (change)="setArrondissement(a.value)">
+          <option value="">Tous</option>
+          @for (x of arrondissements; track x) { <option [value]="x">{{ x }}</option> }
+        </select>
+      </div>
+      <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
+    </div>
+  </div>
+
+  @if (affiches().length) {
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Dossier</th>
+            <th class="hide-md">Arrondissement</th>
+            <th>Statut</th>
+            <th class="hide-md">Priorité</th>
+            <th class="hide-sm">Signalé le</th>
+            <th><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of affiches(); track d.id) {
+            <tr>
+              <td><a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference }}</a></td>
+              <td>{{ d.titre }}<div class="muted small">{{ d.adresse }} · {{ d.quartier }}</div></td>
+              <td class="hide-md">{{ d.arrondissement }}</td>
+              <td><du-status-badge [statut]="d.statut" /></td>
+              <td class="hide-md"><du-priority-badge [priorite]="d.priorite" /></td>
+              <td class="hide-sm">{{ d.dateSignalement | date: 'dd/MM/yyyy' }}</td>
+              <td class="actions">
+                <a [routerLink]="['/admin/dossiers', d.id]" class="btn btn--secondary btn--sm"><du-icon name="eye" [size]="15" /> Voir</a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span class="muted small">{{ filtres().length }} dossier(s) · page {{ pageCourante() }} sur {{ totalPages() }}</span>
+      <div style="display: flex; gap: 0.5rem">
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-state">Aucun dossier ne correspond à votre recherche.</div>
+  }
+</section>

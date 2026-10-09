@@ -1,0 +1,177 @@
+:host {
+  display: contents;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 60px;
+  padding: 0.5rem 1.5rem;
+  background: var(--du-surface);
+  border-bottom: 1px solid var(--du-border);
+}
+
+.topbar__titre {
+  font-size: 1.1rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__btn {
+  display: inline-grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--du-primary);
+  cursor: pointer;
+}
+
+.topbar__btn:hover {
+  background: var(--du-primary-soft);
+}
+
+.topbar__btn--menu {
+  display: none;
+}
+
+.topbar__profil {
+  position: relative;
+  margin-left: auto;
+}
+
+.topbar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.3rem 0.4rem;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+}
+
+.topbar__user:hover {
+  background: var(--du-primary-soft);
+}
+
+.topbar__avatar {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--du-primary);
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.topbar__identite strong {
+  display: block;
+  font-size: 0.88rem;
+  line-height: 1.2;
+}
+
+.topbar__identite small {
+  display: block;
+  color: var(--du-muted);
+  font-size: 0.76rem;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar__voile {
+  position: fixed;
+  inset: 0;
+  z-index: 18;
+}
+
+.topbar__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 19;
+  width: 250px;
+  padding: 0.4rem;
+  background: #fff;
+  border: 1px solid var(--du-border);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.14);
+}
+
+.topbar__menu-entete {
+  margin: 0;
+  padding: 0.6rem 0.7rem;
+  border-bottom: 1px solid var(--du-border);
+}
+
+.topbar__menu-entete strong {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.topbar__menu-entete small {
+  color: var(--du-muted);
+  font-size: 0.78rem;
+}
+
+.topbar__menu a,
+.topbar__menu button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--du-text);
+  font: inherit;
+  font-size: 0.88rem;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.topbar__menu a:hover,
+.topbar__menu button:hover {
+  background: var(--du-primary-soft);
+}
+
+@media (max-width: 900px) {
+  .topbar {
+    padding: 0.5rem 1rem;
+  }
+
+  .topbar__btn--menu {
+    display: inline-grid;
+  }
+
+  .topbar__btn--repli {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar__identite,
+  .topbar__user > du-icon {
+    display: none;
+  }
+
+  .topbar__titre {
+    font-size: 1rem;
+  }
+}

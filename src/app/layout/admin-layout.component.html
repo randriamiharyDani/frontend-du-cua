@@ -1,0 +1,27 @@
+<div
+  class="shell"
+  [class.shell--replie]="sidebarRepliee()"
+  [class.shell--menu-ouvert]="menuMobileOuvert()"
+>
+  <du-admin-sidebar
+    [replie]="sidebarRepliee()"
+    (replierChange)="basculerRepli()"
+    (naviguer)="fermerMenuMobile()"
+  />
+
+  @if (menuMobileOuvert()) {
+    <div class="shell__voile" (click)="fermerMenuMobile()" aria-hidden="true"></div>
+  }
+
+  <div class="shell__contenu">
+    <du-admin-topbar
+      [titrePage]="titrePage()"
+      [menuOuvert]="menuMobileOuvert()"
+      (basculerMenu)="basculerMenuMobile()"
+      (basculerRepli)="basculerRepli()"
+    />
+    <main class="shell__page">
+      <router-outlet />
+    </main>
+  </div>
+</div>

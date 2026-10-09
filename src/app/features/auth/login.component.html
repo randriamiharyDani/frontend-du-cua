@@ -1,0 +1,102 @@
+<main class="login-page">
+  <section class="login-card card" aria-labelledby="titre-connexion">
+    <div class="login-card__brand">
+      <!-- Emplacement du logo officiel : remplacez ce bloc par <img src="assets/logo-du.svg" alt="Logo de la Direction de l'Urbanisme" /> -->
+      <span class="login-card__logo" aria-hidden="true">
+        <du-icon name="building" [size]="28" />
+      </span>
+      <p class="login-card__entite">Direction de l’Urbanisme</p>
+      <h1 id="titre-connexion">Espace d’administration</h1>
+      <p class="muted">Connectez-vous pour accéder à la gestion des dossiers.</p>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="seConnecter()" novalidate>
+      @if (erreurConnexion()) {
+        <p class="login-card__erreur" role="alert">{{ erreurConnexion() }}</p>
+      }
+
+      <div class="field">
+        <label for="email">Adresse e-mail</label>
+        <div class="login-card__champ">
+          <du-icon name="mail" [size]="18" />
+          <input
+            id="email"
+            type="email"
+            class="input"
+            formControlName="email"
+            placeholder="nom@du.gov"
+            autocomplete="username"
+            inputmode="email"
+            [class.is-invalid]="champInvalide('email')"
+            [attr.aria-invalid]="champInvalide('email')"
+            aria-describedby="erreur-email"
+          />
+        </div>
+        @if (champInvalide('email')) {
+          <span class="error" id="erreur-email">
+            @if (form.controls.email.hasError('required')) {
+              L’adresse e-mail est obligatoire.
+            } @else {
+              Saisissez une adresse e-mail valide.
+            }
+          </span>
+        }
+      </div>
+
+      <div class="field">
+        <label for="mot-de-passe">Mot de passe</label>
+        <div class="login-card__champ">
+          <du-icon name="lock" [size]="18" />
+          <input
+            id="mot-de-passe"
+            [type]="motDePasseVisible() ? 'text' : 'password'"
+            class="input"
+            formControlName="motDePasse"
+            placeholder="Votre mot de passe"
+            autocomplete="current-password"
+            [class.is-invalid]="champInvalide('motDePasse')"
+            [attr.aria-invalid]="champInvalide('motDePasse')"
+            aria-describedby="erreur-mot-de-passe"
+          />
+          <button
+            type="button"
+            class="login-card__oeil"
+            (click)="basculerVisibiliteMotDePasse()"
+            [attr.aria-label]="motDePasseVisible() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            [attr.aria-pressed]="motDePasseVisible()"
+          >
+            <du-icon [name]="motDePasseVisible() ? 'eyeOff' : 'eye'" [size]="18" />
+          </button>
+        </div>
+        @if (champInvalide('motDePasse')) {
+          <span class="error" id="erreur-mot-de-passe">
+            @if (form.controls.motDePasse.hasError('required')) {
+              Le mot de passe est obligatoire.
+            } @else {
+              Le mot de passe doit contenir au moins 6 caractères.
+            }
+          </span>
+        }
+      </div>
+
+      <div class="login-card__options">
+        <label class="login-card__memo">
+          <input type="checkbox" formControlName="memoriser" />
+          Rester connecté
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn--primary login-card__submit" [disabled]="chargement()">
+        @if (chargement()) {
+          <span class="login-card__spinner" aria-hidden="true"></span>
+          Connexion en cours…
+        } @else {
+          Se connecter
+        }
+      </button>
+      <span class="sr-only" role="status">{{ chargement() ? 'Connexion en cours' : '' }}</span>
+    </form>
+
+    <p class="login-card__pied muted small">Accès réservé aux agents habilités.</p>
+  </section>
+</main>

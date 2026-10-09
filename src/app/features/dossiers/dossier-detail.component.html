@@ -1,0 +1,66 @@
+@if (dossier(); as d) {
+  <du-page-header [title]="d.reference" [subtitle]="d.titre">
+    <a routerLink="/admin/dossiers" class="btn btn--secondary"><du-icon name="back" [size]="16" /> Retour</a>
+    <a [routerLink]="['/admin/dossiers', d.id, 'modifier']" class="btn btn--primary"><du-icon name="edit" [size]="16" /> Modifier</a>
+  </du-page-header>
+
+  <div class="detail-grid">
+    <div class="stack">
+      <section class="card">
+        <div class="card__header"><h2>Informations générales</h2></div>
+        <div class="card__body">
+          <dl class="dl">
+            <div><dt>Type d’infraction</dt><dd>{{ typeLabel[d.type] }}</dd></div>
+            <div><dt>Date de signalement</dt><dd>{{ d.dateSignalement | date: 'd MMMM y' }}</dd></div>
+            <div><dt>Adresse</dt><dd>{{ d.adresse }}</dd></div>
+            <div><dt>Quartier</dt><dd>{{ d.quartier }} — {{ d.arrondissement }}</dd></div>
+            <div><dt>Propriétaire</dt><dd>{{ d.proprietaire }}</dd></div>
+            <div><dt>Téléphone</dt><dd>{{ d.telephone || 'Non renseigné' }}</dd></div>
+            <div><dt>Agent responsable</dt><dd>{{ d.agent || 'Non affecté' }}</dd></div>
+            <div><dt>Priorité</dt><dd><du-priority-badge [priorite]="d.priorite" /></dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header"><h2>Description des faits</h2></div>
+        <div class="card__body"><p class="description">{{ d.description }}</p></div>
+      </section>
+    </div>
+
+    <div class="stack">
+      <section class="card">
+        <div class="card__header"><h2>Statut</h2><du-status-badge [statut]="d.statut" /></div>
+        <div class="card__body">
+          <div class="field">
+            <label for="nouveau-statut">Modifier le statut</label>
+            <select #s id="nouveau-statut" class="input" [value]="d.statut" (change)="changerStatut(s.value)">
+              @for (x of statuts; track x) { <option [value]="x">{{ statutLabel[x] }}</option> }
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__header"><h2>Historique</h2></div>
+        <div class="card__body">
+          <ol class="timeline">
+            @for (e of d.historique; track $index) {
+              <li>
+                <div>{{ e.libelle }}</div>
+                <div class="muted small">{{ e.date | date: 'dd/MM/yyyy' }}</div>
+              </li>
+            }
+          </ol>
+        </div>
+      </section>
+    </div>
+  </div>
+} @else {
+  <section class="card">
+    <div class="empty-state">
+      <p>Ce dossier est introuvable.</p>
+      <a routerLink="/admin/dossiers" class="btn btn--secondary">Retour à la liste</a>
+    </div>
+  </section>
+}

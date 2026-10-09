@@ -1,0 +1,76 @@
+<du-page-header title="Tableau de bord" subtitle="Vue d’ensemble des dossiers de constructions illicites">
+  <a routerLink="/admin/dossiers/nouveau" class="btn btn--primary"><du-icon name="plus" [size]="16" /> Nouveau dossier</a>
+</du-page-header>
+
+<section class="stats" aria-label="Indicateurs">
+  <du-stat-card label="Dossiers au total" [value]="total()" icon="folder" />
+  <du-stat-card label="Signalés / en vérification" [value]="enVerification()" icon="clock" />
+  <du-stat-card label="Mises en demeure" [value]="misesEnDemeure()" icon="alert" />
+  <du-stat-card label="Dossiers régularisés" [value]="regularises()" icon="check" />
+</section>
+
+<div class="columns">
+  <section class="card">
+    <div class="card__header">
+      <h2>Derniers dossiers</h2>
+      <a routerLink="/admin/dossiers" class="btn btn--secondary btn--sm">Voir tout</a>
+    </div>
+    <div class="table-wrap">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Référence</th>
+            <th>Dossier</th>
+            <th>Statut</th>
+            <th class="hide-sm">Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (d of recents(); track d.id) {
+            <tr>
+              <td><a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference }}</a></td>
+              <td>{{ d.titre }}<div class="muted small">{{ d.quartier }}</div></td>
+              <td><du-status-badge [statut]="d.statut" /></td>
+              <td class="hide-sm">{{ d.dateSignalement | date: 'dd/MM/yyyy' }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <div style="display: grid; gap: 1rem">
+    <section class="card">
+      <div class="card__header"><h2>Répartition par statut</h2></div>
+      <div class="card__body">
+        <ul class="bars">
+          @for (r of repartition(); track r.statut) {
+            <li>
+              <div class="bar-row"><span>{{ r.label }}</span><strong>{{ r.nb }}</strong></div>
+              <div class="bar"><span [style.width.%]="r.pct"></span></div>
+            </li>
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card__header"><h2>Priorité haute</h2></div>
+      <div class="card__body">
+        @if (urgents().length) {
+          <ul class="urgent">
+            @for (d of urgents(); track d.id) {
+              <li>
+                <a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference }}</a>
+                <du-priority-badge [priorite]="d.priorite" />
+                <div class="muted small">{{ d.titre }}</div>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted">Aucun dossier prioritaire en cours.</p>
+        }
+      </div>
+    </section>
+  </div>
+</div>

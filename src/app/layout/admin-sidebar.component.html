@@ -1,0 +1,33 @@
+<aside class="sidebar" [class.sidebar--replie]="replie" aria-label="Navigation principale">
+  <div class="sidebar__brand">
+    <!-- Emplacement du logo officiel : <img src="assets/logo-du.svg" alt="Logo de la Direction de l'Urbanisme" /> -->
+    <span class="sidebar__logo" aria-hidden="true"><du-icon name="building" [size]="22" /></span>
+    <div class="sidebar__titres">
+      <strong>Direction de l’Urbanisme</strong>
+      <small>Espace administrateur</small>
+    </div>
+  </div>
+
+  <nav class="sidebar__nav">
+    @for (item of menus; track item.path) {
+      <a
+        [routerLink]="item.path"
+        routerLinkActive="is-active"
+        [routerLinkActiveOptions]="{ exact: item.exact ?? false }"
+        [title]="replie ? item.label : item.description"
+        (click)="naviguer.emit()"
+      >
+        <du-icon [name]="item.icon" [size]="19" />
+        <span class="sidebar__label">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <div class="sidebar__pied">
+    <p class="sidebar__footer">Gestion des constructions illicites</p>
+    <button type="button" class="sidebar__repli" (click)="replierChange.emit()" [attr.aria-label]="replie ? 'Déplier le menu' : 'Replier le menu'">
+      <du-icon name="collapse" [size]="17" />
+      <span class="sidebar__label">{{ replie ? 'Déplier' : 'Replier' }}</span>
+    </button>
+  </div>
+</aside>

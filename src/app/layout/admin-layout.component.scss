@@ -1,0 +1,48 @@
+.shell {
+  min-height: 100dvh;
+  display: flex;
+  background: var(--du-bg);
+}
+
+.shell__contenu {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.shell__page {
+  padding: 1.5rem;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+  flex: 1;
+}
+
+.shell__voile {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .shell__page {
+    padding: 1rem;
+  }
+
+  /* La sidebar devient un tiroir piloté par .shell--menu-ouvert. */
+  .shell du-admin-sidebar .sidebar {
+    transform: translateX(-100%);
+  }
+
+  .shell--menu-ouvert du-admin-sidebar .sidebar {
+    transform: translateX(0);
+    box-shadow: 0 0 60px rgba(12, 34, 67, 0.35);
+  }
+
+  .shell--menu-ouvert .shell__voile {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(12, 34, 67, 0.45);
+  }
+}

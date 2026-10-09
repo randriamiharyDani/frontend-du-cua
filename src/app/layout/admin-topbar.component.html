@@ -1,0 +1,56 @@
+<header class="topbar">
+  <button
+    type="button"
+    class="topbar__btn topbar__btn--menu"
+    (click)="basculerMenu.emit()"
+    [attr.aria-expanded]="menuOuvert"
+    aria-label="Ouvrir ou fermer le menu"
+  >
+    <du-icon [name]="menuOuvert ? 'close' : 'menu'" [size]="22" />
+  </button>
+
+  <button
+    type="button"
+    class="topbar__btn topbar__btn--repli"
+    (click)="basculerRepli.emit()"
+    aria-label="Replier ou déplier la barre latérale"
+    title="Replier / déplier la barre latérale"
+  >
+    <du-icon name="collapse" [size]="19" />
+  </button>
+
+  <h1 class="topbar__titre">{{ titrePage }}</h1>
+
+  <div class="topbar__profil">
+    <button
+      type="button"
+      class="topbar__user"
+      (click)="basculerProfil()"
+      [attr.aria-expanded]="profilOuvert()"
+      aria-haspopup="menu"
+    >
+      <span class="topbar__avatar" aria-hidden="true">{{ utilisateur.initiales }}</span>
+      <span class="topbar__identite">
+        <strong>{{ utilisateur.nom }}</strong>
+        <small>{{ utilisateur.service }}</small>
+      </span>
+      <du-icon name="chevron" [size]="16" />
+    </button>
+
+    @if (profilOuvert()) {
+      <div class="topbar__voile" (click)="fermerProfil()"></div>
+      <div class="topbar__menu" role="menu" aria-label="Menu de profil">
+        <p class="topbar__menu-entete">
+          <strong>{{ utilisateur.nom }}</strong>
+          <small>{{ utilisateur.role }} · {{ utilisateur.service }}</small>
+        </p>
+        <a routerLink="/admin/parametres" role="menuitem" (click)="fermerProfil()">
+          <du-icon name="gear" [size]="16" /> Paramètres du compte
+        </a>
+        <button type="button" role="menuitem" (click)="seDeconnecter()">
+          <du-icon name="logout" [size]="16" /> Se déconnecter
+        </button>
+      </div>
+    }
+  </div>
+</header>

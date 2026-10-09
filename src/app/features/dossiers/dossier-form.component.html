@@ -1,0 +1,91 @@
+<du-page-header
+  [title]="edition ? 'Modifier le dossier' : 'Nouveau dossier'"
+  subtitle="Les champs marqués d’un astérisque (*) sont obligatoires" />
+
+<form class="card" [formGroup]="form" (ngSubmit)="enregistrer()" novalidate>
+  <div class="card__body">
+    <div class="form-grid">
+      <div class="field full">
+        <label for="titre">Intitulé du dossier *</label>
+        <input id="titre" class="input" formControlName="titre" [class.is-invalid]="invalide('titre')" />
+        @if (invalide('titre')) { <span class="error">Saisissez un intitulé (5 caractères minimum).</span> }
+      </div>
+
+      <div class="field">
+        <label for="type">Type d’infraction *</label>
+        <select id="type" class="input" formControlName="type">
+          @for (t of types; track t) { <option [value]="t">{{ typeLabel[t] }}</option> }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="date">Date de signalement *</label>
+        <input id="date" type="date" class="input" formControlName="dateSignalement" [class.is-invalid]="invalide('dateSignalement')" />
+        @if (invalide('dateSignalement')) { <span class="error">Champ obligatoire.</span> }
+      </div>
+
+      <div class="field full">
+        <label for="adresse">Adresse *</label>
+        <input id="adresse" class="input" formControlName="adresse" [class.is-invalid]="invalide('adresse')" />
+        @if (invalide('adresse')) { <span class="error">Champ obligatoire.</span> }
+      </div>
+
+      <div class="field">
+        <label for="quartier">Quartier *</label>
+        <input id="quartier" class="input" formControlName="quartier" [class.is-invalid]="invalide('quartier')" />
+        @if (invalide('quartier')) { <span class="error">Champ obligatoire.</span> }
+      </div>
+
+      <div class="field">
+        <label for="arr">Arrondissement *</label>
+        <select id="arr" class="input" formControlName="arrondissement" [class.is-invalid]="invalide('arrondissement')">
+          <option value="">Sélectionner…</option>
+          @for (a of arrondissements; track a) { <option [value]="a">{{ a }}</option> }
+        </select>
+        @if (invalide('arrondissement')) { <span class="error">Sélectionnez un arrondissement.</span> }
+      </div>
+
+      <div class="field">
+        <label for="proprietaire">Propriétaire / responsable *</label>
+        <input id="proprietaire" class="input" formControlName="proprietaire" [class.is-invalid]="invalide('proprietaire')" />
+        @if (invalide('proprietaire')) { <span class="error">Champ obligatoire.</span> }
+      </div>
+
+      <div class="field">
+        <label for="tel">Téléphone</label>
+        <input id="tel" type="tel" class="input" formControlName="telephone" placeholder="034 00 000 00" [class.is-invalid]="invalide('telephone')" />
+        @if (invalide('telephone')) { <span class="error">Numéro invalide.</span> }
+      </div>
+
+      <div class="field">
+        <label for="priorite">Priorité *</label>
+        <select id="priorite" class="input" formControlName="priorite">
+          @for (p of priorites; track p) { <option [value]="p">{{ prioriteLabel[p] }}</option> }
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="statut">Statut *</label>
+        <select id="statut" class="input" formControlName="statut">
+          @for (s of statuts; track s) { <option [value]="s">{{ statutLabel[s] }}</option> }
+        </select>
+      </div>
+
+      <div class="field full">
+        <label for="agent">Agent responsable</label>
+        <input id="agent" class="input" formControlName="agent" />
+      </div>
+
+      <div class="field full">
+        <label for="description">Description des faits *</label>
+        <textarea id="description" class="input" formControlName="description" [class.is-invalid]="invalide('description')"></textarea>
+        @if (invalide('description')) { <span class="error">Décrivez les faits (10 caractères minimum).</span> }
+      </div>
+    </div>
+  </div>
+
+  <div class="card__body form-actions">
+    <a [routerLink]="edition ? ['/admin/dossiers', id] : ['/admin/dossiers']" class="btn btn--secondary">Annuler</a>
+    <button type="submit" class="btn btn--primary">{{ edition ? 'Enregistrer les modifications' : 'Créer le dossier' }}</button>
+  </div>
+</form>
