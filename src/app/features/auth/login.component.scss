@@ -11,6 +11,8 @@
 .login-card {
   width: min(440px, 100%);
   padding: 2rem 2rem 1.5rem;
+  box-shadow: var(--du-shadow-md);
+  border-top: 4px solid var(--du-accent);
 }
 
 .login-card__brand {
@@ -24,9 +26,10 @@
   width: 64px;
   height: 64px;
   border-radius: 16px;
-  background: var(--du-primary);
+  background: linear-gradient(145deg, #1a4680, var(--du-primary));
   color: #fff;
   margin-bottom: 0.9rem;
+  box-shadow: 0 6px 18px rgba(13, 41, 77, 0.28);
 }
 
 .login-card__entite {

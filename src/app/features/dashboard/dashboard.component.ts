@@ -41,6 +41,8 @@ export class DashboardComponent {
   protected readonly termines = computed(() => this.count(['regularise', 'cloture']));
 
   /** Repartition des dossiers par service DU / DIS / SCAD. */
+
+  
   protected readonly parService = computed(() =>
     SERVICES.map((service: ServiceDossier) => {
       const liste = this.dossiers().filter((d) => d.service === service);
