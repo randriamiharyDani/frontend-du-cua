@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { STATUT_LABEL, STATUTS, StatutDossier } from '../../core/models/dossier.model';
+import { SERVICES, SERVICE_LABEL, ServiceDossier, StatutDossier } from '../../core/models/dossier.model';
 import { DossierStore } from '../../core/state/dossier-store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
@@ -9,51 +9,58 @@ import { PriorityBadgeComponent } from '../../shared/ui/priority-badge.component
 import { StatCardComponent } from '../../shared/ui/stat-card.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge.component';
 
+/**
+ * Tableau de bord — DONNEES DE DEMONSTRATION (aucune API).
+ * 4 cartes stats + repartition DU/DIS/SCAD + mouvements + recents + attention.
+ */
 @Component({
   selector: 'du-dashboard',
   imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent, StatCardComponent, StatusBadgeComponent, PriorityBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
-  styles: `
-    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; margin-bottom: 1.25rem; }
-    .columns { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; align-items: start; }
-    .bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.9rem; }
-    .bar-row { display: flex; justify-content: space-between; font-size: 0.88rem; margin-bottom: 0.25rem; }
-    .bar { height: 8px; background: #e8edf4; border-radius: 999px; overflow: hidden; }
-    .bar span { display: block; height: 100%; background: var(--du-primary); border-radius: 999px; }
-    .urgent { list-style: none; margin: 0; padding: 0; }
-    .urgent li { padding: 0.75rem 0; border-bottom: 1px solid var(--du-border); }
-    .urgent li:last-child { border-bottom: 0; padding-bottom: 0; }
-    .urgent a { font-weight: 600; text-decoration: none; }
-    .urgent a:hover { text-decoration: underline; }
-    @media (max-width: 1100px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .columns { grid-template-columns: 1fr; } }
-    @media (max-width: 500px) { .stats { grid-template-columns: 1fr; } }`,
+  styleUrl: './dashboard.component.scss',
 })
 export class DashboardComponent {
   private readonly store = inject(DossierStore);
   private readonly dossiers = this.store.dossiers;
+  protected readonly mouvements = this.store.mouvements;
+  protected readonly serviceLabel = SERVICE_LABEL;
 
-  private readonly count = (statut: StatutDossier) => this.dossiers().filter((d) => d.statut === statut).length;
+  private readonly count = (statuts: StatutDossier[]) =>
+    this.dossiers().filter((d) => statuts.includes(d.statut)).length;
 
+  /** Total des dossiers. */
   protected readonly total = computed(() => this.dossiers().length);
-  protected readonly enVerification = computed(() => this.count('en_verification') + this.count('signale'));
-  protected readonly misesEnDemeure = computed(() => this.count('mise_en_demeure'));
-  protected readonly regularises = computed(() => this.count('regularise'));
+  /** Dossiers en cours : verification, mise en demeure, regularisation. */
+  protected readonly enCours = computed(() =>
+    this.count(['en_verification', 'mise_en_demeure', 'en_regularisation']),
+  );
+  /** Dossiers en attente : signales, non pris en charge. */
+  protected readonly enAttente = computed(() => this.count(['signale']));
+  /** Dossiers termines : regularises + clotures. */
+  protected readonly termines = computed(() => this.count(['regularise', 'cloture']));
 
-  protected readonly repartition = computed(() =>
-    STATUTS.map((statut) => {
-      const nb = this.count(statut);
-      return { statut, label: STATUT_LABEL[statut], nb, pct: this.total() ? Math.round((nb / this.total()) * 100) : 0 };
+  /** Repartition des dossiers par service DU / DIS / SCAD. */
+  protected readonly parService = computed(() =>
+    SERVICES.map((service: ServiceDossier) => {
+      const liste = this.dossiers().filter((d) => d.service === service);
+      return {
+        service,
+        label: SERVICE_LABEL[service],
+        total: liste.length,
+        enCours: liste.filter((d) => d.statut === 'en_verification' || d.statut === 'mise_en_demeure' || d.statut === 'en_regularisation').length,
+        pct: this.total() ? Math.round((liste.length / this.total()) * 100) : 0,
+      };
     }),
   );
 
+  /** Dossiers recemment enregistres (5 derniers). */
   protected readonly recents = computed(() =>
-    [...this.dossiers()].sort((a, b) => b.dateSignalement.localeCompare(a.dateSignalement)).slice(0, 5),
+    [...this.dossiers()].sort((a, b) => b.dateEnregistrement.localeCompare(a.dateEnregistrement)).slice(0, 5),
   );
 
-  protected readonly urgents = computed(() =>
-    this.dossiers()
-      .filter((d) => d.priorite === 'haute' && d.statut !== 'regularise' && d.statut !== 'cloture')
-      .slice(0, 4),
+  /** Dossiers necessitant une attention particuliere. */
+  protected readonly attention = computed(() =>
+    this.dossiers().filter((d) => d.attentionRequise).slice(0, 5),
   );
 }

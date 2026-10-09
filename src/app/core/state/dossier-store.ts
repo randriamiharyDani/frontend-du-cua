@@ -1,12 +1,15 @@
 import { Injectable, signal } from '@angular/core';
-import { Dossier, DossierFormValue, StatutDossier } from '../models/dossier.model';
-import { DOSSIERS_MOCK } from '../data/dossiers.mock';
+import { Dossier, DossierFormValue, MouvementDossier, StatutDossier } from '../models/dossier.model';
+import { DOSSIERS_MOCK, MOUVEMENTS_MOCK } from '../data/dossiers.mock';
 
 @Injectable({ providedIn: 'root' })
 export class DossierStore {
   private readonly _dossiers = signal<Dossier[]>([...DOSSIERS_MOCK]);
+  private readonly _mouvements = signal<MouvementDossier[]>([...MOUVEMENTS_MOCK]);
 
   readonly dossiers = this._dossiers.asReadonly();
+  /** Derniers mouvements entre services (données de démonstration). */
+  readonly mouvements = this._mouvements.asReadonly();
 
   getById(id: string): Dossier | undefined {
     return this._dossiers().find((d) => d.id === id);

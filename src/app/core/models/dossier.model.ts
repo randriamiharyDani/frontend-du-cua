@@ -16,9 +16,23 @@ export type TypeInfraction =
   | 'changement_usage'
   | 'autre';
 
+export type ServiceDossier = 'DU' | 'DIS' | 'SCAD';
+
 export interface HistoriqueItem {
   date: string;
   libelle: string;
+}
+
+export interface MouvementDossier {
+  id: string;
+  date: string;
+  dossierId: string;
+  reference: string;
+  titre: string;
+  de: ServiceDossier;
+  vers: ServiceDossier;
+  motif: string;
+  auteur: string;
 }
 
 export interface Dossier {
@@ -33,8 +47,15 @@ export interface Dossier {
   proprietaire: string;
   telephone: string;
   dateSignalement: string;
+  /** Date d'enregistrement administratif (souvent = signalement, décalée pour la démo). */
+  dateEnregistrement: string;
+  service: ServiceDossier;
   statut: StatutDossier;
   priorite: PrioriteDossier;
+  /** Dossier à traiter en priorité (mise en demeure proche, pièce manquante…). */
+  attentionRequise: boolean;
+  /** Motif affiché dans « Attention particulière ». */
+  motifAttention?: string;
   agent: string;
   historique: HistoriqueItem[];
 }
@@ -92,3 +113,11 @@ export const ARRONDISSEMENTS: readonly string[] = [
   'Arrondissement 4',
   'Arrondissement 5',
 ];
+
+export const SERVICES: readonly ServiceDossier[] = ['DU', 'DIS', 'SCAD'];
+
+export const SERVICE_LABEL: Record<ServiceDossier, string> = {
+  DU: 'Direction de l’Urbanisme',
+  DIS: 'Direction des Infrastructures Sociales',
+  SCAD: 'Service du Cadastre',
+};

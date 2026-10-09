@@ -1,76 +1,123 @@
-<du-page-header title="Tableau de bord" subtitle="Vue d’ensemble des dossiers de constructions illicites">
+<du-page-header title="Tableau de bord" subtitle="Vue d’ensemble de l’activité — données de démonstration">
   <a routerLink="/admin/dossiers/nouveau" class="btn btn--primary"><du-icon name="plus" [size]="16" /> Nouveau dossier</a>
+  <a routerLink="/admin/mouvements" class="btn btn--secondary"><du-icon name="swap" [size]="16" /> Mouvements</a>
 </du-page-header>
 
+<p class="demo-note" role="note"><du-icon name="alert" [size]="15" /> Chiffres et listes fictifs pour la démonstration — aucun backend connecté.</p>
+
 <section class="stats" aria-label="Indicateurs">
-  <du-stat-card label="Dossiers au total" [value]="total()" icon="folder" />
-  <du-stat-card label="Signalés / en vérification" [value]="enVerification()" icon="clock" />
-  <du-stat-card label="Mises en demeure" [value]="misesEnDemeure()" icon="alert" />
-  <du-stat-card label="Dossiers régularisés" [value]="regularises()" icon="check" />
+  <du-stat-card label="Total des dossiers" [value]="total()" icon="folder" />
+  <du-stat-card label="Dossiers en cours" [value]="enCours()" icon="clock" />
+  <du-stat-card label="Dossiers en attente" [value]="enAttente()" icon="search" />
+  <du-stat-card label="Dossiers terminés" [value]="termines()" icon="check" />
 </section>
 
 <div class="columns">
-  <section class="card">
-    <div class="card__header">
-      <h2>Derniers dossiers</h2>
-      <a routerLink="/admin/dossiers" class="btn btn--secondary btn--sm">Voir tout</a>
-    </div>
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Référence</th>
-            <th>Dossier</th>
-            <th>Statut</th>
-            <th class="hide-sm">Date</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (d of recents(); track d.id) {
-            <tr>
-              <td><a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference }}</a></td>
-              <td>{{ d.titre }}<div class="muted small">{{ d.quartier }}</div></td>
-              <td><du-status-badge [statut]="d.statut" /></td>
-              <td class="hide-sm">{{ d.dateSignalement | date: 'dd/MM/yyyy' }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </section>
-
-  <div style="display: grid; gap: 1rem">
-    <section class="card">
-      <div class="card__header"><h2>Répartition par statut</h2></div>
+  <div class="stack">
+    <section class="card" aria-labelledby="t-services">
+      <div class="card__header">
+        <h2 id="t-services">Répartition par service</h2>
+        <a routerLink="/admin/dossiers" class="btn btn--secondary btn--sm">Tous les dossiers</a>
+      </div>
       <div class="card__body">
-        <ul class="bars">
-          @for (r of repartition(); track r.statut) {
+        <ul class="services">
+          @for (s of parService(); track s.service) {
             <li>
-              <div class="bar-row"><span>{{ r.label }}</span><strong>{{ r.nb }}</strong></div>
-              <div class="bar"><span [style.width.%]="r.pct"></span></div>
+              <div class="services__row">
+                <span class="services__badge">{{ s.service }}</span>
+                <span class="services__label">{{ s.label }}</span>
+                <strong>{{ s.total }}</strong>
+              </div>
+              <div class="bar" role="img" [attr.aria-label]="s.label + ' : ' + s.total + ' dossiers'">
+                <span [style.width.%]="s.pct"></span>
+              </div>
+              <small class="muted">{{ s.enCours }} en cours · {{ s.pct }} % du total</small>
             </li>
           }
         </ul>
       </div>
     </section>
 
-    <section class="card">
-      <div class="card__header"><h2>Priorité haute</h2></div>
-      <div class="card__body">
-        @if (urgents().length) {
-          <ul class="urgent">
-            @for (d of urgents(); track d.id) {
-              <li>
-                <a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference }}</a>
-                <du-priority-badge [priorite]="d.priorite" />
-                <div class="muted small">{{ d.titre }}</div>
-              </li>
-            }
-          </ul>
-        } @else {
-          <p class="muted">Aucun dossier prioritaire en cours.</p>
-        }
+    <section class="card" aria-labelledby="t-mouvements">
+      <div class="card__header">
+        <h2 id="t-mouvements">Derniers mouvements entre services</h2>
+        <a routerLink="/admin/mouvements" class="btn btn--secondary btn--sm">Voir tout</a>
       </div>
+      <div class="table-wrap">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Dossier</th>
+              <th>Mouvement</th>
+              <th class="hide-md">Motif</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (m of mouvements(); track m.id) {
+              <tr>
+                <td class="nowrap">{{ m.date | date: 'dd/MM/yyyy' }}</td>
+                <td>
+                  <a [routerLink]="['/admin/dossiers', m.dossierId]">{{ m.reference }}</a>
+                  <div class="muted small">{{ m.titre }}</div>
+                </td>
+                <td>
+                  <span class="badge badge--neutral">{{ m.de }}</span>
+                  <span class="flux" aria-hidden="true">→</span>
+                  <span class="badge badge--info">{{ m.vers }}</span>
+                </td>
+                <td class="hide-md">
+                  {{ m.motif }}
+                  <div class="muted small">{{ m.auteur }}</div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="stack">
+    <section class="card" aria-labelledby="t-recents">
+      <div class="card__header">
+        <h2 id="t-recents">Dossiers récemment enregistrés</h2>
+        <a routerLink="/admin/dossiers" class="btn btn--secondary btn--sm">Voir tout</a>
+      </div>
+      <ul class="liste">
+        @for (d of recents(); track d.id) {
+          <li>
+            <a [routerLink]="['/admin/dossiers', d.id]" class="liste__titre">{{ d.reference }} — {{ d.titre }}</a>
+            <div class="liste__meta">
+              <du-status-badge [statut]="d.statut" />
+              <span class="muted small">{{ serviceLabel[d.service] }} · {{ d.dateEnregistrement | date: 'dd/MM/yyyy' }}</span>
+            </div>
+          </li>
+        }
+      </ul>
+    </section>
+
+    <section class="card card--alerte" aria-labelledby="t-attention">
+      <div class="card__header">
+        <h2 id="t-attention">Attention particulière</h2>
+        <span class="badge badge--danger">{{ attention().length }}</span>
+      </div>
+      @if (attention().length) {
+        <ul class="liste">
+          @for (d of attention(); track d.id) {
+            <li>
+              <a [routerLink]="['/admin/dossiers', d.id]" class="liste__titre">{{ d.reference }}</a>
+              <p class="liste__motif">{{ d.motifAttention }}</p>
+              <div class="liste__meta">
+                <du-priority-badge [priorite]="d.priorite" />
+                <span class="muted small">{{ d.service }} · {{ d.agent || 'Non affecté' }}</span>
+              </div>
+            </li>
+          }
+        </ul>
+      } @else {
+        <div class="card__body"><p class="muted">Aucun dossier urgent pour le moment.</p></div>
+      }
     </section>
   </div>
 </div>

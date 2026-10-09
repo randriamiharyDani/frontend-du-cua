@@ -2,7 +2,8 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
-  ARRONDISSEMENTS, DossierFormValue, PRIORITE_LABEL, PRIORITES, PrioriteDossier, STATUT_LABEL, STATUTS, StatutDossier,
+  ARRONDISSEMENTS, DossierFormValue, PRIORITE_LABEL, PRIORITES, PrioriteDossier, SERVICE_LABEL,
+  SERVICES, ServiceDossier, STATUT_LABEL, STATUTS, StatutDossier,
   TYPE_LABEL, TYPES, TypeInfraction,
 } from '../../core/models/dossier.model';
 import { DossierStore } from '../../core/state/dossier-store';
@@ -26,9 +27,11 @@ export class DossierFormComponent {
   protected readonly statuts = STATUTS;
   protected readonly priorites = PRIORITES;
   protected readonly arrondissements = ARRONDISSEMENTS;
+  protected readonly services = SERVICES;
   protected readonly typeLabel = TYPE_LABEL;
   protected readonly statutLabel = STATUT_LABEL;
   protected readonly prioriteLabel = PRIORITE_LABEL;
+  protected readonly serviceLabel = SERVICE_LABEL;
 
   protected readonly form = this.fb.group({
     titre: ['', [Validators.required, Validators.minLength(5)]],
@@ -39,8 +42,12 @@ export class DossierFormComponent {
     proprietaire: ['', Validators.required],
     telephone: ['', Validators.pattern(/^(\+261|0)[\s\d]{8,13}$/)],
     dateSignalement: [new Date().toISOString().slice(0, 10), Validators.required],
+    dateEnregistrement: [new Date().toISOString().slice(0, 10), Validators.required],
+    service: ['DU' as ServiceDossier, Validators.required],
     priorite: ['moyenne' as PrioriteDossier, Validators.required],
     statut: ['signale' as StatutDossier, Validators.required],
+    attentionRequise: [false],
+    motifAttention: [''],
     agent: [''],
     description: ['', [Validators.required, Validators.minLength(10)]],
   });
