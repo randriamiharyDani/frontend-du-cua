@@ -1,73 +1,79 @@
 {
-  "hash": "b59992b2",
-  "configHash": "a59ebe1a",
+  "hash": "f571b8c7",
+  "configHash": "fc7e01ae",
   "lockfileHash": "d38f6a86",
-  "browserHash": "adcb4709",
+  "browserHash": "17189daf",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "f5ee397f",
+      "fileHash": "3c47b743",
+      "needsInterop": false
+    },
+    "@angular/common/http": {
+      "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
+      "file": "@angular_common_http.js",
+      "fileHash": "be46a740",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "11d867b7",
+      "fileHash": "492ae4fb",
       "needsInterop": false
     },
     "@angular/core/rxjs-interop": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/rxjs-interop.mjs",
       "file": "@angular_core_rxjs-interop.js",
-      "fileHash": "d78a3903",
+      "fileHash": "d1612c6f",
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
-      "fileHash": "4d4f0bb4",
+      "fileHash": "4805a90d",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "ef793ca3",
+      "fileHash": "e49027f6",
       "needsInterop": false
     },
     "@angular/platform-server/init": {
       "src": "../../../../../../node_modules/@angular/platform-server/fesm2022/init.mjs",
       "file": "@angular_platform-server_init.js",
-      "fileHash": "44f29e38",
+      "fileHash": "fc7ae8f0",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "d4329879",
+      "fileHash": "21ba6f9b",
       "needsInterop": false
     },
     "@angular/ssr": {
       "src": "../../../../../../node_modules/@angular/ssr/fesm2022/ssr.mjs",
       "file": "@angular_ssr.js",
-      "fileHash": "a1660002",
+      "fileHash": "9e31f798",
       "needsInterop": false
     },
     "@angular/ssr/node": {
       "src": "../../../../../../node_modules/@angular/ssr/fesm2022/node.mjs",
       "file": "@angular_ssr_node.js",
-      "fileHash": "4c3f4969",
+      "fileHash": "50f964f3",
       "needsInterop": false
     },
     "express": {
       "src": "../../../../../../node_modules/express/index.js",
       "file": "express.js",
-      "fileHash": "c38b84d0",
+      "fileHash": "4d3e33a2",
       "needsInterop": true
     },
     "rxjs": {
       "src": "../../../../../../node_modules/rxjs/dist/cjs/index.js",
       "file": "rxjs.js",
-      "fileHash": "d136b5f3",
+      "fileHash": "0cc8dc7c",
       "needsInterop": true
     }
   },
@@ -76,32 +82,40 @@
       "file": "_resource-chunk-CY0xNRjm.js",
       "isDynamicEntry": false
     },
+    "_xhr-chunk-BaX_BnOJ": {
+      "file": "_xhr-chunk-BaX_BnOJ.js",
+      "isDynamicEntry": false
+    },
     "bundled-domino-1lz1wH_B": {
       "file": "bundled-domino-1lz1wH_B.js",
       "isDynamicEntry": false
     },
-    "common-CSbVTllT": {
-      "file": "common-CSbVTllT.js",
+    "common-C_rMe7TR": {
+      "file": "common-C_rMe7TR.js",
       "isDynamicEntry": false
     },
     "core-C44Q43Ru": {
       "file": "core-C44Q43Ru.js",
       "isDynamicEntry": false
     },
-    "platform-browser-SWdxcTWO": {
-      "file": "platform-browser-SWdxcTWO.js",
+    "http-B2Pg4uDH": {
+      "file": "http-B2Pg4uDH.js",
+      "isDynamicEntry": false
+    },
+    "platform-browser-bGwXJa0l": {
+      "file": "platform-browser-bGwXJa0l.js",
       "isDynamicEntry": false
     },
     "rolldown-runtime-B4iAMlE-": {
       "file": "rolldown-runtime-B4iAMlE-.js",
       "isDynamicEntry": false
     },
-    "router-DZfpCgVm": {
-      "file": "router-DZfpCgVm.js",
+    "router-oSGH9bFc": {
+      "file": "router-oSGH9bFc.js",
       "isDynamicEntry": false
     },
-    "ssr-DU_0ZDSX": {
-      "file": "ssr-DU_0ZDSX.js",
+    "ssr-DkidNTXW": {
+      "file": "ssr-DkidNTXW.js",
       "isDynamicEntry": false
     },
     "xhr2-BDl7dY5v": {

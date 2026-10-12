@@ -2,10 +2,12 @@ import { i as __toESM } from "./rolldown-runtime-B4iAMlE-.js";
 import { Ci as runInInjectionContext, E as DOCUMENT, F as EnvironmentInjector, G as Injector, S as CSP_NONCE, U as INTERNAL_APPLICATION_ERROR_HANDLER, W as InjectionToken, at as PLATFORM_INITIALIZER, b as APP_ID, ii as makeEnvironmentProviders, it as PLATFORM_ID, oa as ɵɵdefineInjectable, pi as provideEnvironmentInitializer, pt as TransferState, sa as ɵɵdefineInjector, ua as ɵɵinject, ut as RuntimeError, xr as inject } from "./_resource-chunk-CY0xNRjm.js";
 import { Ai as setClassMetadata, Ci as resetCompiledComponents, E as annotateForHydration, En as LOCALE_ID, F as createPlatformFactory, Ga as ɵɵdefineNgModule, Jn as SSR_CONTENT_INTEGRITY_MARKER, Kt as Compiler, Mi as setDocument, Nn as NgModule, Nr as createEnvironmentInjector, Qt as Console$1, Vt as ApplicationRef, Wn as Renderer2, ar as Testability, b as REQUEST_CONTEXT, bn as Inject, er as TESTABILITY, ht as stopMeasuring, mt as startMeasuring, ot as platformCore, s as ENABLE_ROOT_COMPONENT_BOOTSTRAP, vn as IS_HYDRATION_DOM_REUSE_ENABLED, x as RESPONSE_INIT, xn as Injectable, y as REQUEST } from "./core-C44Q43Ru.js";
 import { t as require_cjs } from "./rxjs.js";
-import { Ht as PlatformLocation, Mt as APP_BASE_HREF, Ut as getDOM, Wt as setRootDomAdapter, i as NullViewportScroller, l as ViewportScroller, o as PLATFORM_SERVER_ID, v as XhrFactory } from "./common-CSbVTllT.js";
-import { A as EVENT_MANAGER_PLUGINS, M as EventManagerPlugin, S as BrowserModule, b as BrowserDomAdapter, v as HTTP_FETCH_MAX_RESPONSE_SIZE, y as HTTP_ROOT_INTERCEPTOR_FNS } from "./platform-browser-SWdxcTWO.js";
+import { c as setRootDomAdapter, o as PlatformLocation, s as getDOM, t as XhrFactory } from "./_xhr-chunk-BaX_BnOJ.js";
+import { At as APP_BASE_HREF, i as NullViewportScroller, l as ViewportScroller, o as PLATFORM_SERVER_ID } from "./common-C_rMe7TR.js";
+import { a as HTTP_FETCH_MAX_RESPONSE_SIZE, s as HTTP_ROOT_INTERCEPTOR_FNS } from "./http-B2Pg4uDH.js";
+import { A as EventManagerPlugin, O as EVENT_MANAGER_PLUGINS, b as BrowserModule, v as BrowserDomAdapter } from "./platform-browser-bGwXJa0l.js";
 import { t as index } from "./bundled-domino-1lz1wH_B.js";
-import { M as ActivatedRoute, kt as loadChildren, lt as Router, nt as ROUTES } from "./router-DZfpCgVm.js";
+import { M as ActivatedRoute, kt as loadChildren, lt as Router, nt as ROUTES } from "./router-oSGH9bFc.js";
 //#region node_modules/@angular/ssr/fesm2022/_validation-chunk.mjs
 var TRUST_ALL_PROXY_HEADERS = "*";
 var HOST_HEADERS_TO_VALIDATE = ["host", "x-forwarded-host"];

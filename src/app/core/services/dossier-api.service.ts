@@ -15,6 +15,7 @@ import {
   ReponseRessource,
   WorkflowState,
 } from '../models/dossier-api.model';
+import { Statistiques } from '../models/statistiques.model';
 
 /**
  * Accès aux endpoints `/api` du backend Laravel (dossiers, workflow,
@@ -25,6 +26,15 @@ import {
 export class DossierApiService {
   private readonly http = inject(HttpClient);
   private readonly base = environment.apiUrl;
+
+  /**
+   * Statistiques agrégées du tableau de bord (`GET /statistiques`).
+   * La portée (globale pour admin_systeme, service pour les autres) est
+   * appliquée côté serveur.
+   */
+  statistiques(): Observable<Statistiques> {
+    return this.http.get<Statistiques>(`${this.base}/statistiques`);
+  }
 
   /** Liste paginée avec recherche et filtres (`GET /dossiers`). */
   lister(filtres: FiltresDossiers): Observable<ReponsePaginee<DossierDto>> {

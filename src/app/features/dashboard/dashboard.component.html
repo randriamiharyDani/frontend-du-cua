@@ -1,123 +1,232 @@
-<du-page-header title="Tableau de bord" subtitle="Vue d’ensemble de l’activité — données de démonstration">
+<du-page-header title="Tableau de bord" subtitle="Vue d’ensemble de l’activité — données réelles de l’API">
   <a routerLink="/admin/dossiers/nouveau" class="btn btn--primary"><du-icon name="plus" [size]="16" /> Nouveau dossier</a>
   <a routerLink="/admin/mouvements" class="btn btn--secondary"><du-icon name="swap" [size]="16" /> Mouvements</a>
 </du-page-header>
 
-<p class="demo-note" role="note"><du-icon name="alert" [size]="15" /> Chiffres et listes fictifs pour la démonstration — aucun backend connecté.</p>
+<!-- État de chargement -->
+@if (chargement()) {
+  <div class="etat" role="status" aria-live="polite">
+    <span class="spinner" aria-hidden="true"></span>
+    <p>Chargement des statistiques…</p>
+  </div>
+} @else if (erreur()) {
+  <!-- État d'erreur -->
+  <div class="etat etat--erreur" role="alert">
+    <du-icon name="alert" [size]="28" />
+    <p><strong>Impossible de charger les statistiques.</strong></p>
+    <p class="muted">{{ erreur() }}</p>
+    <button type="button" class="btn btn--primary" (click)="reessayer()">Réessayer</button>
+  </div>
+} @else if (stats(); as s) {
+  <!-- Bandeau de portée (rôle connecté) -->
+  <p class="portee" role="note">
+    @if (s.portee.global) {
+      <du-icon name="check" [size]="15" /> Portée globale — tous les services (DU, DIS, SCAD).
+    } @else {
+      <du-icon name="user" [size]="15" /> Portée restreinte — service {{ s.portee.service }} uniquement.
+    }
+  </p>
 
-<section class="stats" aria-label="Indicateurs">
-  <du-stat-card label="Total des dossiers" [value]="total()" icon="folder" />
-  <du-stat-card label="Dossiers en cours" [value]="enCours()" icon="clock" />
-  <du-stat-card label="Dossiers en attente" [value]="enAttente()" icon="search" />
-  <du-stat-card label="Dossiers terminés" [value]="termines()" icon="check" />
-</section>
+  <!-- Cartes indicateurs -->
+  <section class="stats" aria-label="Indicateurs clés">
+    <du-stat-card label="Dossiers actifs" [value]="totalActifs()" icon="folder" />
+    <du-stat-card label="En attente" [value]="enAttente()" icon="clock" />
+    <du-stat-card label="En cours" [value]="enCours()" icon="search" />
+    <du-stat-card label="Terminés" [value]="termines()" icon="check" />
+    <du-stat-card [label]="'Créés sur ' + periodeRecente() + ' j'" [value]="recents()" icon="plus" />
+    <du-stat-card label="Transferts en attente" [value]="transfertsEnAttente()" icon="swap" />
+  </section>
 
-<div class="columns">
-  <div class="stack">
-    <section class="card" aria-labelledby="t-services">
-      <div class="card__header">
-        <h2 id="t-services">Répartition par service</h2>
-        <a routerLink="/admin/dossiers" class="btn btn--secondary btn--sm">Tous les dossiers</a>
-      </div>
-      <div class="card__body">
-        <ul class="services">
-          @for (s of parService(); track s.service) {
-            <li>
-              <div class="services__row">
-                <span class="services__badge">{{ s.service }}</span>
-                <span class="services__label">{{ s.label }}</span>
-                <strong>{{ s.total }}</strong>
-              </div>
-              <div class="bar" role="img" [attr.aria-label]="s.label + ' : ' + s.total + ' dossiers'">
-                <span [style.width.%]="s.pct"></span>
-              </div>
-              <small class="muted">{{ s.enCours }} en cours · {{ s.pct }} % du total</small>
-            </li>
-          }
-        </ul>
-      </div>
-    </section>
+  @if (aucuneDonnee()) {
+    <!-- Aucune donnée -->
+    <div class="etat" role="status">
+      <du-icon name="folder" [size]="28" />
+      <p><strong>Aucun dossier pour le moment.</strong></p>
+      <p class="muted">Créez votre premier dossier pour alimenter le tableau de bord.</p>
+      <a routerLink="/admin/dossiers/nouveau" class="btn btn--primary">Nouveau dossier</a>
+    </div>
+  } @else {
+    <div class="columns">
+      <div class="stack">
+        <!-- Répartition par nature -->
+        <section class="card" aria-labelledby="t-nature">
+          <div class="card__header"><h2 id="t-nature">Répartition par nature</h2></div>
+          <div class="card__body">
+            <ul class="repartition">
+              @for (n of parNature(); track n.cle) {
+                <li>
+                  <div class="repartition__row">
+                    <span class="repartition__label">{{ n.label }}</span>
+                    <strong>{{ n.total }}</strong>
+                  </div>
+                  <div class="bar" role="img" [attr.aria-label]="n.label + ' : ' + n.total">
+                    <span [style.width.%]="totalActifs() ? (n.total / totalActifs()) * 100 : 0"></span>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+        </section>
 
-    <section class="card" aria-labelledby="t-mouvements">
-      <div class="card__header">
-        <h2 id="t-mouvements">Derniers mouvements entre services</h2>
-        <a routerLink="/admin/mouvements" class="btn btn--secondary btn--sm">Voir tout</a>
+        <!-- Répartition par statut -->
+        <section class="card" aria-labelledby="t-statut">
+          <div class="card__header"><h2 id="t-statut">Répartition par statut</h2></div>
+          <div class="card__body">
+            <ul class="repartition">
+              @for (st of parStatut(); track st.cle) {
+                <li>
+                  <div class="repartition__row">
+                    <span class="repartition__label">{{ st.label }}</span>
+                    <strong>{{ st.total }}</strong>
+                  </div>
+                  <div class="bar" role="img" [attr.aria-label]="st.label + ' : ' + st.total">
+                    <span [style.width.%]="totalActifs() ? (st.total / totalActifs()) * 100 : 0"></span>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+        </section>
+
+        <!-- Répartition par étape -->
+        <section class="card" aria-labelledby="t-etape">
+          <div class="card__header"><h2 id="t-etape">Répartition par étape</h2></div>
+          <div class="card__body">
+            <ul class="repartition">
+              @for (e of parEtape(); track e.cle) {
+                <li>
+                  <div class="repartition__row">
+                    <span class="repartition__label">{{ e.label }}</span>
+                    <strong>{{ e.total }}</strong>
+                  </div>
+                  <div class="bar" role="img" [attr.aria-label]="e.label + ' : ' + e.total">
+                    <span [style.width.%]="totalActifs() ? (e.total / totalActifs()) * 100 : 0"></span>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+        </section>
       </div>
-      <div class="table-wrap">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Dossier</th>
-              <th>Mouvement</th>
-              <th class="hide-md">Motif</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (m of mouvements(); track m.id) {
-              <tr>
-                <td class="nowrap">{{ m.date | date: 'dd/MM/yyyy' }}</td>
-                <td>
-                  <a [routerLink]="['/admin/dossiers', m.dossierId]">{{ m.reference }}</a>
-                  <div class="muted small">{{ m.titre }}</div>
-                </td>
-                <td>
-                  <span class="badge badge--neutral">{{ m.de }}</span>
-                  <span class="flux" aria-hidden="true">→</span>
-                  <span class="badge badge--info">{{ m.vers }}</span>
-                </td>
-                <td class="hide-md">
-                  {{ m.motif }}
-                  <div class="muted small">{{ m.auteur }}</div>
-                </td>
-              </tr>
+
+      <aside class="stack">
+        <!-- Répartition par service -->
+        <section class="card" aria-labelledby="t-service">
+          <div class="card__header"><h2 id="t-service">Par service</h2></div>
+          <div class="card__body">
+            <ul class="repartition">
+              @for (sv of parService(); track sv.cle) {
+                <li>
+                  <div class="repartition__row">
+                    <span class="repartition__label"><strong>{{ sv.cle }}</strong> — {{ sv.label }}</span>
+                    <strong>{{ sv.total }}</strong>
+                  </div>
+                  <div class="bar" role="img" [attr.aria-label]="sv.label + ' : ' + sv.total">
+                    <span [style.width.%]="totalActifs() ? (sv.total / totalActifs()) * 100 : 0"></span>
+                  </div>
+                </li>
+              }
+            </ul>
+          </div>
+          <div class="card__footer">
+            <a routerLink="/admin/dossiers" class="link">Tous les dossiers</a>
+          </div>
+        </section>
+
+        <!-- Évolution mensuelle -->
+        <section class="card" aria-labelledby="t-evolution">
+          <div class="card__header"><h2 id="t-evolution">Évolution (12 derniers mois)</h2></div>
+          <div class="card__body">
+            @if (evolution().length) {
+              <ol class="evolution">
+                @for (p of evolutionPct(); track p.periode) {
+                  <li class="evolution__item" [title]="p.periode + ' : ' + p.total + ' dossier(s)'">
+                    <span class="evolution__bar" [style.height.%]="p.pct"></span>
+                    <span class="evolution__periode">{{ formatPeriode(p.periode) }}</span>
+                    <span class="evolution__total">{{ p.total }}</span>
+                  </li>
+                }
+              </ol>
+            } @else {
+              <p class="muted">Pas encore de données sur la période.</p>
             }
-          </tbody>
-        </table>
-      </div>
-    </section>
-  </div>
+          </div>
+        </section>
+      </aside>
+    </div>
 
-  <div class="stack">
-    <section class="card" aria-labelledby="t-recents">
+    <!-- Derniers transferts -->
+    <section class="card transferts" aria-labelledby="t-transferts">
       <div class="card__header">
-        <h2 id="t-recents">Dossiers récemment enregistrés</h2>
-        <a routerLink="/admin/dossiers" class="btn btn--secondary btn--sm">Voir tout</a>
+        <h2 id="t-transferts">Derniers transferts</h2>
+        <a routerLink="/admin/mouvements" class="link">Voir les mouvements</a>
       </div>
-      <ul class="liste">
-        @for (d of recents(); track d.id) {
-          <li>
-            <a [routerLink]="['/admin/dossiers', d.id]" class="liste__titre">{{ d.reference }} — {{ d.complements.objet }}</a>
-            <div class="liste__meta">
-              <du-status-badge [statut]="d.statut" />
-              <span class="muted small">{{ serviceLabel[d.service] }} · {{ d.infos.dateEntree | date: 'dd/MM/yyyy' }}</span>
-            </div>
-          </li>
+      <div class="card__body card__body--flush">
+        @if (derniersMouvements().length) {
+          <ul class="liste">
+            @for (m of derniersMouvements(); track m.id) {
+              <li>
+                <a class="liste__titre" [routerLink]="['/admin/dossiers', m.dossier_id]">
+                  {{ m.dossier_reference || ('Dossier n°' + m.dossier_id) }}
+                </a>
+                <div class="liste__meta">
+                  <span class="badge badge--info">{{ m.service_depart || '—' }}</span>
+                  <span class="flux" aria-hidden="true">→</span>
+                  <span class="badge badge--info">{{ m.service_arrivee || '—' }}</span>
+                  @if (m.state) {
+                    <span [class]="mouvementStateBadge[m.state] || 'badge'">{{ mouvementStateLabel[m.state] || m.state }}</span>
+                  }
+                  @if (m.date) {
+                    <span class="muted">{{ m.date | date: 'dd/MM/yyyy' }}</span>
+                  }
+                </div>
+                @if (m.motif) {
+                  <p class="liste__motif">{{ m.motif }}</p>
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted card__vide">Aucun transfert récent.</p>
         }
-      </ul>
+      </div>
     </section>
 
-    <section class="card card--alerte" aria-labelledby="t-attention">
+    <!-- Derniers dossiers -->
+    <section class="card" aria-labelledby="t-derniers">
       <div class="card__header">
-        <h2 id="t-attention">Attention particulière</h2>
-        <span class="badge badge--danger">{{ attention().length }}</span>
+        <h2 id="t-derniers">Dossiers récemment créés</h2>
+        <a routerLink="/admin/dossiers" class="link">Tous les dossiers</a>
       </div>
-      @if (attention().length) {
-        <ul class="liste">
-          @for (d of attention(); track d.id) {
-            <li>
-              <a [routerLink]="['/admin/dossiers', d.id]" class="liste__titre">{{ d.reference }}</a>
-              <p class="liste__motif">{{ d.motifAttention }}</p>
-              <div class="liste__meta">
-                <du-priority-badge [priorite]="d.priorite" />
-                <span class="muted small">{{ d.service }} · {{ d.agent || 'Non affecté' }}</span>
-              </div>
-            </li>
-          }
-        </ul>
-      } @else {
-        <div class="card__body"><p class="muted">Aucun dossier urgent pour le moment.</p></div>
-      }
+      <div class="card__body card__body--flush">
+        @if (derniers().length) {
+          <ul class="liste">
+            @for (d of derniers(); track d.id) {
+              <li>
+                <a class="liste__titre" [routerLink]="['/admin/dossiers', d.id]">
+                  {{ d.reference || ('Dossier n°' + d.id) }}
+                </a>
+                <div class="liste__meta">
+                  @if (d.statut) {
+                    <du-status-badge [statut]="d.statut" />
+                  }
+                  @if (d.service) {
+                    <span class="badge badge--info">{{ d.service }}</span>
+                  }
+                  @if (d.date_entree) {
+                    <span class="muted">{{ d.date_entree | date: 'dd/MM/yyyy' }}</span>
+                  }
+                </div>
+                @if (d.objet) {
+                  <p class="liste__motif">{{ d.objet }}</p>
+                }
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="muted card__vide">Aucun dossier récent.</p>
+        }
+      </div>
     </section>
-  </div>
-</div>
+  }
+}
