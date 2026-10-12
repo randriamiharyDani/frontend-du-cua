@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["admin-placeholder.component.ts"],
+  "sourcesContent": ["\n      .placeholder__liste {\n        margin: 0.75rem 0 0;\n        padding-left: 1.1rem;\n        display: grid;\n        gap: 0.35rem;\n        color: var(--du-text);\n        font-size: 0.9rem;\n      }\n    "],
+  "mappings": ";AACM,CAAA;AACE,UAAA,QAAA,EAAA;AACA,gBAAA;AACA,WAAA;AACA,OAAA;AACA,SAAA,IAAA;AACA,aAAA;AACF;",
+  "names": []
+}

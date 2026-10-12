@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/admin/mouvements.component.scss", "src/app/features/admin/mouvements.component.scss"],
+  "sourcesContent": [".obs {\n  max-width: 22rem;\n  overflow-wrap: anywhere;\n}\n", ".obs {\n  max-width: 22rem;\n  overflow-wrap: anywhere;\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJmaWxlOi8vL0M6L3hhbXBwL2h0ZG9jcy9EVS9mcm9udGVuZC1kdS9zcmMvYXBwL2ZlYXR1cmVzL2FkbWluL21vdXZlbWVudHMuY29tcG9uZW50LnNjc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFDRTtFQUNBIiwic291cmNlc0NvbnRlbnQiOlsiLm9icyB7XG4gIG1heC13aWR0aDogMjJyZW07XG4gIG92ZXJmbG93LXdyYXA6IGFueXdoZXJlO1xufVxuIl19 */"],
+  "mappings": ";AAAA,CAAA;AACE,aAAA;AACA,iBAAA;ACCF;",
+  "names": []
+}

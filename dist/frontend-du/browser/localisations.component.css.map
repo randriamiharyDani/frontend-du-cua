@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/admin/localisations.component.scss", "src/app/features/admin/localisations.component.scss"],
+  "sourcesContent": [".ligne-detail {\n  display: none;\n}\n\n@media (max-width: 900px) {\n  .ligne-detail {\n    display: block;\n    margin-top: 0.15rem;\n  }\n}\n", ".ligne-detail {\n  display: none;\n}\n\n@media (max-width: 900px) {\n  .ligne-detail {\n    display: block;\n    margin-top: 0.15rem;\n  }\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJmaWxlOi8vL0M6L3hhbXBwL2h0ZG9jcy9EVS9mcm9udGVuZC1kdS9zcmMvYXBwL2ZlYXR1cmVzL2FkbWluL2xvY2FsaXNhdGlvbnMuY29tcG9uZW50LnNjc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFDRTs7O0FBR0Y7RUFDRTtJQUNFO0lBQ0EiLCJzb3VyY2VzQ29udGVudCI6WyIubGlnbmUtZGV0YWlsIHtcbiAgZGlzcGxheTogbm9uZTtcbn1cblxuQG1lZGlhIChtYXgtd2lkdGg6IDkwMHB4KSB7XG4gIC5saWduZS1kZXRhaWwge1xuICAgIGRpc3BsYXk6IGJsb2NrO1xuICAgIG1hcmdpbi10b3A6IDAuMTVyZW07XG4gIH1cbn1cbiJdfQ== */"],
+  "mappings": ";AAAA,CAAA;AACE,WAAA;ACCF;ADEA,QAAA,WAAA;AACE,GALF;AAMI,aAAA;AACA,gBAAA;ACCF;AACF;",
+  "names": []
+}
