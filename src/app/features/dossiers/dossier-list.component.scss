@@ -1,13 +1,3 @@
-.toolbar--dossiers {
-  grid-template-columns: 2fr 1fr 1fr 1fr;
-}
-
-.toolbar--dossiers .field:nth-child(5),
-.toolbar--dossiers .field:nth-child(6),
-.toolbar--dossiers .field:nth-child(7) {
-  align-self: end;
-}
-
 .table--dossiers .ref a {
   font-weight: 700;
   text-decoration: none;
@@ -57,17 +47,7 @@ td.actions .btn + .btn {
   }
 }
 
-@media (max-width: 1000px) {
-  .toolbar--dossiers {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 640px) {
-  .toolbar--dossiers {
-    grid-template-columns: 1fr;
-  }
-
   /* Tableau → cartes sur mobile : chaque ligne devient un bloc lisible. */
   .table--dossiers thead {
     display: none;

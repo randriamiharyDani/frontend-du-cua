@@ -35,6 +35,172 @@ interface DossierSeed {
   dateEntree: string;
 }
 
+/**
+ * Valeurs du canevas de suivi (fichier CANEVAS_MOUVEMENT_PL_DOL_SIGNALEMENT.xlsx)
+ * rattachées à chaque dossier de démonstration. Les colonnes vides dans le
+ * fichier source restent vides (idem_ETUDE, DATE_ETUDE, OBS, DATE_SCELLAGE).
+ */
+interface CanevasSeed {
+  referenceEtude: string;
+  idemEtude: string;
+  dateEtude: string;
+  referenceArrivee: string;
+  provenance: string;
+  coordX: string;
+  coordY: string;
+  localisation: string;
+  emplacement: string;
+  dossierRelatif: string;
+  observationsGenerales: string;
+  refArrete: string;
+  dateArrete: string;
+  objetArrete: string;
+  dateScellage: string;
+  dateDemolOuEnlevement: string;
+}
+
+const CANEVAS_VIDE: CanevasSeed = {
+  referenceEtude: '',
+  idemEtude: '',
+  dateEtude: '',
+  referenceArrivee: '',
+  provenance: '',
+  coordX: '',
+  coordY: '',
+  localisation: '',
+  emplacement: '',
+  dossierRelatif: '',
+  observationsGenerales: '',
+  refArrete: '',
+  dateArrete: '',
+  objetArrete: '',
+  dateScellage: '',
+  dateDemolOuEnlevement: '',
+};
+
+/** Correspondance dossier (id) → valeurs du canevas Excel (ordre des lignes source). */
+const CANEVAS_SEED: Record<string, Partial<CanevasSeed>> = {
+  '1': {
+    referenceEtude: '023 SCADol/26',
+    referenceArrivee: '1036-CUA/DIS.25 du 24/12/2025',
+    provenance: 'DIS (N° V.S079.72)',
+    coordX: '513446',
+    coordY: '798110',
+    localisation: 'OK',
+    emplacement: 'Manarintsoa - 1er Arrdt',
+    refArrete: '131-CUA/CAB.26',
+    dateArrete: '2026-02-06',
+    objetArrete: "Interruption des travaux d'extension illicite d'une maison",
+  },
+  '2': {
+    referenceEtude: '021 SCADol/26',
+    referenceArrivee: '006-CUA/DIS.26 du 06/01/2026',
+    provenance: 'DIS (N° V.P073.19)',
+    coordX: '511954',
+    coordY: '795631',
+    localisation: 'OK',
+    emplacement: 'Anosizato Atsinanana I - 4è Arrdt',
+    dossierRelatif: 'Sieur RAJAONA Chrisna Todisoa rep/par Sieur RAKOTONDRAVAO Bien Aimé',
+    refArrete: '132-CUA/CAB.26',
+    dateArrete: '2026-02-06',
+    objetArrete:
+      'Interruption des travaux de construction illicites des deux boxes sur pilotis',
+  },
+  '3': {
+    referenceArrivee: '093-CUA/DIS.26 du 29/01/2026',
+    provenance: 'DIS (N° V.P009.38)',
+    coordX: '518076',
+    coordY: '800291',
+    localisation: 'OK',
+    emplacement: 'Ankadindramamy - 5è Arrdt',
+    dossierRelatif: 'AM 463-CUA/CAB.25 du 23/07/2025 (PC)',
+  },
+  '4': {
+    referenceArrivee: '075-CUA/DIS.26 du 27/01/2026',
+    provenance: 'DIS (N° V.P123.35)',
+    coordX: '519470',
+    coordY: '798470',
+    localisation: 'OK',
+    emplacement: 'Ambatomaro Antsobolo - 5e Arrdt',
+  },
+  '5': {
+    referenceArrivee: '043-CUA/DIS.26 du 19/01/2026',
+    provenance: 'DIS (N° III.S001.79)',
+    coordX: '516663',
+    coordY: '799091',
+    localisation: 'OK',
+    emplacement: 'Ambohitrakely - 3e Arrdt',
+  },
+  '6': {
+    referenceEtude: '037 SCADol/26',
+    referenceArrivee: '1023-CUA/DIS.25 du 22/12/2025',
+    provenance: 'DIS (N° I.S077.72)',
+    coordX: '512596',
+    coordY: '799856',
+    localisation: 'OK',
+    emplacement: 'Ankasina - 1er Arrdt',
+    refArrete: '153-CUA/CAB.26',
+    dateArrete: '2026-02-06',
+    objetArrete: "Interruption des travaux de construction illicite d'une maison R+1",
+  },
+  '7': {
+    referenceArrivee: '1024-CUA/DIS.25 du 22/12/2025',
+    provenance: 'DIS (N° )',
+    coordX: '512725',
+    coordY: '799726',
+    localisation: 'OK',
+    emplacement: 'Ankasina - 1er Arrdt',
+  },
+  '8': {
+    referenceArrivee: '915-CUA/DIS.25 du 19/11/2025',
+    provenance: 'DIS (N° I.P109.43)',
+    coordX: '511117',
+    coordY: '803320',
+    localisation: 'OK',
+    emplacement: 'Anosisoa Ambohimanarina - 6e Arrdt',
+  },
+  '9': {
+    referenceEtude: '141 SCADol/26 - 042 SCADol/26',
+    referenceArrivee: '057-CUA/DIS.26 du 29/01/2026',
+    provenance: 'DIS (N° A.022/26)',
+    coordX: '510744',
+    coordY: '803384',
+    localisation: 'OK',
+    emplacement: 'Près Lot IVH 9 BB Ambodimita - 6e Arrdt',
+    refArrete: '115-CUA/CAB.26',
+    dateArrete: '2026-02-05',
+    objetArrete:
+      "Interruption des travaux de construction illicite d'une fouille pour fondation",
+  },
+  '10': {
+    referenceArrivee: '1039-CUA/DIS.25 du 30/12/2025',
+    provenance: 'DIS (N° I.P111.44)',
+    coordX: '512785',
+    coordY: '798410',
+    localisation: 'OK',
+    emplacement: 'Antetezanafovoany I - 1er Arrdt',
+  },
+  '11': {
+    referenceArrivee: '087-CUA/DIS.26 du 06/02/2026',
+    provenance: 'DIS (N° II.P010.30)',
+    coordX: '517698',
+    coordY: '797176',
+    localisation: 'OK',
+    emplacement: 'Ankatso-Andohanimandroseza - 2e Arrdt',
+    dossierRelatif: 'DAME RAHARISON Léonique',
+    refArrete: 'AM 200-CUA/CAB.26',
+    dateDemolOuEnlevement: '2026-04-24',
+  },
+  '12': {
+    referenceArrivee: '086-CUA/DIS.26 du 06/02/2026',
+    provenance: 'DIS (N° IV.P004.22)',
+    coordX: '514832',
+    coordY: '796304',
+    localisation: 'OK',
+    emplacement: 'TSARAFARITZA TSIMBAZAZA- 4e Arrdt',
+  },
+};
+
 const SEEDS: DossierSeed[] = [
   { id: '1', reference: 'DU-2026-0001', objet: 'Construction R+1 sans permis à Kipe', type: 'construction_sans_permis', service: 'DU', nature: 'plainte', etape: 'constat', statut: 'signale', priorite: 'haute', attentionRequise: true, motifAttention: 'Construction active à constater sous 48 h.', agent: 'Agent K. Diallo', nom: 'Bah', prenom: 'Mamadou', telephone: '034 00 000 01', adresse: 'Rue KA-012, Kipe', quartier: 'Kipe', arrondissement: 'Arrondissement 1', dateEntree: '2026-10-02' },
   { id: '2', reference: 'DU-2026-0002', objet: 'Extension non déclarée à Nongo', type: 'extension_illegale', service: 'SCAD', nature: 'signalement', etape: 'instruction', statut: 'en_verification', priorite: 'moyenne', attentionRequise: false, agent: 'Agent S. Camara', nom: 'Diallo', prenom: 'Awa', telephone: '034 00 000 02', adresse: 'Rue NO-214, Nongo', quartier: 'Nongo', arrondissement: 'Arrondissement 2', dateEntree: '2026-09-29' },
@@ -50,60 +216,63 @@ const SEEDS: DossierSeed[] = [
   { id: '12', reference: 'DU-2026-0012', objet: 'Clôture provisoire non démontée', type: 'occupation_illegale', service: 'DIS', nature: 'signalement', etape: 'cloture', statut: 'cloture', priorite: 'basse', attentionRequise: false, agent: '', nom: 'Sanoh', prenom: 'Elhadj', telephone: '034 00 000 12', adresse: 'Rue TA-077, Taouyah', quartier: 'Taouyah', arrondissement: 'Arrondissement 1', dateEntree: '2026-08-21' },
 ];
 
-export const DOSSIERS_MOCK: Dossier[] = SEEDS.map((s) => ({
-  id: s.id,
-  reference: s.reference,
-  infos: {
-    numero: s.reference,
-    dateEntree: s.dateEntree,
-    referenceArrivee: '',
-    referenceEtude: '',
-    idemEtude: '',
-    dateEtude: '',
-    provenance: '',
-    nature: s.nature,
-  },
-  contrevenant: {
-    nom: s.nom,
-    prenom: s.prenom,
-    telephone: s.telephone,
-    adresse: s.adresse,
-    observations: '',
-  },
-  localisation: {
-    adresse: s.adresse,
-    localisation: '',
-    quartier: s.quartier,
-    arrondissement: s.arrondissement,
-    coordX: '',
-    coordY: '',
-    latitude: '',
-    longitude: '',
-    description: '',
-  },
-  complements: {
-    objet: s.objet,
-    emplacement: '',
-    dossierRelatif: '',
-    observationsGenerales: '',
-  },
-  arretes: {
-    refArrete: '',
-    dateArrete: '',
-    objetArrete: '',
-    dateScellage: '',
-    dateDemolOuEnlevement: '',
-  },
-  type: s.type,
-  service: s.service,
-  etape: s.etape,
-  statut: s.statut,
-  priorite: s.priorite,
-  attentionRequise: s.attentionRequise,
-  motifAttention: s.motifAttention ?? '',
-  agent: s.agent,
-  historique: [{ date: s.dateEntree, libelle: 'Signalement enregistré' }],
-}));
+export const DOSSIERS_MOCK: Dossier[] = SEEDS.map((s) => {
+  const c = { ...CANEVAS_VIDE, ...CANEVAS_SEED[s.id] };
+  return {
+    id: s.id,
+    reference: s.reference,
+    infos: {
+      numero: s.reference,
+      dateEntree: s.dateEntree,
+      referenceArrivee: c.referenceArrivee,
+      referenceEtude: c.referenceEtude,
+      idemEtude: c.idemEtude,
+      dateEtude: c.dateEtude,
+      provenance: c.provenance,
+      nature: s.nature,
+    },
+    contrevenant: {
+      nom: s.nom,
+      prenom: s.prenom,
+      telephone: s.telephone,
+      adresse: s.adresse,
+      observations: '',
+    },
+    localisation: {
+      adresse: s.adresse,
+      localisation: c.localisation,
+      quartier: s.quartier,
+      arrondissement: s.arrondissement,
+      coordX: c.coordX,
+      coordY: c.coordY,
+      latitude: '',
+      longitude: '',
+      description: '',
+    },
+    complements: {
+      objet: s.objet,
+      emplacement: c.emplacement,
+      dossierRelatif: c.dossierRelatif,
+      observationsGenerales: c.observationsGenerales,
+    },
+    arretes: {
+      refArrete: c.refArrete,
+      dateArrete: c.dateArrete,
+      objetArrete: c.objetArrete,
+      dateScellage: c.dateScellage,
+      dateDemolOuEnlevement: c.dateDemolOuEnlevement,
+    },
+    type: s.type,
+    service: s.service,
+    etape: s.etape,
+    statut: s.statut,
+    priorite: s.priorite,
+    attentionRequise: s.attentionRequise,
+    motifAttention: s.motifAttention ?? '',
+    agent: s.agent,
+    historique: [{ date: s.dateEntree, libelle: 'Signalement enregistré' }],
+  };
+});
 
 export const MOUVEMENTS_MOCK: MouvementDossier[] = [
   { id: 'mv-1', date: '2026-10-08', dossierId: '1', reference: 'DU-2026-0001', titre: 'Construction R+1 sans permis à Kipe', de: 'SCAD', vers: 'DU', etape: 'constat', action: 'Retour pour constat', referenceDocument: 'BOR-2026-014', motif: 'Bornage joint, retour pour constat', auteur: 'Agent S. Camara' },

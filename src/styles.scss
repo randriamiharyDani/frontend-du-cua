@@ -406,6 +406,54 @@ input[type='checkbox'] {
 }
 
 /* --------------------------------------------------------------------------
+   Carte dédiée aux filtres de recherche
+   -------------------------------------------------------------------------- */
+.filtres-card {
+  margin-bottom: 1.25rem;
+}
+.filtres-card__entete {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1.4rem;
+  border-bottom: 1px solid var(--du-border);
+  background: linear-gradient(180deg, #fff, var(--du-surface-2));
+}
+.filtres-card__icone {
+  display: inline-grid;
+  place-items: center;
+  width: 1.95rem;
+  height: 1.95rem;
+  flex: 0 0 auto;
+  border-radius: 9px;
+  background: var(--du-primary-soft);
+  color: var(--du-primary);
+}
+.filtres-card__entete h2 {
+  font-size: 0.98rem;
+  letter-spacing: -0.01em;
+}
+.filtres-card__corps {
+  padding: 1.2rem 1.4rem;
+}
+.filtres__actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+@media (max-width: 620px) {
+  .filtres__actions {
+    width: 100%;
+    margin-left: 0;
+  }
+  .filtres__actions .btn {
+    flex: 1 1 auto;
+  }
+}
+
+/* --------------------------------------------------------------------------
    Pagination
    -------------------------------------------------------------------------- */
 .pagination {

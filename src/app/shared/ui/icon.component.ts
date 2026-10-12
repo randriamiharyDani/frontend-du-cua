@@ -28,6 +28,7 @@ const PATHS: Record<string, string> = {
   menu: 'M4 6h16M4 12h16M4 18h16',
   close: 'M6 6l12 12M18 6L6 18',
   building: 'M4 21V5a2 2 0 012-2h8a2 2 0 012 2v16M16 9h3a1 1 0 011 1v11M4 21h17M8 7h4M8 11h4M8 15h4',
+  filter: 'M4 5h16l-6 7.4V19l-4 1.8v-8.4L4 5z',
 };
 
 @Component({

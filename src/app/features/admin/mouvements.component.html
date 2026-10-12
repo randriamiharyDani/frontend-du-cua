@@ -13,8 +13,12 @@
   <div class="succes" role="status">{{ messageSucces() }}</div>
 }
 
-<section class="card">
-  <div class="card__body">
+<section class="card filtres-card">
+  <div class="filtres-card__entete">
+    <span class="filtres-card__icone"><du-icon name="filter" [size]="16" /></span>
+    <h2>Filtres de recherche</h2>
+  </div>
+  <div class="filtres-card__corps">
     <div class="filtres">
       <div class="field champ-recherche">
         <label for="recherche">Recherche</label>
@@ -43,10 +47,17 @@
         <label for="au">Au</label>
         <input #d2 id="au" type="date" class="input" [value]="au()" (change)="setAu(d2.value)" />
       </div>
-      <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
+      <div class="filtres__actions">
+        <button type="button" class="btn btn--primary" (click)="rechercher()">
+          <du-icon name="search" [size]="15" /> Rechercher
+        </button>
+        <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
+      </div>
     </div>
   </div>
+</section>
 
+<section class="card">
   @if (affiches().length) {
     <div class="table-wrap">
       <table class="table">

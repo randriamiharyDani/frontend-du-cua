@@ -200,6 +200,11 @@ export class DocumentsComponent {
   protected setDossier(v: string): void { this.dossierId.set(v); this.resetPage(); }
   protected allerA(p: number): void { this.page.set(Math.min(Math.max(1, p), this.totalPages())); }
 
+  /** Applique les filtres en revenant à la première page. */
+  protected rechercher(): void {
+    this.resetPage();
+  }
+
   protected reinitialiser(): void {
     this.recherche.set('');
     this.type.set('');
