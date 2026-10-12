@@ -6,12 +6,9 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Prerender,
   },
   {
-    path: 'admin/dossiers/:id',
-    renderMode: RenderMode.Server,
-  },
-  {
-    path: 'admin/dossiers/:id/modifier',
-    renderMode: RenderMode.Server,
+    // L'espace admin dépend du jeton stocké côté navigateur : rendu client.
+    path: 'admin/**',
+    renderMode: RenderMode.Client,
   },
   {
     path: '**',

@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["dossier-form.component.ts"],
-  "sourcesContent": ["\n    .form-sections { display: grid; gap: 1rem; }\n    .demo-note {\n      display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem; padding: 0.6rem 0.85rem;\n      border-radius: var(--du-radius); background: #fbf1de; border: 1px solid #f0dcb4;\n      color: #8a5a12; font-size: 0.85rem;\n    }\n    .hint { color: var(--du-muted); font-size: 0.78rem; }\n    .checkbox { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; cursor: pointer; }\n    .checkbox input { width: 1rem; height: 1rem; }\n  "],
-  "mappings": ";AACI,CAAA;AAAiB,WAAA;AAAe,OAAA;AAAW;AAC3C,CAAA;AACE,WAAA;AAAe,eAAA;AAAqB,OAAA;AAAa,UAAA,EAAA,EAAA;AAAkB,WAAA,OAAA;AACnE,iBAAA,IAAA;AAAiC,cAAA;AAAqB,UAAA,IAAA,MAAA;AACtD,SAAA;AAAgB,aAAA;AAClB;AACA,CAAA;AAAQ,SAAA,IAAA;AAAwB,aAAA;AAAoB;AACpD,CAAA;AAAY,WAAA;AAAe,eAAA;AAAqB,OAAA;AAAa,eAAA;AAAkB,UAAA;AAAiB;AAChG,CADA,SACA;AAAkB,SAAA;AAAa,UAAA;AAAc;",
-  "names": []
-}

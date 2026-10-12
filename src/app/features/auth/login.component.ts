@@ -1,18 +1,16 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { finalize } from 'rxjs';
+import { AuthService } from '../../core/services/auth.service';
+import { messageErreur } from '../../core/state/dossier-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
 
 /**
  * Page de connexion de l'espace administrateur DU.
  *
- * Étape locale uniquement : validation côté client + navigation temporaire.
- * Aucune authentification réelle, aucun appel API / backend.
- *
- * TODO (branchement futur) :
- * - Remplacer `simulerConnexion()` par un `AuthService.login(email, password)`.
- * - Stocker le token/sessions via un service dédié, gérer les erreurs HTTP (401/422/500).
- * - Protéger `/admin` avec un guard `authGuard` + redirection vers `/connexion`.
+ * Authentification réelle via `AuthService` (token Sanctum). En cas de
+ * succès, redirection vers l'URL demandée ou le tableau de bord.
  */
 @Component({
   selector: 'du-login',
@@ -25,12 +23,14 @@ import { IconComponent } from '../../shared/ui/icon.component';
 export class LoginComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly auth = inject(AuthService);
 
   /** Masquage / affichage du mot de passe. */
   protected readonly motDePasseVisible = signal(false);
-  /** État de chargement visuel pendant la « connexion » simulée. */
+  /** État de chargement visuel pendant la requête d'authentification. */
   protected readonly chargement = signal(false);
-  /** Message d'erreur générique (ex. identifiants de démo refusés). */
+  /** Message d'erreur affiché sous le formulaire. */
   protected readonly erreurConnexion = signal('');
 
   protected readonly form = this.fb.group({
@@ -48,7 +48,7 @@ export class LoginComponent {
     return controle.invalid && (controle.touched || controle.dirty);
   }
 
-  /** Soumission locale : valide, simule un délai, puis navigue vers l'espace admin. */
+  /** Soumission : authentifie auprès de l'API puis navigue vers l'espace admin. */
   protected seConnecter(): void {
     this.erreurConnexion.set('');
     if (this.form.invalid) {
@@ -56,17 +56,25 @@ export class LoginComponent {
       return;
     }
     if (this.chargement()) return;
+
+    const { email, motDePasse, memoriser } = this.form.getRawValue();
     this.chargement.set(true);
 
-    // Simulation temporaire — à remplacer par AuthService.login().
-    const { email } = this.form.getRawValue();
-    window.setTimeout(() => {
-      this.chargement.set(false);
-      if (email.trim().toLowerCase() === 'refuse@du.gouv') {
-        this.erreurConnexion.set('Adresse e-mail ou mot de passe incorrect.');
-        return;
-      }
-      this.router.navigate(['/admin/dashboard']);
-    }, 900);
+    this.auth
+      .connexion(email.trim(), motDePasse, memoriser)
+      .pipe(finalize(() => this.chargement.set(false)))
+      .subscribe({
+        next: () => {
+          const retour = this.route.snapshot.queryParamMap.get('returnUrl');
+          void this.router.navigateByUrl(retour || '/admin/dashboard');
+        },
+        error: (erreur: unknown) => {
+          this.erreurConnexion.set(
+            (erreur as { status?: number })?.status === 401
+              ? 'Adresse e-mail ou mot de passe incorrect.'
+              : messageErreur(erreur),
+          );
+        },
+      });
   }
 }

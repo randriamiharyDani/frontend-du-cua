@@ -11,6 +11,7 @@ import { DocumentsComponent } from './features/admin/documents.component';
 import { UtilisateursComponent } from './features/admin/utilisateurs.component';
 import { CanevasExcelComponent } from './features/admin/canevas-excel.component';
 import { ParametresComponent } from './features/admin/parametres.component';
+import { authGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'connexion', pathMatch: 'full' },
@@ -18,6 +19,7 @@ export const routes: Routes = [
   {
     path: 'admin',
     component: AdminLayoutComponent,
+    canActivate: [authGuard],
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', component: DashboardComponent, title: 'Tableau de bord — DU' },

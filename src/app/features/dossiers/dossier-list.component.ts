@@ -5,14 +5,11 @@ import {
   ETAPE_LABEL, ETAPES, EtapeDossier, ETAT_LABEL, NATURE_LABEL, NATURES, NatureDossier,
   nomContrevenant, SERVICES, ServiceDossier, STATUT_LABEL, STATUTS, StatutDossier, etatDossier,
 } from '../../core/models/dossier.model';
-import { DossierStore } from '../../core/state/dossier-store';
+import { DossierApiStore } from '../../core/state/dossier-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
-const normaliser = (s: string) =>
-  (s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-
-/** Page « Gestion des dossiers » : recherche, filtres, pagination, actions. */
+/** Page « Gestion des dossiers » : recherche, filtres, pagination (API). */
 @Component({
   selector: 'du-dossier-list',
   imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent],
@@ -21,7 +18,12 @@ const normaliser = (s: string) =>
   styleUrl: './dossier-list.component.scss',
 })
 export class DossierListComponent {
-  private readonly store = inject(DossierStore);
+  private readonly store = inject(DossierApiStore);
+
+  protected readonly dossiers = this.store.dossiers;
+  protected readonly chargement = this.store.chargementListe;
+  protected readonly erreur = this.store.erreurListe;
+  protected readonly pagination = this.store.pagination;
 
   protected readonly natures = NATURES;
   protected readonly services = SERVICES;
@@ -44,41 +46,27 @@ export class DossierListComponent {
   private readonly page = signal(1);
   protected readonly taillePage = 8;
 
-  protected readonly filtres = computed(() => {
-    const q = normaliser(this.recherche().trim());
-    const du = this.du();
-    const au = this.au();
-    return this.store.dossiers().filter((d) => {
-      if (this.nature() && d.infos.nature !== this.nature()) return false;
-      if (this.service() && d.service !== this.service()) return false;
-      if (this.statut() && d.statut !== this.statut()) return false;
-      if (this.etape() && d.etape !== this.etape()) return false;
-      if (du && d.infos.dateEntree < du) return false;
-      if (au && d.infos.dateEntree > au) return false;
-      if (!q) return true;
-      const hay = normaliser(
-        [
-          d.reference,
-          d.complements.objet,
-          nomContrevenant(d.contrevenant),
-          d.localisation.quartier,
-          d.localisation.arrondissement,
-          d.localisation.adresse,
-        ].join(' '),
-      );
-      return hay.includes(q);
-    });
-  });
-
-  protected readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filtres().length / this.taillePage)));
-  protected readonly pageCourante = computed(() => Math.min(this.page(), this.totalPages()));
-  protected readonly affiches = computed(() => {
-    const debut = (this.pageCourante() - 1) * this.taillePage;
-    return this.filtres().slice(debut, debut + this.taillePage);
-  });
   protected readonly filtresActifs = computed(
     () => !!(this.recherche() || this.nature() || this.service() || this.statut() || this.etape() || this.du() || this.au()),
   );
+
+  constructor() {
+    this.charger();
+  }
+
+  /** Interroge l'API avec les filtres courants. */
+  private charger(): void {
+    this.store.chargerListe({
+      search: this.recherche().trim(),
+      nature: this.nature(),
+      service: this.service(),
+      statut: this.statut(),
+      etape: this.etape(),
+      date_entree: this.du() || this.au(),
+      per_page: this.taillePage,
+      page: this.page(),
+    });
+  }
 
   private resetPage(): void {
     this.page.set(1);
@@ -91,11 +79,17 @@ export class DossierListComponent {
   protected setEtape(v: string): void { this.etape.set(v as EtapeDossier | ''); this.resetPage(); }
   protected setDu(v: string): void { this.du.set(v); this.resetPage(); }
   protected setAu(v: string): void { this.au.set(v); this.resetPage(); }
-  protected allerA(p: number): void { this.page.set(Math.min(Math.max(1, p), this.totalPages())); }
 
-  /** Applique les filtres en revenant à la première page. */
+  protected allerA(p: number): void {
+    const cible = Math.min(Math.max(1, p), this.pagination().dernierPage);
+    this.page.set(cible);
+    this.charger();
+  }
+
+  /** Relance la recherche depuis la première page. */
   protected rechercher(): void {
     this.resetPage();
+    this.charger();
   }
 
   protected reinitialiser(): void {
@@ -107,5 +101,6 @@ export class DossierListComponent {
     this.du.set('');
     this.au.set('');
     this.page.set(1);
+    this.charger();
   }
 }

@@ -1,4 +1,4 @@
-<du-page-header title="Gestion des dossiers" subtitle="Constructions illicites — données de démonstration">
+<du-page-header title="Gestion des dossiers" subtitle="Constructions illicites — dossiers de l’API">
   <a routerLink="/admin/dossiers/nouveau" class="btn btn--primary"><du-icon name="plus" [size]="16" /> Nouveau dossier</a>
 </du-page-header>
 
@@ -57,11 +57,24 @@
         <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
       </div>
     </div>
+    <p class="muted small" style="margin: 0.5rem 0 0;">
+      Filtre par date : une seule date d’entrée est prise en compte (Du prioritaire sur Au).
+    </p>
   </div>
 </section>
 
 <section class="card">
-  @if (affiches().length) {
+  @if (chargement()) {
+    <div class="empty-state">
+      <p><strong>Chargement des dossiers…</strong></p>
+    </div>
+  } @else if (erreur()) {
+    <div class="empty-state">
+      <du-icon name="close" [size]="28" />
+      <p><strong>{{ erreur() }}</strong></p>
+      <button type="button" class="btn btn--secondary btn--sm" (click)="rechercher()">Réessayer</button>
+    </div>
+  } @else if (dossiers().length) {
     <div class="table-wrap">
       <table class="table table--dossiers">
         <thead>
@@ -79,14 +92,14 @@
           </tr>
         </thead>
         <tbody>
-          @for (d of affiches(); track d.id) {
+          @for (d of dossiers(); track d.id) {
             <tr>
-              <td class="ref"><a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference }}</a></td>
-              <td class="nowrap">{{ d.infos.dateEntree | date: 'dd/MM/yyyy' }}</td>
+              <td class="ref"><a [routerLink]="['/admin/dossiers', d.id]">{{ d.reference || '—' }}</a></td>
+              <td class="nowrap">{{ d.infos.dateEntree ? (d.infos.dateEntree | date: 'dd/MM/yyyy') : '—' }}</td>
               <td>{{ natureLabel[d.infos.nature] }}</td>
-              <td>{{ nomContrevenant(d.contrevenant) }}</td>
+              <td>{{ nomContrevenant(d.contrevenant) || '—' }}</td>
               <td class="objet">{{ d.complements.objet }}</td>
-              <td class="hide-lg">{{ d.localisation.quartier }}<div class="muted small">{{ d.localisation.arrondissement }}</div></td>
+              <td class="hide-lg">{{ d.localisation.adresse || '—' }}</td>
               <td><span class="badge badge--neutral">{{ d.service }}</span></td>
               <td class="hide-lg">{{ etapeLabel[d.etape] }}</td>
               <td>
@@ -104,10 +117,10 @@
     </div>
 
     <div class="pagination">
-      <span class="muted small">{{ filtres().length }} dossier(s) · page {{ pageCourante() }} sur {{ totalPages() }}</span>
+      <span class="muted small">{{ pagination().total }} dossier(s) · page {{ pagination().page }} sur {{ pagination().dernierPage }}</span>
       <div class="pagination__nav">
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page <= 1" (click)="allerA(pagination().page - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page >= pagination().dernierPage" (click)="allerA(pagination().page + 1)">Suivant</button>
       </div>
     </div>
   } @else {

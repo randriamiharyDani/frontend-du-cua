@@ -29,10 +29,10 @@
       [attr.aria-expanded]="profilOuvert()"
       aria-haspopup="menu"
     >
-      <span class="topbar__avatar" aria-hidden="true">{{ utilisateur.initiales }}</span>
+      <span class="topbar__avatar" aria-hidden="true">{{ utilisateur().initiales }}</span>
       <span class="topbar__identite">
-        <strong>{{ utilisateur.nom }}</strong>
-        <small>{{ utilisateur.service }}</small>
+        <strong>{{ utilisateur().nom }}</strong>
+        <small>{{ utilisateur().service }}</small>
       </span>
       <du-icon name="chevron" [size]="16" />
     </button>
@@ -41,8 +41,8 @@
       <div class="topbar__voile" (click)="fermerProfil()"></div>
       <div class="topbar__menu" role="menu" aria-label="Menu de profil">
         <p class="topbar__menu-entete">
-          <strong>{{ utilisateur.nom }}</strong>
-          <small>{{ utilisateur.role }} · {{ utilisateur.service }}</small>
+          <strong>{{ utilisateur().nom }}</strong>
+          <small>{{ utilisateur().role }} · {{ utilisateur().service }}</small>
         </p>
         <a routerLink="/admin/parametres" role="menuitem" (click)="fermerProfil()">
           <du-icon name="gear" [size]="16" /> Paramètres du compte

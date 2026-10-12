@@ -1,33 +1,35 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
+import { formatTaille } from '../../core/mappers/dossier.mapper';
+import { DocumentDto, MouvementDto, TransitionOption } from '../../core/models/dossier-api.model';
 import {
-  ETAPE_LABEL,
-  NATURE_LABEL,
-  nomContrevenant,
-  SERVICE_LABEL,
-  SERVICES,
-  ServiceDossier,
-  STATUT_LABEL,
-  STATUTS,
-  StatutDossier,
-  TYPE_DOCUMENT_LABEL,
+  ETAPE_LABEL, NATURE_LABEL, nomContrevenant, SERVICE_LABEL, SERVICES, ServiceDossier,
   TYPE_LABEL,
 } from '../../core/models/dossier.model';
-import { DossierStore } from '../../core/state/dossier-store';
+import { DossierApiStore } from '../../core/state/dossier-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
-import { PriorityBadgeComponent } from '../../shared/ui/priority-badge.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge.component';
 
 /** État d’un service dans le circuit visuel DU → DIS → SCAD. */
 type EtatService = 'traverse' | 'actuel' | 'a_venir';
 
+/** Événement d’historique prêt à l’affichage. */
+interface EvenementAffiche {
+  id: string;
+  date: string;
+  source: string;
+  titre: string;
+  service: ServiceDossier | null;
+  auteur: string;
+}
+
 @Component({
   selector: 'du-dossier-detail',
-  imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent, StatusBadgeComponent, PriorityBadgeComponent],
+  imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent, StatusBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dossier-detail.component.html',
   styles: `
@@ -165,6 +167,22 @@ type EtatService = 'traverse' | 'actuel' | 'a_venir';
       font-size: 0.85rem;
     }
 
+    /* Actions de workflow / transfert */
+    .actions-stack { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }
+    .actions-ligne { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-end; }
+    .transfert-form { display: grid; gap: 0.6rem; margin: 0.75rem 0 1rem; }
+    .transfert-item { padding: 0.6rem 0; border-top: 1px solid var(--du-border); }
+    .transfert-item__entete { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .transfert-item__actions { display: flex; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+    .message {
+      margin-top: 0.75rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: var(--du-radius);
+      font-size: 0.85rem;
+    }
+    .message--succes { background: var(--du-success-soft); color: var(--du-success); }
+    .message--erreur { background: var(--du-danger-soft); color: var(--du-danger); }
+
     @media (max-width: 900px) {
       .detail-grid { grid-template-columns: 1fr; }
     }
@@ -176,51 +194,84 @@ type EtatService = 'traverse' | 'actuel' | 'a_venir';
   `,
 })
 export class DossierDetailComponent {
-  private readonly store = inject(DossierStore);
+  private readonly store = inject(DossierApiStore);
   private readonly id = toSignal(
     inject(ActivatedRoute).paramMap.pipe(map((p) => p.get('id') ?? '')),
     { initialValue: '' },
   );
 
-  protected readonly dossier = computed(() => this.store.getById(this.id()));
-  protected readonly mouvements = computed(() => this.store.mouvementsDuDossier(this.id()));
-  protected readonly documents = computed(() => this.store.documentsDuDossier(this.id()));
+  protected readonly dossier = this.store.dossier;
+  protected readonly transferts = this.store.transferts;
+  protected readonly documents = this.store.documents;
+  protected readonly workflow = this.store.workflow;
+  protected readonly chargement = this.store.chargementDetail;
+  protected readonly erreur = this.store.erreurDetail;
+  protected readonly enCours = this.store.enCours;
+  protected readonly messageAction = this.store.messageAction;
+  protected readonly erreurAction = this.store.erreurAction;
 
-  protected readonly statuts = STATUTS;
-  protected readonly statutLabel = STATUT_LABEL;
-  protected readonly typeLabel = TYPE_LABEL;
   protected readonly natureLabel = NATURE_LABEL;
   protected readonly etapeLabel = ETAPE_LABEL;
   protected readonly serviceLabel = SERVICE_LABEL;
-  protected readonly typeDocumentLabel = TYPE_DOCUMENT_LABEL;
+  protected readonly typeLabel = TYPE_LABEL;
   protected readonly nomContrevenant = nomContrevenant;
+  protected readonly formatTaille = formatTaille;
+  protected readonly services = SERVICES;
 
-  /** Document dont le panneau de détails est déplié (interaction locale). */
-  protected readonly documentOuvert = signal<string | null>(null);
+  /** Champ de saisie des actions de transfert. */
+  protected readonly serviceDestination = signal<ServiceDossier>('DIS');
+  protected readonly motifTransfert = signal('');
+  protected readonly noteReception = signal('');
+  protected readonly motifRetour = signal('');
+  protected readonly fichierSelectionne = signal<File | null>(null);
+  protected readonly libelleDocument = signal('');
 
-  /** Chronologie des mouvements enrichie pour l’affichage. */
-  protected readonly timeline = computed(() => {
-    const liste = this.mouvements();
-    return liste.map((m, i) => ({
-      ...m,
-      action:
-        m.action ||
-        (m.de === m.vers ? `Traitement au service ${m.de}` : `Transfert de ${m.de} vers ${m.vers}`),
-      dernier: i === liste.length - 1,
-    }));
-  });
+  constructor() {
+    effect(() => {
+      const id = this.id();
+      if (id) this.store.chargerDetail(id);
+    });
+  }
+
+  /** Transitions de workflow disponibles depuis l'état courant. */
+  protected readonly transitions = computed<TransitionOption[]>(
+    () => this.workflow()?.available_transitions ?? [],
+  );
+
+  /** Étape courante du circuit (libellé). */
+  protected readonly etapeCourante = computed(() => this.workflow()?.current_step?.label ?? '');
+
+  /** Transfert encore en attente de traitement (au plus un). */
+  protected readonly transfertEnAttente = computed<MouvementDto | null>(
+    () => this.transferts().find((m) => m.state === 'envoye') ?? null,
+  );
+
+  /** Chronologie de l'historique réel (création, workflow, transferts). */
+  protected readonly timeline = computed<EvenementAffiche[]>(() =>
+    this.store.historique().map((e) => ({
+      id: e.id,
+      date: e.date ?? '',
+      source: e.source,
+      titre: e.description ?? e.action ?? 'Événement',
+      service: e.service,
+      auteur: e.user?.name ?? '',
+    })),
+  );
 
   /** Chemin chronologique des services traversés par le dossier. */
   protected readonly parcours = computed<ServiceDossier[]>(() => {
-    const d = this.dossier();
     const chemin: ServiceDossier[] = [];
-    for (const m of this.mouvements()) {
-      if (chemin.length === 0) chemin.push(m.de);
-      if (chemin[chemin.length - 1] !== m.vers) chemin.push(m.vers);
+    const tries = [...this.transferts()].sort((a, b) => a.id - b.id);
+    for (const m of tries) {
+      if (m.service_depart && (chemin.length === 0 || chemin[chemin.length - 1] !== m.service_depart)) {
+        chemin.push(m.service_depart);
+      }
+      if (m.service_arrivee && chemin[chemin.length - 1] !== m.service_arrivee) {
+        chemin.push(m.service_arrivee);
+      }
     }
-    if (d && (chemin.length === 0 || chemin[chemin.length - 1] !== d.service)) {
-      chemin.push(d.service);
-    }
+    const d = this.dossier();
+    if (d && chemin[chemin.length - 1] !== d.service) chemin.push(d.service);
     return chemin;
   });
 
@@ -235,12 +286,77 @@ export class DossierDetailComponent {
     }));
   });
 
-  protected changerStatut(valeur: string): void {
-    const d = this.dossier();
-    if (d) this.store.changeStatut(d.id, valeur as StatutDossier);
+  /** Applique une transition de workflow (avec confirmation). */
+  protected avancer(transition: TransitionOption): void {
+    if (!this.confirmer(`Appliquer « ${transition.label} » à ce dossier ?`)) return;
+    this.store.executerTransition(this.id(), transition.code).subscribe();
   }
 
-  protected basculerDocument(id: string): void {
-    this.documentOuvert.update((courant) => (courant === id ? null : id));
+  /** Expédie le dossier vers le service choisi. */
+  protected transferer(): void {
+    if (this.transfertEnAttente()) return;
+    if (!this.confirmer(`Transférer le dossier vers ${this.serviceDestination()} ?`)) return;
+    this.store
+      .envoyerTransfert(this.id(), {
+        service_arrivee: this.serviceDestination(),
+        motif: this.motifTransfert().trim() || null,
+      })
+      .subscribe({ next: () => this.motifTransfert.set('') });
+  }
+
+  /** Accepte la réception du transfert en attente. */
+  protected receptionner(mouvement: MouvementDto): void {
+    if (!this.confirmer('Confirmer la réception de ce dossier ?')) return;
+    this.store
+      .receptionnerTransfert(this.id(), mouvement.id, { note: this.noteReception().trim() || null })
+      .subscribe({ next: () => this.noteReception.set('') });
+  }
+
+  /** Retourne le transfert en attente à l'expéditeur. */
+  protected retourner(mouvement: MouvementDto): void {
+    const motif = this.motifRetour().trim();
+    if (!motif) return;
+    if (!this.confirmer('Retourner ce dossier à l’expéditeur ?')) return;
+    this.store
+      .retournerTransfert(this.id(), mouvement.id, { motif })
+      .subscribe({ next: () => this.motifRetour.set('') });
+  }
+
+  /** Mémorise le fichier choisi pour le dépôt. */
+  protected choisirFichier(evenement: Event): void {
+    const input = evenement.target as HTMLInputElement;
+    this.fichierSelectionne.set(input.files?.[0] ?? null);
+  }
+
+  /** Dépose le document sélectionné (multipart). */
+  protected deposerDocument(): void {
+    const fichier = this.fichierSelectionne();
+    if (!fichier) return;
+    const donnees = new FormData();
+    donnees.append('file', fichier);
+    const libelle = this.libelleDocument().trim();
+    if (libelle) donnees.append('libelle', libelle);
+    this.store.deposerDocument(this.id(), donnees).subscribe({
+      next: () => {
+        this.fichierSelectionne.set(null);
+        this.libelleDocument.set('');
+      },
+    });
+  }
+
+  /** Télécharge un document via l'endpoint authentifié. */
+  protected telecharger(document: DocumentDto): void {
+    this.store.telecharger(document);
+  }
+
+  /** Recharge tout le détail (bouton réessayer). */
+  protected recharger(): void {
+    const id = this.id();
+    if (id) this.store.chargerDetail(id);
+  }
+
+  private confirmer(message: string): boolean {
+    if (typeof window === 'undefined') return true;
+    return window.confirm(message);
   }
 }

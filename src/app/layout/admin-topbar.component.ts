@@ -1,9 +1,21 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../core/services/auth.service';
+import { SERVICE_LABEL } from '../core/models/dossier.model';
 import { IconComponent } from '../shared/ui/icon.component';
 import { ADMIN_CURRENT_USER, AdminUser } from './admin-navigation';
 
-/** Barre supérieure : bouton menu, titre de page, profil utilisateur fictif. */
+/** Initiales à partir d'un nom complet (ex. « Aminata Diallo » → « AD »). */
+function initiales(nom: string): string {
+  return nom
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((mot) => mot.charAt(0).toUpperCase())
+    .join('');
+}
+
+/** Barre supérieure : bouton menu, titre de page, profil utilisateur connecté. */
 @Component({
   selector: 'du-admin-topbar',
   standalone: true,
@@ -12,12 +24,13 @@ import { ADMIN_CURRENT_USER, AdminUser } from './admin-navigation';
   styleUrl: './admin-topbar.component.scss',
 })
 export class AdminTopbarComponent {
+  private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
+
   /** Titre de la page courante, fourni par le layout. */
   @Input() titrePage = 'Tableau de bord';
   /** Libellé du bouton menu sur mobile (accessibilité). */
   @Input() menuOuvert = false;
-  /** Utilisateur fictif affiché dans le menu de profil. */
-  @Input() utilisateur: AdminUser = ADMIN_CURRENT_USER;
 
   /** Ouverture / fermeture du menu mobile. */
   @Output() basculerMenu = new EventEmitter<void>();
@@ -26,7 +39,17 @@ export class AdminTopbarComponent {
 
   protected readonly profilOuvert = signal(false);
 
-  constructor(private readonly router: Router) {}
+  /** Utilisateur connecté (repli neutre si la session n'est pas chargée). */
+  protected readonly utilisateur = computed<AdminUser>(() => {
+    const connecte = this.auth.utilisateur();
+    if (!connecte) return ADMIN_CURRENT_USER;
+    return {
+      nom: connecte.name,
+      service: connecte.service ? SERVICE_LABEL[connecte.service] : '—',
+      role: connecte.role_label ?? connecte.role ?? '',
+      initiales: initiales(connecte.name),
+    };
+  });
 
   protected basculerProfil(): void {
     this.profilOuvert.update((v) => !v);
@@ -36,9 +59,15 @@ export class AdminTopbarComponent {
     this.profilOuvert.set(false);
   }
 
-  /** Déconnexion fictive : retour temporaire vers la page de connexion. */
+  /** Déconnexion : révoque le jeton côté serveur puis retourne à la connexion. */
   protected seDeconnecter(): void {
     this.profilOuvert.set(false);
-    this.router.navigate(['/connexion']);
+    this.auth.deconnexion().subscribe({
+      next: () => void this.router.navigate(['/connexion']),
+      error: () => {
+        this.auth.purger();
+        void this.router.navigate(['/connexion']);
+      },
+    });
   }
 }

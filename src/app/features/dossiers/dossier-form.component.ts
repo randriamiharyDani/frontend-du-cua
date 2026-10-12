@@ -1,12 +1,12 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
   ARRONDISSEMENTS, DossierFormValue, ETAPE_LABEL, ETAPES, EtapeDossier, NATURE_LABEL, NATURES, NatureDossier,
-  NUMERO_TEMPORAIRE, PRIORITE_LABEL, PRIORITES, PrioriteDossier, SERVICE_LABEL, SERVICES, ServiceDossier,
+  PRIORITE_LABEL, PRIORITES, PrioriteDossier, SERVICE_LABEL, SERVICES, ServiceDossier,
   STATUT_LABEL, STATUTS, StatutDossier, TYPE_LABEL, TYPES, TypeInfraction,
 } from '../../core/models/dossier.model';
-import { DossierStore } from '../../core/state/dossier-store';
+import { DossierApiStore } from '../../core/state/dossier-api.store';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 /** Aujourd’hui au format ISO `yyyy-MM-dd` (valeur par défaut des champs date). */
@@ -26,24 +26,33 @@ function coordonneeValide(control: AbstractControl): ValidationErrors | null {
   templateUrl: './dossier-form.component.html',
   styles: `
     .form-sections { display: grid; gap: 1rem; }
-    .demo-note {
+    .api-note {
       display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem; padding: 0.6rem 0.85rem;
-      border-radius: var(--du-radius); background: #fbf1de; border: 1px solid #f0dcb4;
-      color: #8a5a12; font-size: 0.85rem;
+      border-radius: var(--du-radius); background: #eef4fc; border: 1px solid #cfe0f5;
+      color: #2b5b8a; font-size: 0.85rem;
     }
     .hint { color: var(--du-muted); font-size: 0.78rem; }
+    .hint--absent { font-style: italic; }
     .checkbox { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; cursor: pointer; }
     .checkbox input { width: 1rem; height: 1rem; }
+    .form-message { margin: 0 0 1rem; padding: 0.5rem 0.75rem; border-radius: var(--du-radius); font-size: 0.85rem; }
+    .form-message--erreur { background: var(--du-danger-soft); color: var(--du-danger); }
   `,
 })
 export class DossierFormComponent {
   private readonly fb = inject(NonNullableFormBuilder);
-  private readonly store = inject(DossierStore);
+  private readonly store = inject(DossierApiStore);
   private readonly router = inject(Router);
 
   protected readonly id = inject(ActivatedRoute).snapshot.paramMap.get('id');
   /** Mode édition si un identifiant de dossier est présent dans l’URL. */
   protected readonly edition = !!this.id;
+
+  /** Indicateurs exposés par le store (chargement / erreurs / action en cours). */
+  protected readonly chargementDetail = this.store.chargementDetail;
+  protected readonly erreurDetail = this.store.erreurDetail;
+  protected readonly erreurAction = this.store.erreurAction;
+  protected readonly enCours = this.store.enCours;
 
   protected readonly types = TYPES;
   protected readonly statuts = STATUTS;
@@ -59,25 +68,28 @@ export class DossierFormComponent {
   protected readonly natureLabel = NATURE_LABEL;
   protected readonly etapeLabel = ETAPE_LABEL;
 
+  /** Empêche de patcher plusieurs fois le formulaire en mode édition. */
+  private patchApplique = false;
+
   /**
    * Formulaire réparti par sections.
-   * Les champs de suivi (type, service, étape, statut, priorité…) restent à la racine
-   * afin que `getRawValue()` corresponde exactement à `DossierFormValue`.
+   * Les champs sans équivalent API (type, priorité, agent, prénom, quartier…)
+   * restent affichés mais ne sont ni requis ni envoyés au serveur.
    */
   protected readonly form = this.fb.group({
-    // Suivi du traitement.
-    type: ['construction_sans_permis' as TypeInfraction, Validators.required],
+    // Suivi du traitement (service envoyé à la création ; étape/statut pilotés serveur).
+    type: ['construction_sans_permis' as TypeInfraction],
     service: ['DU' as ServiceDossier, Validators.required],
-    etape: ['constat' as EtapeDossier, Validators.required],
-    statut: ['signale' as StatutDossier, Validators.required],
-    priorite: ['moyenne' as PrioriteDossier, Validators.required],
+    etape: ['constat' as EtapeDossier],
+    statut: ['signale' as StatutDossier],
+    priorite: ['moyenne' as PrioriteDossier],
     agent: [''],
     attentionRequise: [false],
     motifAttention: [''],
 
     // 1. Informations du dossier.
     infos: this.fb.group({
-      numero: [NUMERO_TEMPORAIRE, [Validators.required, Validators.maxLength(40)]],
+      numero: ['', [Validators.required, Validators.maxLength(40)]],
       dateEntree: [aujourdHui(), Validators.required],
       referenceEtude: [''],
       idemEtude: [''],
@@ -90,7 +102,7 @@ export class DossierFormComponent {
     // 2. Contrevenant.
     contrevenant: this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
-      prenom: ['', [Validators.required, Validators.minLength(2)]],
+      prenom: [''],
       telephone: ['', Validators.pattern(/^(\+224|0)[\d\s]{8,13}$/)],
       adresse: [''],
       observations: [''],
@@ -100,8 +112,8 @@ export class DossierFormComponent {
     localisation: this.fb.group({
       adresse: ['', Validators.required],
       localisation: [''],
-      quartier: ['', Validators.required],
-      arrondissement: ['', Validators.required],
+      quartier: [''],
+      arrondissement: [''],
       coordX: ['', coordonneeValide],
       coordY: ['', coordonneeValide],
       latitude: ['', coordonneeValide],
@@ -136,11 +148,8 @@ export class DossierFormComponent {
     'infos.dateEntree': { required: 'La date d’entrée est obligatoire.' },
     'infos.nature': { required: 'Sélectionnez la nature du dossier.' },
     'contrevenant.nom': { required: 'Le nom est obligatoire.', minlength: 'Au moins 2 caractères.' },
-    'contrevenant.prenom': { required: 'Le prénom est obligatoire.', minlength: 'Au moins 2 caractères.' },
     'contrevenant.telephone': { pattern: 'Numéro invalide (ex. 034 00 000 00).' },
     'localisation.adresse': { required: 'L’adresse est obligatoire.' },
-    'localisation.quartier': { required: 'Le quartier est obligatoire.' },
-    'localisation.arrondissement': { required: 'Sélectionnez un arrondissement.' },
     'localisation.coordX': { coordonnee: 'Coordonnée X numérique attendue.' },
     'localisation.coordY': { coordonnee: 'Coordonnée Y numérique attendue.' },
     'localisation.latitude': { coordonnee: 'Latitude invalide (ex. 9.5370).' },
@@ -150,12 +159,13 @@ export class DossierFormComponent {
 
   constructor() {
     if (!this.id) return;
-    const existant = this.store.getById(this.id);
-    if (!existant) {
-      this.router.navigate(['/admin/dossiers']);
-      return;
-    }
-    this.form.patchValue(existant);
+    this.store.chargerDetail(this.id);
+    effect(() => {
+      const dossier = this.store.dossier();
+      if (this.patchApplique || !dossier || dossier.id !== this.id) return;
+      this.patchApplique = true;
+      this.form.patchValue(dossier);
+    });
   }
 
   /** Contrôle invalide et déjà touché / modifié → affiche l’état d’erreur. */
@@ -172,19 +182,23 @@ export class DossierFormComponent {
     return DossierFormComponent.MESSAGES[chemin]?.[type] ?? 'Champ invalide.';
   }
 
-  /** Enregistre localement (démonstration) puis redirige vers le détail du dossier. */
+  /** Crée (POST) ou met à jour (PUT) le dossier via l’API puis redirige vers le détail. */
   protected enregistrer(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
     const valeur: DossierFormValue = this.form.getRawValue();
+
     if (this.id) {
-      this.store.update(this.id, valeur);
-      this.router.navigate(['/admin/dossiers', this.id]);
-    } else {
-      const cree = this.store.add(valeur);
-      this.router.navigate(['/admin/dossiers', cree.id]);
+      this.store.modifier(this.id, valeur).subscribe({
+        next: () => this.router.navigate(['/admin/dossiers', this.id]),
+      });
+      return;
     }
+
+    this.store.creer(valeur).subscribe({
+      next: (dossier) => this.router.navigate(['/admin/dossiers', dossier.id]),
+    });
   }
 }

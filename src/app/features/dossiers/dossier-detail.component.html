@@ -1,8 +1,32 @@
-@if (dossier(); as d) {
-  <du-page-header [title]="d.infos.numero || d.reference" [subtitle]="d.complements.objet">
+@if (chargement() && !dossier()) {
+  <section class="card">
+    <div class="empty-state">
+      <p><strong>Chargement du dossier…</strong></p>
+    </div>
+  </section>
+} @else if (erreur()) {
+  <section class="card">
+    <div class="empty-state">
+      <du-icon name="close" [size]="28" />
+      <p><strong>{{ erreur() }}</strong></p>
+      <div style="display:flex; gap:0.5rem;">
+        <button type="button" class="btn btn--secondary" (click)="recharger()">Réessayer</button>
+        <a routerLink="/admin/dossiers" class="btn btn--secondary">Retour à la liste</a>
+      </div>
+    </div>
+  </section>
+} @else if (dossier(); as d) {
+  <du-page-header [title]="d.reference || d.infos.numero || 'Dossier'" [subtitle]="d.complements.objet">
     <a routerLink="/admin/dossiers" class="btn btn--secondary"><du-icon name="back" [size]="16" /> Retour à la liste</a>
     <a [routerLink]="['/admin/dossiers', d.id, 'modifier']" class="btn btn--primary"><du-icon name="edit" [size]="16" /> Modifier</a>
   </du-page-header>
+
+  @if (messageAction()) {
+    <p class="message message--succes" role="status">{{ messageAction() }}</p>
+  }
+  @if (erreurAction()) {
+    <p class="message message--erreur" role="alert">{{ erreurAction() }}</p>
+  }
 
   <!-- En-tête : Nature, Statut, Service, Étape -->
   <section class="card" style="margin-bottom: 1rem;">
@@ -25,7 +49,7 @@
       </div>
       <div class="meta__item">
         <span class="meta__label">Référence</span>
-        <span class="meta__value">{{ d.reference }}</span>
+        <span class="meta__value">{{ d.reference || '—' }}</span>
       </div>
     </div>
   </section>
@@ -38,7 +62,7 @@
         <div class="card__body">
           <dl class="dl">
             <div class="full"><dt>Objet</dt><dd>{{ d.complements.objet || '—' }}</dd></div>
-            <div><dt>Numéro du dossier</dt><dd>{{ d.infos.numero || d.reference }}</dd></div>
+            <div><dt>Numéro du dossier</dt><dd>{{ d.infos.numero || '—' }}</dd></div>
             <div><dt>Date d’entrée</dt><dd>{{ d.infos.dateEntree ? (d.infos.dateEntree | date: 'd MMMM y') : '—' }}</dd></div>
             <div><dt>Référence d’arrivée</dt><dd>{{ d.infos.referenceArrivee || '—' }}</dd></div>
             <div><dt>Référence d’étude</dt><dd>{{ d.infos.referenceEtude || '—' }}</dd></div>
@@ -46,19 +70,12 @@
             <div><dt>Date d’étude</dt><dd>{{ d.infos.dateEtude ? (d.infos.dateEtude | date: 'd MMMM y') : '—' }}</dd></div>
             <div><dt>Provenance</dt><dd>{{ d.infos.provenance || '—' }}</dd></div>
             <div><dt>Nature</dt><dd>{{ natureLabel[d.infos.nature] }}</dd></div>
-            <div><dt>Type d’infraction</dt><dd>{{ typeLabel[d.type] }}</dd></div>
-            <div><dt>Priorité</dt><dd><du-priority-badge [priorite]="d.priorite" /></dd></div>
+            <div><dt>Type d’infraction</dt><dd><span class="absent">Non géré par l’API</span></dd></div>
+            <div><dt>Priorité</dt><dd><span class="absent">Non gérée par l’API</span></dd></div>
             <div><dt>Agent responsable</dt><dd>{{ d.agent || 'Non affecté' }}</dd></div>
             <div class="full">
               <dt>Attention particulière</dt>
-              <dd>
-                @if (d.attentionRequise) {
-                  <span class="badge badge--danger">Prioritaire</span>
-                  @if (d.motifAttention) { <span> — {{ d.motifAttention }}</span> }
-                } @else {
-                  <span class="absent">Non signalé</span>
-                }
-              </dd>
+              <dd><span class="absent">Non gérée par l’API</span></dd>
             </div>
           </dl>
         </div>
@@ -69,17 +86,17 @@
         <div class="card__header"><h2>Informations du contrevenant</h2></div>
         <div class="card__body">
           <dl class="dl">
-            <div><dt>Nom complet</dt>
+            <div class="full"><dt>Nom complet</dt>
               <dd>@if (nomContrevenant(d.contrevenant)) { {{ nomContrevenant(d.contrevenant) }} } @else { <span class="absent">Non renseigné</span> }</dd>
             </div>
             <div><dt>Téléphone</dt>
-              <dd>@if (d.contrevenant.telephone) { {{ d.contrevenant.telephone }} } @else { <span class="absent">Non renseigné</span> }</dd>
+              <dd>@if (d.contrevenant.telephone) { {{ d.contrevenant.telephone }} } @else { <span class="absent">Non disponible</span> }</dd>
             </div>
-            <div class="full"><dt>Adresse</dt>
-              <dd>@if (d.contrevenant.adresse) { {{ d.contrevenant.adresse }} } @else { <span class="absent">Non renseignée</span> }</dd>
+            <div><dt>Adresse</dt>
+              <dd>@if (d.contrevenant.adresse) { {{ d.contrevenant.adresse }} } @else { <span class="absent">Non disponible</span> }</dd>
             </div>
             <div class="full"><dt>Observations</dt>
-              <dd>@if (d.contrevenant.observations) { {{ d.contrevenant.observations }} } @else { <span class="absent">Aucune observation</span> }</dd>
+              <dd>@if (d.contrevenant.observations) { {{ d.contrevenant.observations }} } @else { <span class="absent">—</span> }</dd>
             </div>
           </dl>
         </div>
@@ -90,29 +107,13 @@
         <div class="card__header"><h2>Localisation</h2></div>
         <div class="card__body">
           <dl class="dl">
-            <div class="full"><dt>Adresse</dt>
-              <dd>@if (d.localisation.adresse) { {{ d.localisation.adresse }} } @else { <span class="absent">Non renseignée</span> }</dd>
-            </div>
             <div class="full"><dt>Localisation</dt>
               <dd>@if (d.localisation.localisation) { {{ d.localisation.localisation }} } @else { <span class="absent">Non renseignée</span> }</dd>
             </div>
-            <div><dt>Quartier</dt>
-              <dd>@if (d.localisation.quartier) { {{ d.localisation.quartier }} } @else { <span class="absent">—</span> }</dd>
-            </div>
-            <div><dt>Arrondissement</dt>
-              <dd>@if (d.localisation.arrondissement) { {{ d.localisation.arrondissement }} } @else { <span class="absent">—</span> }</dd>
-            </div>
-            <div><dt>Coordonnée X</dt><dd>{{ d.localisation.coordX || '—' }}</dd></div>
-            <div><dt>Coordonnée Y</dt><dd>{{ d.localisation.coordY || '—' }}</dd></div>
-            <div><dt>Latitude</dt><dd>{{ d.localisation.latitude || '—' }}</dd></div>
-            <div><dt>Longitude</dt><dd>{{ d.localisation.longitude || '—' }}</dd></div>
-            <div class="full"><dt>Description</dt>
-              <dd>@if (d.localisation.description) { {{ d.localisation.description }} } @else { <span class="absent">Aucune description</span> }</dd>
+            <div class="full"><dt>Coordonnées</dt>
+              <dd>@if (d.localisation.description) { {{ d.localisation.description }} } @else { <span class="absent">Non renseignées</span> }</dd>
             </div>
           </dl>
-          <p class="muted small" style="margin-top: 1rem;">
-            <du-icon name="pin" [size]="14" /> Carte interactive non disponible (démonstration).
-          </p>
         </div>
       </section>
 
@@ -132,31 +133,29 @@
         </div>
       </section>
 
-      <!-- Historique des mouvements -->
+      <!-- Historique réel -->
       <section class="card">
         <div class="card__header">
-          <h2>Historique des mouvements</h2>
-          <span class="badge badge--neutral">{{ mouvements().length }}</span>
+          <h2>Historique</h2>
+          <span class="badge badge--neutral">{{ timeline().length }}</span>
         </div>
         <div class="card__body">
           @if (timeline().length) {
             <ol class="timeline">
-              @for (m of timeline(); track m.id) {
+              @for (ev of timeline(); track ev.id) {
                 <li class="timeline__item">
                   <div class="timeline__head">
-                    <span class="timeline__date">{{ m.date | date: 'dd/MM/yyyy' }}</span>
-                    <span class="badge badge--neutral">{{ m.de }}</span>
-                    <span class="flux">→</span>
-                    <span class="badge badge--info">{{ m.vers }}</span>
+                    <span class="timeline__date">{{ ev.date ? (ev.date | date: 'dd/MM/yyyy HH:mm') : '—' }}</span>
+                    <span class="badge badge--neutral">{{ ev.source }}</span>
+                    @if (ev.service) { <span class="badge badge--info">{{ ev.service }}</span> }
                   </div>
-                  <p class="timeline__action">{{ m.action }}</p>
-                  <p class="timeline__obs">{{ m.motif || 'Sans observation' }}</p>
-                  <div class="timeline__agent muted small">Agent : {{ m.auteur || 'Non renseigné' }}</div>
+                  <p class="timeline__action">{{ ev.titre }}</p>
+                  <div class="timeline__agent muted small">Agent : {{ ev.auteur || 'Non renseigné' }}</div>
                 </li>
               }
             </ol>
           } @else {
-            <p class="absent">Aucun mouvement enregistré pour ce dossier.</p>
+            <p class="absent">Aucun événement enregistré pour ce dossier.</p>
           }
         </div>
       </section>
@@ -185,26 +184,112 @@
         </div>
       </section>
 
-      <!-- Suivi -->
+      <!-- Suivi / workflow -->
       <section class="card">
         <div class="card__header"><h2>Suivi</h2><du-status-badge [statut]="d.statut" /></div>
         <div class="card__body">
           <dl class="dl">
             <div><dt>Service actuel</dt><dd>{{ d.service }} — {{ serviceLabel[d.service] }}</dd></div>
             <div><dt>Étape</dt><dd>{{ etapeLabel[d.etape] }}</dd></div>
-            <div><dt>Priorité</dt><dd><du-priority-badge [priorite]="d.priorite" /></dd></div>
-            <div><dt>Agent</dt><dd>{{ d.agent || 'Non affecté' }}</dd></div>
           </dl>
-          <div class="field" style="margin-top: 1rem;">
-            <label for="nouveau-statut">Changer le statut</label>
-            <select #s id="nouveau-statut" class="input" [value]="d.statut" (change)="changerStatut(s.value)">
-              @for (x of statuts; track x) { <option [value]="x">{{ statutLabel[x] }}</option> }
-            </select>
+          @if (etapeCourante()) {
+            <p class="muted small" style="margin-top: 0.75rem;">Étape du circuit : <strong>{{ etapeCourante() }}</strong></p>
+          }
+          <div class="actions-stack">
+            @if (transitions().length) {
+              @for (t of transitions(); track t.code) {
+                <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours()" (click)="avancer(t)">
+                  {{ t.label }}@if (t.admin_only) { <span class="muted small"> (administrateur système)</span> }
+                </button>
+              }
+            } @else {
+              <p class="absent">Aucune transition disponible depuis cet état.</p>
+            }
           </div>
         </div>
       </section>
 
-      <!-- 5. Documents associés -->
+      <!-- Transferts entre services -->
+      <section class="card">
+        <div class="card__header">
+          <h2>Transferts</h2>
+          <span class="badge badge--neutral">{{ transferts().length }}</span>
+        </div>
+        <div class="card__body">
+          @if (transfertEnAttente(); as enAttente) {
+            <div class="transfert-item">
+              <div class="transfert-item__entete">
+                <span class="badge badge--warning">En attente</span>
+                <span class="badge badge--neutral">{{ enAttente.service_depart }}</span>
+                <span class="flux">→</span>
+                <span class="badge badge--info">{{ enAttente.service_arrivee }}</span>
+              </div>
+              <p class="muted small">{{ enAttente.motif || 'Sans motif' }}</p>
+              <div class="transfert-form">
+                <div class="field">
+                  <label for="noteReception">Note de réception (facultatif)</label>
+                  <input id="noteReception" class="input" [value]="noteReception()" (input)="noteReception.set($any($event.target).value)" />
+                </div>
+                <div class="actions-ligne">
+                  <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours()" (click)="receptionner(enAttente)">Réceptionner</button>
+                </div>
+                <div class="field">
+                  <label for="motifRetour">Motif de retour (obligatoire pour retourner)</label>
+                  <input id="motifRetour" class="input" [value]="motifRetour()" (input)="motifRetour.set($any($event.target).value)" />
+                </div>
+                <div class="actions-ligne">
+                  <button type="button" class="btn btn--secondary btn--sm" [disabled]="enCours() || !motifRetour().trim()" (click)="retourner(enAttente)">Retourner à l’expéditeur</button>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="transfert-form">
+              <div class="field">
+                <label for="serviceDestination">Service destinataire</label>
+                <select id="serviceDestination" class="input"
+                        [value]="serviceDestination()"
+                        (change)="serviceDestination.set($any($event.target).value)">
+                  @for (s of services; track s) { <option [value]="s">{{ s }} — {{ serviceLabel[s] }}</option> }
+                </select>
+              </div>
+              <div class="field">
+                <label for="motifTransfert">Motif (facultatif)</label>
+                <input id="motifTransfert" class="input" [value]="motifTransfert()" (input)="motifTransfert.set($any($event.target).value)" />
+              </div>
+              <div class="actions-ligne">
+                <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours()" (click)="transferer()">
+                  <du-icon name="swap" [size]="15" /> Transférer le dossier
+                </button>
+              </div>
+            </div>
+
+            @if (transferts().length) {
+              @for (m of transferts(); track m.id) {
+                <div class="transfert-item">
+                  <div class="transfert-item__entete">
+                    <span class="badge badge--neutral">{{ m.service_depart }}</span>
+                    <span class="flux">→</span>
+                    <span class="badge badge--info">{{ m.service_arrivee }}</span>
+                    @switch (m.state) {
+                      @case ('envoye') { <span class="badge badge--warning">Envoyé</span> }
+                      @case ('recu') { <span class="badge badge--success">Reçu</span> }
+                      @case ('retourne') { <span class="badge badge--danger">Retourné</span> }
+                    }
+                  </div>
+                  <p class="muted small">
+                    {{ m.date_expedition ? (m.date_expedition | date: 'dd/MM/yyyy') : '—' }}
+                    @if (m.motif) { · {{ m.motif }} }
+                  </p>
+                </div>
+              }
+            } @else {
+              <p class="absent">Aucun transfert enregistré pour ce dossier.</p>
+            }
+          }
+        </div>
+      </section>
+
+      <!-- Documents associés -->
       <section class="card">
         <div class="card__header">
           <h2>Documents associés</h2>
@@ -218,26 +303,40 @@
                   <div class="docs__row">
                     <span class="docs__icon"><du-icon name="file" [size]="16" /></span>
                     <div class="docs__info">
-                      <div class="docs__nom">{{ doc.nom }}</div>
-                      <div class="muted small">{{ typeDocumentLabel[doc.type] }} · {{ doc.dateDepot | date: 'dd/MM/yyyy' }}</div>
+                      <div class="docs__nom">{{ doc.nom || 'Document' }}</div>
+                      <div class="muted small">
+                        {{ doc.libelle || doc.type || 'Pièce jointe' }}
+                        @if (doc.created_at) { · {{ doc.created_at | date: 'dd/MM/yyyy' }} }
+                        · {{ formatTaille(doc.taille) }}
+                      </div>
                     </div>
-                    <button type="button" class="btn btn--secondary btn--sm" (click)="basculerDocument(doc.id)">
-                      {{ documentOuvert() === doc.id ? 'Fermer' : 'Détails' }}
+                    <button type="button" class="btn btn--secondary btn--sm" (click)="telecharger(doc)">
+                      <du-icon name="file" [size]="15" /> Télécharger
                     </button>
                   </div>
-                  @if (documentOuvert() === doc.id) {
-                    <div class="docs__detail">
-                      <div><strong>Taille :</strong> {{ doc.taille || '—' }}</div>
-                      <div><strong>Déposé par :</strong> {{ doc.deposePar || 'Non renseigné' }}</div>
-                      <div class="muted small" style="margin-top: 0.35rem;">Aperçu du fichier non disponible (démonstration).</div>
-                    </div>
-                  }
                 </li>
               }
             </ul>
           } @else {
             <p class="absent">Aucun document associé à ce dossier.</p>
           }
+
+          <div class="transfert-form" style="margin-top: 1rem;">
+            <div class="field">
+              <label for="fichierDocument">Ajouter un document (PDF, image, Office — 50 Mo max)</label>
+              <input id="fichierDocument" type="file" class="input" (change)="choisirFichier($event)"
+                     accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" />
+            </div>
+            <div class="field">
+              <label for="libelleDocument">Libellé (facultatif)</label>
+              <input id="libelleDocument" class="input" [value]="libelleDocument()" (input)="libelleDocument.set($any($event.target).value)" />
+            </div>
+            <div class="actions-ligne">
+              <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours() || !fichierSelectionne()" (click)="deposerDocument()">
+                Déposer le document
+              </button>
+            </div>
+          </div>
         </div>
       </section>
     </div>

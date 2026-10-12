@@ -2,9 +2,28 @@
   [title]="edition ? 'Modifier le dossier' : 'Nouveau dossier'"
   subtitle="Les champs marqués d’un astérisque (*) sont obligatoires" />
 
-<p class="demo-note" role="note">
-  Formulaire de démonstration — l’enregistrement est simulé localement, aucune donnée n’est envoyée à un serveur.
+@if (edition && chargementDetail()) {
+  <section class="card">
+    <div class="card__body">
+      <p><strong>Chargement du dossier…</strong></p>
+    </div>
+  </section>
+} @else if (edition && erreurDetail()) {
+  <section class="card">
+    <div class="card__body">
+      <p class="form-message form-message--erreur" role="alert">{{ erreurDetail() }}</p>
+      <a routerLink="/admin/dossiers" class="btn btn--secondary">Retour à la liste</a>
+    </div>
+  </section>
+} @else {
+<p class="api-note" role="note">
+  Les champs indiqués « non enregistré par l’API » restent affichés (canevas Excel) mais ne sont pas persistés :
+  l’API Laravel ne gère que les 20 champs métier du dossier.
 </p>
+
+@if (erreurAction()) {
+  <p class="form-message form-message--erreur" role="alert">{{ erreurAction() }}</p>
+}
 
 <form class="form-sections" [formGroup]="form" (ngSubmit)="enregistrer()" novalidate>
   <!-- 1. Informations du dossier -->
@@ -15,7 +34,7 @@
         <div class="field">
           <label for="numero">NUM_BD — Numéro du dossier *</label>
           <input id="numero" class="input" formControlName="numero" [class.is-invalid]="invalide('infos.numero')" />
-          <span class="hint">Numéro temporaire pour la démonstration (ex. « À attribuer »).</span>
+          <span class="hint">Numéro du dossier (canevas NUM_BD).</span>
           @if (invalide('infos.numero')) { <span class="error">{{ message('infos.numero') }}</span> }
         </div>
 
@@ -74,25 +93,28 @@
         </div>
 
         <div class="field">
-          <label for="prenom">Prénom *</label>
-          <input id="prenom" class="input" formControlName="prenom" [class.is-invalid]="invalide('contrevenant.prenom')" autocomplete="given-name" />
-          @if (invalide('contrevenant.prenom')) { <span class="error">{{ message('contrevenant.prenom') }}</span> }
+          <label for="prenom">Prénom</label>
+          <input id="prenom" class="input" formControlName="prenom" autocomplete="given-name" />
+          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field">
           <label for="telephone">Téléphone</label>
           <input id="telephone" type="tel" class="input" formControlName="telephone" placeholder="034 00 000 00" [class.is-invalid]="invalide('contrevenant.telephone')" />
+          <span class="hint hint--absent">Non enregistré par l’API.</span>
           @if (invalide('contrevenant.telephone')) { <span class="error">{{ message('contrevenant.telephone') }}</span> }
         </div>
 
         <div class="field">
           <label for="adresseContrevenant">Adresse</label>
           <input id="adresseContrevenant" class="input" formControlName="adresse" />
+          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field full">
           <label for="observationsContrevenant">Observations</label>
           <textarea id="observationsContrevenant" class="input" formControlName="observations"></textarea>
+          <span class="hint hint--absent">Reprise dans OBS si les observations générales sont vides.</span>
         </div>
       </div>
     </div>
@@ -110,18 +132,18 @@
         </div>
 
         <div class="field">
-          <label for="quartier">Quartier *</label>
-          <input id="quartier" class="input" formControlName="quartier" [class.is-invalid]="invalide('localisation.quartier')" />
-          @if (invalide('localisation.quartier')) { <span class="error">{{ message('localisation.quartier') }}</span> }
+          <label for="quartier">Quartier</label>
+          <input id="quartier" class="input" formControlName="quartier" />
+          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field">
-          <label for="arrondissement">Arrondissement *</label>
-          <select id="arrondissement" class="input" formControlName="arrondissement" [class.is-invalid]="invalide('localisation.arrondissement')">
+          <label for="arrondissement">Arrondissement</label>
+          <select id="arrondissement" class="input" formControlName="arrondissement">
             <option value="">Sélectionner…</option>
             @for (a of arrondissements; track a) { <option [value]="a">{{ a }}</option> }
           </select>
-          @if (invalide('localisation.arrondissement')) { <span class="error">{{ message('localisation.arrondissement') }}</span> }
+          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field full">
@@ -231,45 +253,55 @@
   <section class="card">
     <div class="card__header"><h2>Suivi du dossier</h2></div>
     <div class="card__body">
+      <p class="hint" style="margin: 0 0 0.75rem;">
+        Le service n’est transmis qu’à la création ; l’étape et le statut sont pilotés par le serveur (workflow).
+        Les autres champs de cette section ne sont pas enregistrés par l’API.
+      </p>
       <div class="form-grid">
         <div class="field">
-          <label for="type">Type d’infraction *</label>
+          <label for="type">Type d’infraction</label>
           <select id="type" class="input" formControlName="type">
             @for (t of types; track t) { <option [value]="t">{{ typeLabel[t] }}</option> }
           </select>
+          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field">
           <label for="service">Service *</label>
           <select id="service" class="input" formControlName="service">
-            @for (s of services; track s) { <option [value]="s">{{ s }}</option> }
+            @for (s of services; track s) { <option [value]="s">{{ serviceLabel[s] }}</option> }
           </select>
+          <span class="hint">Utilisé à la création ; ensuite modifié via les transferts.</span>
         </div>
 
         <div class="field">
-          <label for="etape">Étape actuelle *</label>
+          <label for="etape">Étape actuelle</label>
           <select id="etape" class="input" formControlName="etape">
             @for (e of etapes; track e) { <option [value]="e">{{ etapeLabel[e] }}</option> }
           </select>
+          <span class="hint">Pilotée par le serveur (workflow).</span>
         </div>
 
         <div class="field">
-          <label for="statut">Statut *</label>
+          <label for="statut">Statut</label>
           <select id="statut" class="input" formControlName="statut">
             @for (s of statuts; track s) { <option [value]="s">{{ statutLabel[s] }}</option> }
           </select>
+          <span class="hint">Piloté par le serveur (workflow).</span>
         </div>
 
         <div class="field">
-          <label for="priorite">Priorité *</label>
+          <label for="priorite">Priorité</label>
           <select id="priorite" class="input" formControlName="priorite">
             @for (p of priorites; track p) { <option [value]="p">{{ prioriteLabel[p] }}</option> }
           </select>
+          <span class="hint hint--absent">Non enregistrée par l’API.</span>
         </div>
 
         <div class="field">
           <label for="agent">Agent responsable</label>
           <input id="agent" class="input" formControlName="agent" />
+          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field full">
@@ -277,11 +309,13 @@
             <input type="checkbox" formControlName="attentionRequise" />
             <span>Signaler ce dossier en « attention particulière »</span>
           </label>
+          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field full">
           <label for="motifAttention">Motif de l’attention</label>
           <input id="motifAttention" class="input" formControlName="motifAttention" placeholder="Ex. mise en demeure proche, pièce manquante…" />
+          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
       </div>
     </div>
@@ -290,7 +324,10 @@
   <div class="card">
     <div class="card__body form-actions">
       <a [routerLink]="edition ? ['/admin/dossiers', id] : ['/admin/dossiers']" class="btn btn--secondary">Annuler</a>
-      <button type="submit" class="btn btn--primary">Enregistrer</button>
+      <button type="submit" class="btn btn--primary" [disabled]="enCours()">
+        @if (enCours()) { Enregistrement… } @else { Enregistrer }
+      </button>
     </div>
   </div>
 </form>
+}
