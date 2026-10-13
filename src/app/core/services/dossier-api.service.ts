@@ -6,6 +6,7 @@ import {
   DocumentDto,
   DossierDto,
   FiltresDossiers,
+  FiltresTransferts,
   HistoriqueResponse,
   MouvementDto,
   PayloadReception,
@@ -85,6 +86,20 @@ export class DossierApiService {
   /** Historique des transferts (`GET /dossiers/{id}/transferts`). */
   transferts(id: number | string): Observable<ReponseRessource<MouvementDto[]>> {
     return this.http.get<ReponseRessource<MouvementDto[]>>(`${this.base}/dossiers/${id}/transferts`);
+  }
+
+  /** Liste globale paginée des transferts (`GET /transferts`). */
+  listerTransferts(filtres: FiltresTransferts): Observable<ReponsePaginee<MouvementDto>> {
+    let params = new HttpParams();
+    const entrees: Record<string, unknown> = { ...filtres };
+
+    for (const [cle, valeur] of Object.entries(entrees)) {
+      if (valeur !== undefined && valeur !== null && valeur !== '') {
+        params = params.set(cle, String(valeur));
+      }
+    }
+
+    return this.http.get<ReponsePaginee<MouvementDto>>(`${this.base}/transferts`, { params });
   }
 
   /** Envoi d'un transfert (`POST /dossiers/{id}/transferts`). */

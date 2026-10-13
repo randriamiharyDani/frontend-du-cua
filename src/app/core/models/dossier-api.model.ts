@@ -47,10 +47,14 @@ export type MouvementState = 'envoye' | 'recu' | 'retourne';
 export interface MouvementDto {
   id: number;
   dossier_id: number;
+  dossier_reference?: string | null;
+  dossier_objet?: string | null;
   service_depart: ServiceDossier | null;
   service_arrivee: ServiceDossier | null;
   agent_expediteur: number | null;
   agent_destinataire: number | null;
+  expediteur?: UtilisateurResume | null;
+  destinataire?: UtilisateurResume | null;
   motif: string | null;
   description: string | null;
   state: MouvementState | null;
@@ -184,6 +188,18 @@ export interface FiltresDossiers {
   etape?: EtapeDossier | '';
   statut?: StatutDossier | '';
   date_entree?: string;
+  per_page?: number;
+  page?: number;
+}
+
+/** Filtres acceptés par `GET /transferts` (IndexTransfertRequest). */
+export interface FiltresTransferts {
+  search?: string;
+  service?: ServiceDossier | '';
+  state?: MouvementState | '';
+  dossier_id?: number | '';
+  du?: string;
+  au?: string;
   per_page?: number;
   page?: number;
 }

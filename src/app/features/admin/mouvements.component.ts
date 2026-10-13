@@ -1,190 +1,205 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { Observable } from 'rxjs';
+import { SERVICES, ServiceDossier } from '../../core/models/dossier.model';
 import {
-  ETAPE_LABEL,
-  ETAPES,
-  EtapeDossier,
-  MouvementFormValue,
-  SERVICES,
-  ServiceDossier,
-} from '../../core/models/dossier.model';
-import { DossierStore } from '../../core/state/dossier-store';
-import { ADMIN_CURRENT_USER } from '../../layout/admin-navigation';
+  FiltresTransferts,
+  MouvementDto,
+  MouvementState,
+} from '../../core/models/dossier-api.model';
+import { DossierApiService } from '../../core/services/dossier-api.service';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
-const aujourdHui = () => new Date().toISOString().slice(0, 10);
+/** États de transfert (alignés sur l'enum backend MouvementState). */
+const ETATS: readonly MouvementState[] = ['envoye', 'recu', 'retourne'];
 
-const normaliser = (s: string) =>
-  (s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+const ETAT_LABEL: Record<MouvementState, string> = {
+  envoye: 'Envoyé',
+  recu: 'Reçu',
+  retourne: 'Retourné',
+};
 
-/** Le service d’arrivée doit être différent du service de départ. */
-function servicesDifferents(groupe: AbstractControl): ValidationErrors | null {
-  const de = groupe.get('de')?.value;
-  const vers = groupe.get('vers')?.value;
-  return de && vers && de === vers ? { memeService: true } : null;
-}
+const ETAT_BADGE: Record<MouvementState, string> = {
+  envoye: 'badge badge--warning',
+  recu: 'badge badge--success',
+  retourne: 'badge badge--danger',
+};
 
-/** Page « Mouvements » : circulation des dossiers entre DU, DIS et SCAD. */
+/**
+ * Page « Mouvements » : liste globale des transferts réels (`GET /api/transferts`).
+ * Lecture seule + réception / retour du transfert en attente via les endpoints
+ * métier existants (`POST .../reception`, `POST .../retour`).
+ * Aucune donnée simulée : tout transite par le backend (portée par service).
+ */
 @Component({
   selector: 'du-page-mouvements',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe, IconComponent, PageHeaderComponent],
+  imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './mouvements.component.html',
   styleUrl: './mouvements.component.scss',
-  host: { '(document:keydown.escape)': 'fermerFormulaire()' },
 })
 export class MouvementsComponent {
-  private readonly store = inject(DossierStore);
-  private readonly fb = inject(NonNullableFormBuilder);
+  private readonly api = inject(DossierApiService);
 
   protected readonly services = SERVICES;
-  protected readonly etapes = ETAPES;
-  protected readonly etapeLabel = ETAPE_LABEL;
-  protected readonly dossiers = this.store.dossiers;
-  protected readonly utilisateur = ADMIN_CURRENT_USER;
+  protected readonly etats = ETATS;
+  protected readonly etatLabel = ETAT_LABEL;
+  protected readonly etatBadge = ETAT_BADGE;
 
-  // --- Filtres ---
+  // --- Filtres (serveur) ---
   protected readonly recherche = signal('');
   protected readonly service = signal<ServiceDossier | ''>('');
-  protected readonly action = signal('');
+  protected readonly etat = signal<MouvementState | ''>('');
   protected readonly du = signal('');
   protected readonly au = signal('');
-  private readonly page = signal(1);
   protected readonly taillePage = 8;
 
-  /** Bandeau de confirmation temporaire (simulation). */
+  // --- État liste ---
+  protected readonly mouvements = signal<MouvementDto[]>([]);
+  protected readonly chargement = signal(false);
+  protected readonly erreur = signal('');
+  protected readonly page = signal(1);
+  protected readonly dernierPage = signal(1);
+  protected readonly total = signal(0);
+
+  // --- Actions réception / retour ---
+  protected readonly actionEnCours = signal<number | null>(null);
   protected readonly messageSucces = signal('');
+  protected readonly messageErreur = signal('');
 
-  /** Actions distinctes présentes dans les données, pour le filtre. */
-  protected readonly actionsDisponibles = computed(() =>
-    [...new Set(this.store.mouvements().map((m) => m.action).filter(Boolean))].sort((a, b) =>
-      a.localeCompare(b),
-    ),
-  );
-
-  /** Mouvements filtrés, du plus récent au plus ancien. */
-  protected readonly filtres = computed(() => {
-    const q = normaliser(this.recherche().trim());
-    const service = this.service();
-    const action = this.action();
-    const du = this.du();
-    const au = this.au();
-    return this.store
-      .mouvements()
-      .filter((m) => {
-        if (service && m.de !== service && m.vers !== service) return false;
-        if (action && m.action !== action) return false;
-        if (du && m.date < du) return false;
-        if (au && m.date > au) return false;
-        if (!q) return true;
-        const hay = normaliser(
-          [m.reference, m.titre, m.action, m.referenceDocument, m.auteur, m.motif].join(' '),
-        );
-        return hay.includes(q);
-      })
-      .sort((a, b) => b.date.localeCompare(a.date));
-  });
-
-  protected readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filtres().length / this.taillePage)),
-  );
-  protected readonly pageCourante = computed(() => Math.min(this.page(), this.totalPages()));
-  protected readonly affiches = computed(() => {
-    const debut = (this.pageCourante() - 1) * this.taillePage;
-    return this.filtres().slice(debut, debut + this.taillePage);
-  });
   protected readonly filtresActifs = computed(
-    () => !!(this.recherche() || this.service() || this.action() || this.du() || this.au()),
+    () => !!(this.recherche() || this.service() || this.etat() || this.du() || this.au()),
   );
 
-  // --- Formulaire de saisie ---
-  protected readonly formulaireOuvert = signal(false);
-  protected readonly form = this.fb.group(
-    {
-      dossierId: ['', Validators.required],
-      date: [aujourdHui(), Validators.required],
-      de: ['DU' as ServiceDossier, Validators.required],
-      vers: ['DIS' as ServiceDossier, Validators.required],
-      etape: ['constat' as EtapeDossier, Validators.required],
-      action: ['', [Validators.required, Validators.minLength(3)]],
-      observations: [''],
-    },
-    { validators: servicesDifferents },
-  );
-
-  protected ouvrirFormulaire(): void {
-    this.form.reset({
-      dossierId: '',
-      date: aujourdHui(),
-      de: 'DU',
-      vers: 'DIS',
-      etape: 'constat',
-      action: '',
-      observations: '',
-    });
-    this.formulaireOuvert.set(true);
+  constructor() {
+    this.charger();
   }
 
-  protected fermerFormulaire(): void {
-    this.formulaireOuvert.set(false);
-  }
+  /** Interroge `GET /api/transferts` avec les filtres courants. */
+  private charger(): void {
+    this.chargement.set(true);
+    this.erreur.set('');
 
-  protected invalide(champ: string): boolean {
-    const c = this.form.get(champ);
-    return !!c && c.invalid && (c.touched || c.dirty);
-  }
-
-  /** Valide puis simule l’ajout local du mouvement + mise à jour du dossier. */
-  protected enregistrer(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-    const brut = this.form.getRawValue();
-    const valeur: MouvementFormValue = {
-      dossierId: brut.dossierId,
-      date: brut.date,
-      de: brut.de,
-      vers: brut.vers,
-      etape: brut.etape,
-      action: brut.action.trim(),
-      observations: brut.observations.trim(),
-      auteur: this.utilisateur.nom,
-      referenceDocument: '',
+    const filtres: FiltresTransferts = {
+      search: this.recherche().trim(),
+      service: this.service(),
+      state: this.etat(),
+      du: this.du(),
+      au: this.au(),
+      per_page: this.taillePage,
+      page: this.page(),
     };
-    this.store.addMouvement(valeur);
-    this.fermerFormulaire();
-    this.reinitialiser();
-    this.messageSucces.set(
-      'Mouvement ajouté localement (simulation) — le service du dossier a été mis à jour. Non enregistré de façon permanente.',
-    );
-    window.setTimeout(() => this.messageSucces.set(''), 6000);
+
+    this.api.listerTransferts(filtres).subscribe({
+      next: (reponse) => {
+        this.mouvements.set(reponse.data ?? []);
+        this.page.set(reponse.meta.current_page);
+        this.dernierPage.set(reponse.meta.last_page);
+        this.total.set(reponse.meta.total);
+        this.chargement.set(false);
+      },
+      error: (e: unknown) => {
+        this.erreur.set(this.lireErreur(e));
+        this.chargement.set(false);
+      },
+    });
   }
 
   private resetPage(): void {
     this.page.set(1);
   }
-  protected setRecherche(v: string): void { this.recherche.set(v); this.resetPage(); }
-  protected setService(v: string): void { this.service.set(v as ServiceDossier | ''); this.resetPage(); }
-  protected setAction(v: string): void { this.action.set(v); this.resetPage(); }
-  protected setDu(v: string): void { this.du.set(v); this.resetPage(); }
-  protected setAu(v: string): void { this.au.set(v); this.resetPage(); }
-  protected allerA(p: number): void { this.page.set(Math.min(Math.max(1, p), this.totalPages())); }
 
-  /** Applique les filtres en revenant à la première page. */
+  protected setRecherche(v: string): void { this.recherche.set(v); }
+  protected setService(v: string): void { this.service.set(v as ServiceDossier | ''); }
+  protected setEtat(v: string): void { this.etat.set(v as MouvementState | ''); }
+  protected setDu(v: string): void { this.du.set(v); }
+  protected setAu(v: string): void { this.au.set(v); }
+
+  protected allerA(p: number): void {
+    const cible = Math.min(Math.max(1, p), this.dernierPage());
+    this.page.set(cible);
+    this.charger();
+  }
+
+  /** Relance la recherche depuis la première page. */
   protected rechercher(): void {
     this.resetPage();
+    this.charger();
   }
 
   protected reinitialiser(): void {
     this.recherche.set('');
     this.service.set('');
-    this.action.set('');
+    this.etat.set('');
     this.du.set('');
     this.au.set('');
     this.page.set(1);
+    this.charger();
+  }
+
+  /** Réceptionne le transfert en attente (`state === 'envoye'`). */
+  protected receptionner(m: MouvementDto): void {
+    if (!this.confirmer(`Confirmer la réception du dossier « ${this.refDossier(m)} » ?`)) return;
+    this.executerAction(m, () =>
+      this.api.receptionnerTransfert(m.dossier_id, m.id, {}),
+    );
+  }
+
+  /** Retourne le transfert en attente à l'expéditeur (motif obligatoire). */
+  protected retourner(m: MouvementDto): void {
+    const motif = typeof window === 'undefined' ? '' : window.prompt('Motif du retour à l’expéditeur (obligatoire) :', '') ?? '';
+    if (!motif.trim()) return;
+    if (!this.confirmer(`Retourner le dossier « ${this.refDossier(m)} » à l’expéditeur ?`)) return;
+    this.executerAction(m, () =>
+      this.api.retournerTransfert(m.dossier_id, m.id, { motif: motif.trim() }),
+    );
+  }
+
+  private executerAction(m: MouvementDto, op: () => Observable<unknown>): void {
+    this.actionEnCours.set(m.id);
+    this.messageSucces.set('');
+    this.messageErreur.set('');
+    op().subscribe({
+      next: () => {
+        this.messageSucces.set('Opération enregistrée.');
+        this.actionEnCours.set(null);
+        this.charger();
+      },
+      error: (e: unknown) => {
+        this.messageErreur.set(this.lireErreur(e));
+        this.actionEnCours.set(null);
+      },
+    });
+  }
+
+  protected refDossier(m: MouvementDto): string {
+    return m.dossier_reference || `Dossier n°${m.dossier_id}`;
+  }
+
+  protected expediteur(m: MouvementDto): string {
+    return m.expediteur?.name ?? '—';
+  }
+
+  protected destinataire(m: MouvementDto): string {
+    return m.destinataire?.name ?? '—';
+  }
+
+  private confirmer(message: string): boolean {
+    if (typeof window === 'undefined') return true;
+    return window.confirm(message);
+  }
+
+  private lireErreur(e: unknown): string {
+    const err = e as { error?: { message?: string }; status?: number; message?: string };
+    if (err?.error && typeof err.error.message === 'string' && err.error.message.trim()) {
+      return err.error.message;
+    }
+    if (err?.status === 0) return 'Serveur injoignable. Vérifiez que l’API Laravel est démarrée.';
+    if (err?.status === 403) return 'Accès refusé : hors de votre périmètre de service.';
+    if (err?.status === 404) return 'Ressource introuvable.';
+    if (typeof err?.status === 'number' && err.status >= 500) return 'Erreur serveur. Réessayez plus tard.';
+    return err?.message || 'Une erreur inattendue est survenue.';
   }
 }
