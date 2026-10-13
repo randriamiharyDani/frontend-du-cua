@@ -18,7 +18,7 @@
     <div class="filtres">
       <div class="field champ-recherche">
         <label for="recherche">Recherche</label>
-        <input #q id="recherche" class="input" type="search" placeholder="N° dossier, action, agent, référence�?�"
+        <input #q id="recherche" class="input" type="search" placeholder="N° dossier, action, agent, référence…"
                [value]="recherche()" (input)="setRecherche(q.value)" />
       </div>
       <div class="field">
@@ -29,7 +29,7 @@
         </select>
       </div>
       <div class="field">
-        <label for="etat">�?tat</label>
+        <label for="etat">État</label>
         <select #e id="etat" class="input" [value]="etat()" (change)="setEtat(e.value)">
           <option value="">Tous</option>
           @for (x of etats; track x) { <option [value]="x">{{ etatLabel[x] }}</option> }
@@ -56,7 +56,7 @@
 <section class="card">
   @if (chargement()) {
     <div class="empty-state">
-      <p><strong>Chargement des mouvements�?�</strong></p>
+      <p><strong>Chargement des mouvements…</strong></p>
     </div>
   } @else if (erreur()) {
     <div class="empty-state">
@@ -69,11 +69,11 @@
       <table class="table">
         <thead>
           <tr>
-            <th>Date d�?Texpédition</th>
+            <th>Date d'expédition</th>
             <th>N° dossier</th>
             <th>Départ</th>
             <th>Arrivée</th>
-            <th>�?tat</th>
+            <th>État</th>
             <th class="hide-md">Expéditeur</th>
             <th class="hide-md">Destinataire</th>
             <th class="hide-lg">Motif</th>
@@ -83,25 +83,25 @@
         <tbody>
           @for (m of mouvements(); track m.id) {
             <tr>
-              <td class="nowrap">{{ m.date_expedition ? (m.date_expedition | date: 'dd/MM/yyyy') : '�?"' }}</td>
+              <td class="nowrap">{{ m.date_expedition ? (m.date_expedition | date: 'dd/MM/yyyy') : '—' }}</td>
               <td>
                 <a [routerLink]="['/admin/dossiers', m.dossier_id]">{{ refDossier(m) }}</a>
                 @if (m.dossier_objet) {
                   <div class="muted small">{{ m.dossier_objet }}</div>
                 }
               </td>
-              <td><span class="badge badge--neutral">{{ m.service_depart || '�?"' }}</span></td>
-              <td><span class="badge badge--info">{{ m.service_arrivee || '�?"' }}</span></td>
+              <td><span class="badge badge--neutral">{{ m.service_depart || '—' }}</span></td>
+              <td><span class="badge badge--info">{{ m.service_arrivee || '—' }}</span></td>
               <td>
                 @if (m.state) {
                   <span [class]="etatBadge[m.state]">{{ etatLabel[m.state] }}</span>
                 } @else {
-                  <span class="badge">�?"</span>
+                  <span class="badge">—</span>
                 }
               </td>
               <td class="hide-md">{{ expediteur(m) }}</td>
               <td class="hide-md">{{ destinataire(m) }}</td>
-              <td class="hide-lg obs">{{ m.motif || m.description || m.state_note || '�?"' }}</td>
+              <td class="hide-lg obs">{{ m.motif || m.description || m.state_note || '—' }}</td>
               <td class="actions">
                 <a [routerLink]="['/admin/dossiers', m.dossier_id]" class="btn btn--secondary btn--sm">
                   <du-icon name="eye" [size]="15" /> Consulter
@@ -144,5 +144,3 @@
   Les transferts se créent depuis la fiche dossier (workflow métier). Cette page liste,
   réceptionne et retourne les transferts en attente.
 </p>
-
-
