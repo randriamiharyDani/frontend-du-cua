@@ -66,6 +66,11 @@ export class DossierApiService {
     return this.http.put<ReponseRessource<DossierDto>>(`${this.base}/dossiers/${id}`, corps);
   }
 
+  /** Suppression logique (`DELETE /dossiers/{id}`). */
+  supprimer(id: number | string): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.base}/dossiers/${id}`);
+  }
+
   /** État de workflow + transitions disponibles (`GET /dossiers/{id}/workflow`). */
   workflow(id: number | string): Observable<WorkflowState> {
     return this.http.get<WorkflowState>(`${this.base}/dossiers/${id}/workflow`);

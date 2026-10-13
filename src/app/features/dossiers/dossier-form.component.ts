@@ -193,12 +193,14 @@ export class DossierFormComponent {
     if (this.id) {
       this.store.modifier(this.id, valeur).subscribe({
         next: () => this.router.navigate(['/admin/dossiers', this.id]),
+        error: () => undefined,
       });
       return;
     }
 
     this.store.creer(valeur).subscribe({
       next: (dossier) => this.router.navigate(['/admin/dossiers', dossier.id]),
+      error: () => undefined,
     });
   }
 }

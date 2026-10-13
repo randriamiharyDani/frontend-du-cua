@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { formatTaille } from '../../core/mappers/dossier.mapper';
 import { DocumentDto, MouvementDto, TransitionOption } from '../../core/models/dossier-api.model';
@@ -195,6 +195,7 @@ interface EvenementAffiche {
 })
 export class DossierDetailComponent {
   private readonly store = inject(DossierApiStore);
+  private readonly router = inject(Router);
   private readonly id = toSignal(
     inject(ActivatedRoute).paramMap.pipe(map((p) => p.get('id') ?? '')),
     { initialValue: '' },
@@ -353,6 +354,17 @@ export class DossierDetailComponent {
   protected recharger(): void {
     const id = this.id();
     if (id) this.store.chargerDetail(id);
+  }
+
+  /** Supprime logiquement le dossier après confirmation, puis retourne à la liste. */
+  protected supprimer(): void {
+    const d = this.dossier();
+    const id = this.id();
+    if (!d || !id) return;
+    if (!this.confirmer(`Supprimer le dossier « ${d.reference || d.infos.numero || `#${d.id}`} » ?`)) return;
+    this.store.supprimer(id).subscribe({
+      next: () => void this.router.navigate(['/admin/dossiers']),
+    });
   }
 
   private confirmer(message: string): boolean {

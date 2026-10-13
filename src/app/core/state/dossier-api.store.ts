@@ -160,17 +160,52 @@ export class DossierApiStore {
   /** Crée un dossier à partir des valeurs du formulaire. */
   creer(valeur: DossierFormValue): Observable<Dossier> {
     const corps = { ...donneesMetierPourApi(valeur), service: valeur.service };
+    this._enCours.set(true);
+    this._messageAction.set('');
+    this._erreurAction.set('');
     return this.api.creer(corps).pipe(
       map((reponse) => dossierDepuisApi(reponse.data)),
-      tap((dossier) => this._dossier.set(dossier)),
+      tap((dossier) => {
+        this._dossier.set(dossier);
+        this._messageAction.set(`Dossier ${dossier.reference || `#${dossier.id}`} créé avec succès.`);
+      }),
+      tap({
+        error: (erreur: unknown) => {
+          this._erreurAction.set(messageErreur(erreur));
+        },
+      }),
+      finalize(() => this._enCours.set(false)),
     );
   }
 
   /** Modifie un dossier existant (champs métier uniquement). */
   modifier(id: number | string, valeur: DossierFormValue): Observable<Dossier> {
+    this._enCours.set(true);
+    this._messageAction.set('');
+    this._erreurAction.set('');
     return this.api.modifier(id, donneesMetierPourApi(valeur)).pipe(
       map((reponse) => dossierDepuisApi(reponse.data)),
-      tap((dossier) => this._dossier.set(dossier)),
+      tap((dossier) => {
+        this._dossier.set(dossier);
+        this._messageAction.set('Dossier modifié avec succès.');
+      }),
+      tap({
+        error: (erreur: unknown) => {
+          this._erreurAction.set(messageErreur(erreur));
+        },
+      }),
+      finalize(() => this._enCours.set(false)),
+    );
+  }
+
+  /** Supprime logiquement un dossier (soft delete). */
+  supprimer(id: number | string): Observable<{ message?: string }> {
+    this._enCours.set(true);
+    this._messageAction.set('');
+    this._erreurAction.set('');
+    return this.api.supprimer(id).pipe(
+      tap((reponse) => this._messageAction.set(reponse.message ?? 'Dossier supprimé.')),
+      finalize(() => this._enCours.set(false)),
     );
   }
 

@@ -19,6 +19,7 @@
   <du-page-header [title]="d.reference || d.infos.numero || 'Dossier'" [subtitle]="d.complements.objet">
     <a routerLink="/admin/dossiers" class="btn btn--secondary"><du-icon name="back" [size]="16" /> Retour à la liste</a>
     <a [routerLink]="['/admin/dossiers', d.id, 'modifier']" class="btn btn--primary"><du-icon name="edit" [size]="16" /> Modifier</a>
+    <button type="button" class="btn btn--danger" [disabled]="enCours()" (click)="supprimer()"><du-icon name="close" [size]="16" /> Supprimer</button>
   </du-page-header>
 
   @if (messageAction()) {

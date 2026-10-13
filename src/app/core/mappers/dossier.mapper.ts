@@ -50,6 +50,12 @@ export function formatTaille(octets: number | null | undefined): string {
  * envoyés ni persistés par l'API.
  */
 export function dossierDepuisApi(dto: DossierDto): Dossier {
+  const coordonnees = (dto.coordonnees ?? '').trim();
+  const coords = coordonnees
+    .split(',')
+    .map((c) => c.trim())
+    .filter((c) => c !== '');
+
   return {
     id: String(dto.id),
     reference: dto.num_bd ?? '',
@@ -75,10 +81,10 @@ export function dossierDepuisApi(dto: DossierDto): Dossier {
       localisation: dto.localisation ?? '',
       quartier: '',
       arrondissement: '',
-      coordX: '',
-      coordY: '',
-      latitude: '',
-      longitude: '',
+      coordX: coords[0] ?? '',
+      coordY: coords[1] ?? '',
+      latitude: coords[2] ?? '',
+      longitude: coords[3] ?? '',
       description: dto.coordonnees ?? '',
     },
     complements: {
