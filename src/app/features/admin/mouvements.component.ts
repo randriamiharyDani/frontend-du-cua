@@ -79,6 +79,7 @@ export class MouvementsComponent {
 
   /** Interroge `GET /api/transferts` avec les filtres courants. */
   private charger(): void {
+    if (this.chargement()) return;
     this.chargement.set(true);
     this.erreur.set('');
 
@@ -197,6 +198,7 @@ export class MouvementsComponent {
       return err.error.message;
     }
     if (err?.status === 0) return 'Serveur injoignable. Vérifiez que l’API Laravel est démarrée.';
+    if (err?.status === 401) return 'Session expirée. Reconnectez-vous.';
     if (err?.status === 403) return 'Accès refusé : hors de votre périmètre de service.';
     if (err?.status === 404) return 'Ressource introuvable.';
     if (typeof err?.status === 'number' && err.status >= 500) return 'Erreur serveur. Réessayez plus tard.';

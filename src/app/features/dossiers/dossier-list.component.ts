@@ -62,7 +62,8 @@ export class DossierListComponent {
       service: this.service(),
       statut: this.statut(),
       etape: this.etape(),
-      date_entree: this.du() || this.au(),
+      du: this.du(),
+      au: this.au(),
       per_page: this.taillePage,
       page: this.page(),
     });

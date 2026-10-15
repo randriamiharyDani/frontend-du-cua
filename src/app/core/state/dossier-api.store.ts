@@ -32,18 +32,25 @@ export function messageErreur(erreur: unknown): string {
     const corps: unknown = erreur.error;
     if (corps && typeof corps === 'object') {
       const objet = corps as Record<string, unknown>;
+      const erreurs = objet['errors'];
+      if (erreurs && typeof erreurs === 'object') {
+        const entrees = Object.entries(erreurs as Record<string, string[]>);
+        const details = entrees
+          .map(([, messages]) => (Array.isArray(messages) ? messages[0] : null))
+          .filter((m): m is string => typeof m === 'string' && m.trim() !== '');
+        if (details.length > 0) {
+          const premier = String(details[0]);
+          return details.length > 1
+            ? `${premier} (${details.length - 1} autre(s) erreur(s))`
+            : premier;
+        }
+      }
       if (typeof objet['message'] === 'string' && (objet['message'] as string).trim()) {
         return objet['message'] as string;
       }
-      const erreurs = objet['errors'];
-      if (erreurs && typeof erreurs === 'object') {
-        const premiere = Object.values(erreurs as Record<string, string[]>)[0];
-        if (Array.isArray(premiere) && premiere.length > 0) {
-          return String(premiere[0]);
-        }
-      }
     }
     if (erreur.status === 0) return 'Serveur injoignable. Vérifiez que l’API Laravel est démarrée.';
+    if (erreur.status === 401) return 'Session expirée. Reconnectez-vous.';
     if (erreur.status === 403) return 'Accès refusé à cette ressource.';
     if (erreur.status === 404) return 'Ressource introuvable.';
     if (erreur.status >= 500) return 'Erreur serveur. Réessayez plus tard.';

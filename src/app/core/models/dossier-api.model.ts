@@ -188,6 +188,8 @@ export interface FiltresDossiers {
   etape?: EtapeDossier | '';
   statut?: StatutDossier | '';
   date_entree?: string;
+  du?: string;
+  au?: string;
   per_page?: number;
   page?: number;
 }

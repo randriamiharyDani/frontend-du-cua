@@ -296,7 +296,10 @@ export class DossierDetailComponent {
   /** Expédie le dossier vers le service choisi. */
   protected transferer(): void {
     if (this.transfertEnAttente()) return;
-    if (!this.confirmer(`Transférer le dossier vers ${this.serviceDestination()} ?`)) return;
+    const destination = this.serviceDestination();
+    const actuel = this.dossier()?.service;
+    if (actuel && destination === actuel) return;
+    if (!this.confirmer(`Transférer le dossier vers ${destination} ?`)) return;
     this.store
       .envoyerTransfert(this.id(), {
         service_arrivee: this.serviceDestination(),

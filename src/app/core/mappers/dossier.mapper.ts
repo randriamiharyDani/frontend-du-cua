@@ -117,7 +117,7 @@ export function dossierDepuisApi(dto: DossierDto): Dossier {
  * l'API : uniquement les 20 champs métier reconnus par Laravel.
  */
 export function donneesMetierPourApi(valeur: DossierFormValue): Record<string, unknown> {
-  return {
+  const corps: Record<string, unknown> = {
     num_bd: nullOu(valeur.infos.numero),
     date_entree: nullOu(valeur.infos.dateEntree),
     ref_etude: nullOu(valeur.infos.referenceEtude),
@@ -139,4 +139,13 @@ export function donneesMetierPourApi(valeur: DossierFormValue): Record<string, u
     date_scellage: nullOu(valeur.arretes.dateScellage),
     date_demol_ou_enlevement: nullOu(valeur.arretes.dateDemolOuEnlevement),
   };
+
+  // Service transmis uniquement si renseigné (admin système à la création).
+  // Pour les autres rôles, le contrôle est désactivé : getRawValue() renvoie
+  // le service du compte, mais le serveur l'ignore et impose son périmètre.
+  if (typeof (valeur as { service?: unknown }).service === 'string') {
+    corps['service'] = (valeur as { service: string }).service;
+  }
+
+  return corps;
 }

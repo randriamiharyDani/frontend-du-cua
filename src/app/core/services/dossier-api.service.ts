@@ -62,6 +62,7 @@ export class DossierApiService {
   }
 
   /** Modification (`PUT /dossiers/{id}`). */
+  
   modifier(id: number | string, corps: Record<string, unknown>): Observable<ReponseRessource<DossierDto>> {
     return this.http.put<ReponseRessource<DossierDto>>(`${this.base}/dossiers/${id}`, corps);
   }
@@ -72,6 +73,7 @@ export class DossierApiService {
   }
 
   /** État de workflow + transitions disponibles (`GET /dossiers/{id}/workflow`). */
+
   workflow(id: number | string): Observable<WorkflowState> {
     return this.http.get<WorkflowState>(`${this.base}/dossiers/${id}/workflow`);
   }

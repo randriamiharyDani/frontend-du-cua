@@ -268,10 +268,14 @@
 
         <div class="field">
           <label for="service">Service *</label>
-          <select id="service" class="input" formControlName="service">
+          <select id="service" class="input" formControlName="service" [disabled]="!serviceModifiable">
             @for (s of services; track s) { <option [value]="s">{{ serviceLabel[s] }}</option> }
           </select>
-          <span class="hint">Utilisé à la création ; ensuite modifié via les transferts.</span>
+          @if (serviceModifiable) {
+            <span class="hint">Utilisé à la création ; ensuite modifié via les transferts.</span>
+          } @else {
+            <span class="hint">Service du compte connecté : le dossier est créé dans votre service (DU, DIS ou SCAD ne peut être modifié que par transfert).</span>
+          }
         </div>
 
         <div class="field">

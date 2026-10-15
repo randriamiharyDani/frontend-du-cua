@@ -6,6 +6,7 @@ import {
   PRIORITE_LABEL, PRIORITES, PrioriteDossier, SERVICE_LABEL, SERVICES, ServiceDossier,
   STATUT_LABEL, STATUTS, StatutDossier, TYPE_LABEL, TYPES, TypeInfraction,
 } from '../../core/models/dossier.model';
+import { AuthService } from '../../core/services/auth.service';
 import { DossierApiStore } from '../../core/state/dossier-api.store';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
@@ -43,10 +44,24 @@ export class DossierFormComponent {
   private readonly fb = inject(NonNullableFormBuilder);
   private readonly store = inject(DossierApiStore);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
 
   protected readonly id = inject(ActivatedRoute).snapshot.paramMap.get('id');
   /** Mode édition si un identifiant de dossier est présent dans l’URL. */
   protected readonly edition = !!this.id;
+
+  /**
+   * Service par défaut à la création : celui du compte connecté. Un agent
+   * ne peut consulter/modifier que les dossiers de son service (policy) ;
+   * créer dans un autre service le rendrait inaccessible (403).
+   */
+  protected readonly serviceConnecte: ServiceDossier = this.auth.utilisateur()?.service ?? 'DU';
+
+  /**
+   * Le service n'est proposé au choix qu'à la création, et uniquement à
+   * l'administrateur système. Les autres rôles sont limités à leur service.
+   */
+  protected readonly serviceModifiable = !this.edition && this.auth.utilisateur()?.role === 'admin_systeme';
 
   /** Indicateurs exposés par le store (chargement / erreurs / action en cours). */
   protected readonly chargementDetail = this.store.chargementDetail;
@@ -79,7 +94,7 @@ export class DossierFormComponent {
   protected readonly form = this.fb.group({
     // Suivi du traitement (service envoyé à la création ; étape/statut pilotés serveur).
     type: ['construction_sans_permis' as TypeInfraction],
-    service: ['DU' as ServiceDossier, Validators.required],
+    service: [this.serviceConnecte, Validators.required],
     etape: ['constat' as EtapeDossier],
     statut: ['signale' as StatutDossier],
     priorite: ['moyenne' as PrioriteDossier],
@@ -184,6 +199,7 @@ export class DossierFormComponent {
 
   /** Crée (POST) ou met à jour (PUT) le dossier via l’API puis redirige vers le détail. */
   protected enregistrer(): void {
+    if (this.enCours()) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
