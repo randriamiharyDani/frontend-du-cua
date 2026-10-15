@@ -9,6 +9,7 @@ import {
   MouvementState,
 } from '../../core/models/dossier-api.model';
 import { DossierApiService } from '../../core/services/dossier-api.service';
+import { AuthService } from '../../core/services/auth.service';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
@@ -42,6 +43,10 @@ const ETAT_BADGE: Record<MouvementState, string> = {
 })
 export class MouvementsComponent {
   private readonly api = inject(DossierApiService);
+  private readonly auth = inject(AuthService);
+
+  /** Utilisateur connecté : les boutons Réceptionner / Retourner ne sont proposés que si son service est concerné. */
+  protected readonly utilisateurConnecte = this.auth.utilisateur;
 
   protected readonly services = SERVICES;
   protected readonly etats = ETATS;
@@ -68,6 +73,18 @@ export class MouvementsComponent {
   protected readonly actionEnCours = signal<number | null>(null);
   protected readonly messageSucces = signal('');
   protected readonly messageErreur = signal('');
+
+  // --- Création d'un transfert (va-et-vient) ---
+  protected readonly transfertCible = signal<MouvementDto | null>(null);
+  protected readonly destination = signal<ServiceDossier | ''>('');
+  protected readonly motifTransfert = signal('');
+
+  /** Destinations possibles : tous les services sauf le service actuel du dossier. */
+  protected readonly destinationsTransfert = computed<ServiceDossier[]>(() => {
+    const cible = this.transfertCible();
+    if (!cible) return [];
+    return SERVICES.filter((s) => s !== cible.dossier_service);
+  });
 
   protected readonly filtresActifs = computed(
     () => !!(this.recherche() || this.service() || this.etat() || this.du() || this.au()),
@@ -140,22 +157,117 @@ export class MouvementsComponent {
     this.charger();
   }
 
-  /** Réceptionne le transfert en attente (`state === 'envoye'`). */
+  /** Réceptionne le transfert en attente (`state === 'envoye'`, service destinataire uniquement). */
   protected receptionner(m: MouvementDto): void {
+    if (!this.peutAgir(m)) return;
     if (!this.confirmer(`Confirmer la réception du dossier « ${this.refDossier(m)} » ?`)) return;
     this.executerAction(m, () =>
       this.api.receptionnerTransfert(m.dossier_id, m.id, {}),
     );
   }
 
-  /** Retourne le transfert en attente à l'expéditeur (motif obligatoire). */
+  /** Retourne le transfert en attente à l'expéditeur (motif obligatoire, service destinataire uniquement). */
   protected retourner(m: MouvementDto): void {
+    if (!this.peutAgir(m)) return;
     const motif = typeof window === 'undefined' ? '' : window.prompt('Motif du retour à l’expéditeur (obligatoire) :', '') ?? '';
     if (!motif.trim()) return;
     if (!this.confirmer(`Retourner le dossier « ${this.refDossier(m)} » à l’expéditeur ?`)) return;
     this.executerAction(m, () =>
       this.api.retournerTransfert(m.dossier_id, m.id, { motif: motif.trim() }),
     );
+  }
+
+  /**
+   * N'affiche les boutons d'action que si l'utilisateur connecté appartient
+   * au service destinataire (ou est administrateur système). Le contrôle
+   * réel reste côté Laravel (policy `receive` / `returnDossier`) : un appel
+   * hors périmètre reçoit un 403 explicite.
+   */
+  protected peutAgir(m: MouvementDto): boolean {
+    if (m.state !== 'envoye') return false;
+    const moi = this.utilisateurConnecte();
+    if (!moi) return false;
+    if (moi.role === 'admin_systeme') return true;
+    return moi.service !== null && m.service_arrivee !== null && moi.service === m.service_arrivee;
+  }
+
+  /**
+   * L'utilisateur connecté peut-il ouvrir la fiche du dossier ? Oui pour
+   * l'administrateur système et pour le service qui détient actuellement le
+   * dossier. Un expéditeur dont le dossier est déjà chez le destinataire voit
+   * le mouvement (suivi du va-et-vient) sans pouvoir l'ouvrir (403 côté API).
+   */
+  protected peutConsulter(m: MouvementDto): boolean {
+    const moi = this.utilisateurConnecte();
+    if (!moi) return false;
+    if (moi.role === 'admin_systeme') return true;
+    if (m.dossier_service == null) return true;
+    return moi.service !== null && m.dossier_service === moi.service;
+  }
+
+  /** Un transfert est-il déjà en attente pour ce dossier ? (au plus un). */
+  private aTransfertEnAttente(dossierId: number): boolean {
+    return this.mouvements().some((x) => x.dossier_id === dossierId && x.state === 'envoye');
+  }
+
+  /**
+   * L'utilisateur peut-il expédier le dossier ? Oui s'il détient actuellement
+   * le dossier (même service) ou est administrateur système, et qu'aucun
+   * transfert n'est déjà en attente. Le contrôle réel reste côté Laravel.
+   */
+  protected peutTransferer(m: MouvementDto): boolean {
+    if (this.aTransfertEnAttente(m.dossier_id)) return false;
+    const moi = this.utilisateurConnecte();
+    if (!moi) return false;
+    if (moi.role === 'admin_systeme') return true;
+    return moi.service !== null && m.dossier_service === moi.service;
+  }
+
+  /** Ouvre le panneau de transfert pour le dossier du mouvement choisi. */
+  protected ouvrirTransfert(m: MouvementDto): void {
+    if (!this.peutTransferer(m)) return;
+    this.messageSucces.set('');
+    this.messageErreur.set('');
+    this.transfertCible.set(m);
+    this.motifTransfert.set('');
+    const dispo = SERVICES.filter((s) => s !== m.dossier_service);
+    this.destination.set(dispo[0] ?? '');
+  }
+
+  /** Ferme le panneau de transfert. */
+  protected annulerTransfert(): void {
+    this.transfertCible.set(null);
+    this.destination.set('');
+    this.motifTransfert.set('');
+  }
+
+  /** Crée le transfert vers le service choisi puis recharge la liste. */
+  protected validerTransfert(): void {
+    const cible = this.transfertCible();
+    const dest = this.destination();
+    if (!cible || !dest) return;
+    if (!this.confirmer(`Transférer le dossier « ${this.refDossier(cible)} » vers ${dest} ?`)) return;
+
+    this.actionEnCours.set(cible.id);
+    this.messageSucces.set('');
+    this.messageErreur.set('');
+    this.api
+      .envoyerTransfert(cible.dossier_id, {
+        service_arrivee: dest,
+        motif: this.motifTransfert().trim() || null,
+      })
+      .subscribe({
+        next: () => {
+          this.messageSucces.set(`Dossier transféré vers ${dest}.`);
+          this.actionEnCours.set(null);
+          this.annulerTransfert();
+          this.charger();
+        },
+        error: (e: unknown) => {
+          this.messageErreur.set(this.lireErreur(e));
+          this.actionEnCours.set(null);
+        },
+      });
   }
 
   private executerAction(m: MouvementDto, op: () => Observable<unknown>): void {

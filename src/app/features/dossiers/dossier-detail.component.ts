@@ -9,6 +9,7 @@ import {
   ETAPE_LABEL, NATURE_LABEL, nomContrevenant, SERVICE_LABEL, SERVICES, ServiceDossier,
   TYPE_LABEL,
 } from '../../core/models/dossier.model';
+import { AuthService } from '../../core/services/auth.service';
 import { DossierApiStore } from '../../core/state/dossier-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
@@ -220,17 +221,31 @@ export class DossierDetailComponent {
   protected readonly services = SERVICES;
 
   /** Champ de saisie des actions de transfert. */
-  protected readonly serviceDestination = signal<ServiceDossier>('DIS');
   protected readonly motifTransfert = signal('');
   protected readonly noteReception = signal('');
   protected readonly motifRetour = signal('');
   protected readonly fichierSelectionne = signal<File | null>(null);
   protected readonly libelleDocument = signal('');
 
+  /** Utilisateur connecté (service + rôle) pour filtrer les actions proposées. */
+  private readonly auth = inject(AuthService);
+  protected readonly utilisateurConnecte = this.auth.utilisateur;
+
+  /** Destination par défaut : premier service différent du service actuel. */
+  protected readonly serviceDestination = signal<ServiceDossier>('DIS');
+
   constructor() {
     effect(() => {
       const id = this.id();
       if (id) this.store.chargerDetail(id);
+    });
+    // Synchronise la destination par défaut dès que le dossier est connu :
+    // premier service différent du service actuel (jamais d'auto-transfert proposé).
+    effect(() => {
+      const actuel = this.dossier()?.service;
+      if (!actuel) return;
+      const premier = SERVICES.find((s) => s !== actuel) ?? actuel;
+      if (this.serviceDestination() === actuel) this.serviceDestination.set(premier);
     });
   }
 
@@ -246,6 +261,37 @@ export class DossierDetailComponent {
   protected readonly transfertEnAttente = computed<MouvementDto | null>(
     () => this.transferts().find((m) => m.state === 'envoye') ?? null,
   );
+
+  /** Destinations proposées : tous les services sauf le service actuel du dossier. */
+  protected readonly destinationsTransfert = computed<ServiceDossier[]>(() => {
+    const actuel = this.dossier()?.service;
+    return SERVICES.filter((s) => s !== actuel);
+  });
+
+  /**
+   * L'utilisateur connecté peut-il expédier ce dossier ?
+   * (même service que le dossier, ou administrateur système ; jamais si un
+   * transfert est déjà en attente). Le contrôle réel reste côté Laravel.
+   */
+  protected readonly peutTransferer = computed(() => {
+    const moi = this.utilisateurConnecte();
+    const dossier = this.dossier();
+    if (!moi || !dossier || this.transfertEnAttente()) return false;
+    return moi.role === 'admin_systeme' || (moi.service !== null && moi.service === dossier.service);
+  });
+
+  /**
+   * L'utilisateur connecté peut-il réceptionner / retourner le transfert
+   * en attente ? (service destinataire = service actuel du dossier, ou
+   * administrateur système). Le contrôle réel reste côté Laravel.
+   */
+  protected readonly peutReceptionner = computed(() => {
+    const moi = this.utilisateurConnecte();
+    const dossier = this.dossier();
+    const attente = this.transfertEnAttente();
+    if (!moi || !dossier || !attente) return false;
+    return moi.role === 'admin_systeme' || (moi.service !== null && moi.service === dossier.service);
+  });
 
   /** Chronologie de l'historique réel (création, workflow, transferts). */
   protected readonly timeline = computed<EvenementAffiche[]>(() =>
@@ -293,31 +339,33 @@ export class DossierDetailComponent {
     this.store.executerTransition(this.id(), transition.code).subscribe();
   }
 
-  /** Expédie le dossier vers le service choisi. */
+  /** Expédie le dossier vers le service choisi (jamais vers le service actuel). */
   protected transferer(): void {
-    if (this.transfertEnAttente()) return;
+    if (this.transfertEnAttente() || !this.peutTransferer()) return;
     const destination = this.serviceDestination();
     const actuel = this.dossier()?.service;
-    if (actuel && destination === actuel) return;
+    if (!destination || (actuel && destination === actuel)) return;
     if (!this.confirmer(`Transférer le dossier vers ${destination} ?`)) return;
     this.store
       .envoyerTransfert(this.id(), {
-        service_arrivee: this.serviceDestination(),
+        service_arrivee: destination,
         motif: this.motifTransfert().trim() || null,
       })
       .subscribe({ next: () => this.motifTransfert.set('') });
   }
 
-  /** Accepte la réception du transfert en attente. */
+  /** Accepte la réception du transfert en attente (service destinataire uniquement). */
   protected receptionner(mouvement: MouvementDto): void {
+    if (!this.peutReceptionner()) return;
     if (!this.confirmer('Confirmer la réception de ce dossier ?')) return;
     this.store
       .receptionnerTransfert(this.id(), mouvement.id, { note: this.noteReception().trim() || null })
       .subscribe({ next: () => this.noteReception.set('') });
   }
 
-  /** Retourne le transfert en attente à l'expéditeur. */
+  /** Retourne le transfert en attente à l'expéditeur (service destinataire uniquement). */
   protected retourner(mouvement: MouvementDto): void {
+    if (!this.peutReceptionner()) return;
     const motif = this.motifRetour().trim();
     if (!motif) return;
     if (!this.confirmer('Retourner ce dossier à l’expéditeur ?')) return;

@@ -53,6 +53,36 @@
   </div>
 </section>
 
+@if (transfertCible(); as cible) {
+  <section class="card transfert-panel">
+    <div class="card__header"><h2>Transférer le dossier</h2></div>
+    <div class="card__body">
+      <p class="muted small panel__info">
+        Dossier : <strong>{{ refDossier(cible) }}</strong>
+        @if (cible.dossier_service) { · service actuel : <strong>{{ cible.dossier_service }}</strong> }
+      </p>
+      <div class="transfert-form">
+        <div class="field">
+          <label for="destService">Service destinataire</label>
+          <select id="destService" class="input" [value]="destination()" (change)="destination.set($any($event.target).value)">
+            @for (s of destinationsTransfert(); track s) { <option [value]="s">{{ s }}</option> }
+          </select>
+        </div>
+        <div class="field">
+          <label for="motifTransfert">Motif (facultatif)</label>
+          <input id="motifTransfert" class="input" [value]="motifTransfert()" (input)="motifTransfert.set($any($event.target).value)" />
+        </div>
+        <div class="actions-ligne">
+          <button type="button" class="btn btn--primary" [disabled]="actionEnCours() === cible.id || !destination()" (click)="validerTransfert()">
+            <du-icon name="swap" [size]="15" /> Transférer
+          </button>
+          <button type="button" class="btn btn--secondary" (click)="annulerTransfert()">Annuler</button>
+        </div>
+      </div>
+    </div>
+  </section>
+}
+
 <section class="card">
   @if (chargement()) {
     <div class="empty-state">
@@ -85,7 +115,11 @@
             <tr>
               <td class="nowrap">{{ m.date_expedition ? (m.date_expedition | date: 'dd/MM/yyyy') : '—' }}</td>
               <td>
-                <a [routerLink]="['/admin/dossiers', m.dossier_id]">{{ refDossier(m) }}</a>
+                @if (peutConsulter(m)) {
+                  <a [routerLink]="['/admin/dossiers', m.dossier_id]">{{ refDossier(m) }}</a>
+                } @else {
+                  <span>{{ refDossier(m) }}</span>
+                }
                 @if (m.dossier_objet) {
                   <div class="muted small">{{ m.dossier_objet }}</div>
                 }
@@ -103,10 +137,20 @@
               <td class="hide-md">{{ destinataire(m) }}</td>
               <td class="hide-lg obs">{{ m.motif || m.description || m.state_note || '—' }}</td>
               <td class="actions">
-                <a [routerLink]="['/admin/dossiers', m.dossier_id]" class="btn btn--secondary btn--sm">
-                  <du-icon name="eye" [size]="15" /> Consulter
-                </a>
-                @if (m.state === 'envoye') {
+                @if (peutConsulter(m)) {
+                  <a [routerLink]="['/admin/dossiers', m.dossier_id]" class="btn btn--secondary btn--sm">
+                    <du-icon name="eye" [size]="15" /> Consulter
+                  </a>
+                }                 @else {
+                  <span class="muted small">Chez {{ m.dossier_service }}</span>
+                }
+                @if (peutTransferer(m)) {
+                  <button type="button" class="btn btn--secondary btn--sm"
+                          [disabled]="actionEnCours() === m.id" (click)="ouvrirTransfert(m)">
+                    <du-icon name="swap" [size]="15" /> Transférer
+                  </button>
+                }
+                @if (peutAgir(m)) {
                   <button type="button" class="btn btn--primary btn--sm"
                           [disabled]="actionEnCours() === m.id" (click)="receptionner(m)">
                     Réceptionner

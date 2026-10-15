@@ -3,6 +3,27 @@
   overflow-wrap: anywhere;
 }
 
+.transfert-panel {
+  margin-bottom: 1rem;
+}
+
+.panel__info {
+  margin: 0 0 0.75rem;
+}
+
+.transfert-form {
+  display: grid;
+  gap: 0.6rem;
+  max-width: 34rem;
+}
+
+.actions-ligne {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
 .succes {
   margin: 0 0 1rem;
   padding: 0.6rem 0.85rem;

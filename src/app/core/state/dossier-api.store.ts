@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, finalize, forkJoin, map, switchMap, tap } from 'rxjs';
+import { Observable, catchError, finalize, forkJoin, map, of, switchMap, tap, throwError } from 'rxjs';
 import {
   DocumentDto,
   DossierDto,
@@ -224,7 +224,7 @@ export class DossierApiStore {
 
   /** Expédie le dossier vers un autre service. */
   envoyerTransfert(id: number | string, corps: PayloadTransfert): Observable<Dossier> {
-    return this.muter(id, () => this.api.envoyerTransfert(id, corps));
+    return this.muter(id, () => this.api.envoyerTransfert(id, corps), true);
   }
 
   /** Enregistre la réception du transfert en attente. */
@@ -272,10 +272,16 @@ export class DossierApiStore {
    * Enveloppe commune des mutations : verrouille l'action, applique l'opération
    * puis recharge le dossier (toutes les mutations ne renvoient pas le dossier),
    * rafraîchit les données dérivées et gère les erreurs.
+   *
+   * `rechargementTolerant` : après un envoi de transfert, l'expéditeur peut
+   * perdre l'accès en lecture (dossier passé au service destinataire, 403) ;
+   * le rechargement est alors ignoré pour préserver le message de succès
+   * (l'utilisateur retrouve le dossier via la page Mouvements).
    */
   private muter(
     id: number | string,
     operation: () => Observable<{ message?: string }>,
+    rechargementTolerant = false,
   ): Observable<Dossier> {
     this._enCours.set(true);
     this._messageAction.set('');
@@ -286,8 +292,17 @@ export class DossierApiStore {
         next: (reponse) => this._messageAction.set(reponse.message ?? 'Opération effectuée.'),
         error: (erreur: unknown) => this._erreurAction.set(messageErreur(erreur)),
       }),
-      switchMap(() => this.api.voir(id)),
-      tap((reponse) => this._dossier.set(dossierDepuisApi(reponse.data))),
+      switchMap(() => this.api.voir(id).pipe(
+        catchError((erreur: unknown) => {
+          if (rechargementTolerant && erreur instanceof HttpErrorResponse && (erreur.status === 403 || erreur.status === 404)) {
+            return of(null);
+          }
+          return throwError(() => erreur);
+        }),
+      )),
+      tap((reponse) => {
+        if (reponse !== null) this._dossier.set(dossierDepuisApi(reponse.data));
+      }),
       map(() => this._dossier() as Dossier),
       finalize(() => this._enCours.set(false)),
       tap(() => this.rafraichirDerivees(id)),
@@ -308,6 +323,9 @@ export class DossierApiStore {
         this._historique.set(reponse.historique.data);
         this._documents.set(reponse.documents.data);
       },
+      // Après un envoi, l'expéditeur peut perdre l'accès (403) : ne pas écraser
+      // le message de succès affiché par `muter`.
+      error: () => undefined,
     });
   }
 }

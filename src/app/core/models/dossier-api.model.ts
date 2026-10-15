@@ -49,6 +49,7 @@ export interface MouvementDto {
   dossier_id: number;
   dossier_reference?: string | null;
   dossier_objet?: string | null;
+  dossier_service?: ServiceDossier | null;
   service_depart: ServiceDossier | null;
   service_arrivee: ServiceDossier | null;
   agent_expediteur: number | null;
