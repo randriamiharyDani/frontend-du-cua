@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/app.scss", "src/app/app.scss"],
+  "sourcesContent": [":host { display: block; min-height: 100dvh; }\r\n", ":host {\n  display: block;\n  min-height: 100dvh;\n}\n/*# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VSb290IjoiIiwic291cmNlcyI6WyJmaWxlOi8vL0M6L3hhbXBwL2h0ZG9jcy9EVS9mcm9udGVuZC1kdS9zcmMvYXBwL2FwcC5zY3NzIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBO0VBQVE7RUFBZ0IiLCJzb3VyY2VzQ29udGVudCI6WyI6aG9zdCB7IGRpc3BsYXk6IGJsb2NrOyBtaW4taGVpZ2h0OiAxMDBkdmg7IH1cclxuIl19 */"],
+  "mappings": ";AAAA;AAAQ,WAAA;AAAgB,cAAA;ACGxB;",
+  "names": []
+}

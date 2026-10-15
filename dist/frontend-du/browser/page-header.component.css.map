@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["page-header.component.ts"],
+  "sourcesContent": ["\n      .page-header {\n        display: flex;\n        justify-content: space-between;\n        align-items: flex-end;\n        gap: 1rem 1.5rem;\n        margin-bottom: 1.5rem;\n        flex-wrap: wrap;\n        padding-bottom: 1.1rem;\n        border-bottom: 1px solid var(--du-border);\n      }\n      .page-header__titre {\n        min-width: 0;\n      }\n      h1 {\n        font-size: 1.55rem;\n        letter-spacing: -0.02em;\n        margin: 0;\n      }\n      p {\n        margin: 0.3rem 0 0;\n        font-size: 0.9rem;\n        max-width: 62ch;\n      }\n      .page-header__actions {\n        display: flex;\n        gap: 0.6rem;\n        flex-wrap: wrap;\n      }\n      @media (max-width: 600px) {\n        .page-header__actions { width: 100%; }\n        .page-header__actions :is(a, button) { flex: 1 1 auto; }\n      }\n    "],
+  "mappings": ";AACM,CAAA;AACE,WAAA;AACA,mBAAA;AACA,eAAA;AACA,OAAA,KAAA;AACA,iBAAA;AACA,aAAA;AACA,kBAAA;AACA,iBAAA,IAAA,MAAA,IAAA;AACF;AACA,CAAA;AACE,aAAA;AACF;AACA;AACE,aAAA;AACA,kBAAA;AACA,UAAA;AACF;AACA;AACE,UAAA,OAAA,EAAA;AACA,aAAA;AACA,aAAA;AACF;AACA,CAAA;AACE,WAAA;AACA,OAAA;AACA,aAAA;AACF;AACA,QAAA,WAAA;AACE,GANF;AAM0B,WAAA;AAAa;AACrC,GAPF,qBAOE,IAAA,GAAA;AAAuC,UAAA,EAAA,EAAA;AAAgB;AACzD;",
+  "names": []
+}

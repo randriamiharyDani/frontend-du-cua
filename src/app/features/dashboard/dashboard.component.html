@@ -156,6 +156,57 @@
     </div>
 
     <!-- Derniers transferts -->
+    <section class="graphiques" aria-label="Graphiques statistiques">
+      <h2 class="graphiques__titre">Graphiques statistiques <span class="muted">— données réelles</span></h2>
+      <div class="graphiques__grille">
+        <section class="card" aria-labelledby="g-nature">
+          <div class="card__header">
+            <h2 id="g-nature">Dossiers par nature</h2>
+            <span class="muted graphique-total">{{ totalActifs() }} dossier(s)</span>
+          </div>
+          <div class="card__body">
+            <du-donut-chart [donnees]="graphiqueNature()" ariaLabel="Dossiers par nature" />
+          </div>
+        </section>
+        <section class="card" aria-labelledby="g-service">
+          <div class="card__header">
+            <h2 id="g-service">Dossiers par service</h2>
+            <span class="muted graphique-total">{{ totalActifs() }} dossier(s)</span>
+          </div>
+          <div class="card__body">
+            <du-donut-chart [donnees]="graphiqueService()" ariaLabel="Dossiers par service" />
+          </div>
+        </section>
+        <section class="card" aria-labelledby="g-statut">
+          <div class="card__header">
+            <h2 id="g-statut">Dossiers par statut</h2>
+            <span class="muted graphique-total">{{ totalActifs() }} dossier(s)</span>
+          </div>
+          <div class="card__body">
+            <du-bar-chart [donnees]="graphiqueStatut()" ariaLabel="Dossiers par statut" />
+          </div>
+        </section>
+        <section class="card" aria-labelledby="g-etape">
+          <div class="card__header">
+            <h2 id="g-etape">Dossiers par étape</h2>
+            <span class="muted graphique-total">{{ totalActifs() }} dossier(s)</span>
+          </div>
+          <div class="card__body">
+            <du-bar-chart [donnees]="graphiqueEtape()" ariaLabel="Dossiers par étape" />
+          </div>
+        </section>
+        <section class="card graphique-large" aria-labelledby="g-evolution">
+          <div class="card__header">
+            <h2 id="g-evolution">Évolution des créations (12 derniers mois)</h2>
+          </div>
+          <div class="card__body">
+            <du-line-chart [points]="graphiqueEvolution()" ariaLabel="Évolution des créations sur 12 mois" />
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <!-- Derniers transferts -->
     <section class="card transferts" aria-labelledby="t-transferts">
       <div class="card__header">
         <h2 id="t-transferts">Derniers transferts</h2>

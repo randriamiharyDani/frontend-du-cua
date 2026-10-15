@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["dossier-form.component.ts"],
+  "sourcesContent": ["\n    .form-sections { display: grid; gap: 1rem; }\n    .api-note {\n      display: flex; align-items: center; gap: 0.5rem; margin: 0 0 1rem; padding: 0.6rem 0.85rem;\n      border-radius: var(--du-radius); background: #eef4fc; border: 1px solid #cfe0f5;\n      color: #2b5b8a; font-size: 0.85rem;\n    }\n    .hint { color: var(--du-muted); font-size: 0.78rem; }\n    .hint--absent { font-style: italic; }\n    .checkbox { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; cursor: pointer; }\n    .checkbox input { width: 1rem; height: 1rem; }\n    .form-message { margin: 0 0 1rem; padding: 0.5rem 0.75rem; border-radius: var(--du-radius); font-size: 0.85rem; }\n    .form-message--erreur { background: var(--du-danger-soft); color: var(--du-danger); }\n  "],
+  "mappings": ";AACI,CAAA;AAAiB,WAAA;AAAe,OAAA;AAAW;AAC3C,CAAA;AACE,WAAA;AAAe,eAAA;AAAqB,OAAA;AAAa,UAAA,EAAA,EAAA;AAAkB,WAAA,OAAA;AACnE,iBAAA,IAAA;AAAiC,cAAA;AAAqB,UAAA,IAAA,MAAA;AACtD,SAAA;AAAgB,aAAA;AAClB;AACA,CAAA;AAAQ,SAAA,IAAA;AAAwB,aAAA;AAAoB;AACpD,CAAA;AAAgB,cAAA;AAAoB;AACpC,CAAA;AAAY,WAAA;AAAe,eAAA;AAAqB,OAAA;AAAa,eAAA;AAAkB,UAAA;AAAiB;AAChG,CADA,SACA;AAAkB,SAAA;AAAa,UAAA;AAAc;AAC7C,CAAA;AAAgB,UAAA,EAAA,EAAA;AAAkB,WAAA,OAAA;AAAyB,iBAAA,IAAA;AAAiC,aAAA;AAAoB;AAChH,CAAA;AAAwB,cAAA,IAAA;AAAmC,SAAA,IAAA;AAAyB;",
+  "names": []
+}

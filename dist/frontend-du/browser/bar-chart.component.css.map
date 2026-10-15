@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["bar-chart.component.ts"],
+  "sourcesContent": ["\n      :host { display: block; }\n      .chart-svg { width: 100%; height: auto; display: block; }\n      .grid { stroke: #e5eaf2; stroke-width: 1; }\n      .grid-label { font-size: 10px; fill: #64748b; }\n      .axe { stroke: #d3dcea; stroke-width: 1.5; }\n      .bar-valeur { font-size: 12px; font-weight: 700; fill: #0d294d; }\n      .bar-label { font-size: 10px; fill: #64748b; }\n      .legende {\n        list-style: none; margin: 0.75rem 0 0; padding: 0;\n        display: flex; flex-wrap: wrap; gap: 0.4rem 1rem; font-size: 0.82rem;\n      }\n      .legende li { display: flex; align-items: center; gap: 0.4rem; }\n      .pastille { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }\n      .muted { color: var(--du-muted); }\n      .chart-vide { color: var(--du-muted); font-size: 0.88rem; margin: 0; padding: 0.5rem 0; }\n    "],
+  "mappings": ";AACM;AAAQ,WAAA;AAAgB;AACxB,CAAA;AAAa,SAAA;AAAa,UAAA;AAAc,WAAA;AAAgB;AACxD,CAAA;AAAQ,UAAA;AAAiB,gBAAA;AAAiB;AAC1C,CAAA;AAAc,aAAA;AAAiB,QAAA;AAAe;AAC9C,CAAA;AAAO,UAAA;AAAiB,gBAAA;AAAmB;AAC3C,CAAA;AAAc,aAAA;AAAiB,eAAA;AAAkB,QAAA;AAAe;AAChE,CAAA;AAAa,aAAA;AAAiB,QAAA;AAAe;AAC7C,CAAA;AACE,cAAA;AAAkB,UAAA,QAAA,EAAA;AAAqB,WAAA;AACvC,WAAA;AAAe,aAAA;AAAiB,OAAA,OAAA;AAAkB,aAAA;AACpD;AACA,CAJA,QAIA;AAAc,WAAA;AAAe,eAAA;AAAqB,OAAA;AAAa;AAC/D,CAAA;AAAY,SAAA;AAAa,UAAA;AAAc,iBAAA;AAAoB,WAAA;AAAuB;AAClF,CAAA;AAAS,SAAA,IAAA;AAAwB;AACjC,CAAA;AAAc,SAAA,IAAA;AAAwB,aAAA;AAAoB,UAAA;AAAW,WAAA,OAAA;AAAmB;",
+  "names": []
+}

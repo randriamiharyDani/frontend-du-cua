@@ -215,6 +215,32 @@
   margin-top: 1rem;
 }
 
+/* --- Graphiques statistiques (ajout uniquement, existant inchangé) --- */
+.graphiques {
+  margin-top: 1rem;
+}
+
+.graphiques__titre {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.graphiques__grille {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.graphique-total {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.graphique-large {
+  grid-column: 1 / -1;
+}
+
 .card__vide {
   padding: 1.25rem;
 }
@@ -238,6 +264,9 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .columns {
+    grid-template-columns: 1fr;
+  }
+  .graphiques__grille {
     grid-template-columns: 1fr;
   }
 }
