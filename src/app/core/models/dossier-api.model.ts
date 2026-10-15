@@ -77,11 +77,21 @@ export interface DocumentDto {
   nom: string | null;
   taille: number | null;
   mime: string | null;
+  /** Résumé du dossier propriétaire (présent sur la liste globale). */
+  dossier?: DossierResume | null;
   user: UtilisateurResume | null;
   created_by: number | null;
   download_url: string | null;
   created_at: string | null;
   updated_at: string | null;
+}
+
+/** Résumé du dossier propriétaire d'un document (liste globale). */
+export interface DossierResume {
+  id: number;
+  num_bd: string | null;
+  ref_arrivee: string | null;
+  service: ServiceDossier | null;
 }
 
 /** Résumé d'utilisateur tel qu'exposé par l'API. */
@@ -203,6 +213,15 @@ export interface FiltresTransferts {
   dossier_id?: number | '';
   du?: string;
   au?: string;
+  per_page?: number;
+  page?: number;
+}
+
+/** Filtres acceptés par `GET /documents` (IndexDocumentRequest). */
+export interface FiltresDocuments {
+  search?: string;
+  type?: string;
+  dossier_id?: number | '';
   per_page?: number;
   page?: number;
 }

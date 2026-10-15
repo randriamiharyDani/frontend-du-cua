@@ -1,20 +1,20 @@
 <du-page-header
   title="Documents"
-  subtitle="Pièces et courriers fictifs associés aux dossiers (plainte, rapport, arrêté, scellés…)."
+  subtitle="Pièces et courriers associés aux dossiers (plainte, rapport, arrêté, scellés…)."
 >
-  <button type="button" class="btn btn--primary" (click)="ouvrirFormulaire()">
+  <button type="button" class="btn btn--primary" (click)="ouvrirFormulaire()" [disabled]="!dossiers().length">
     <du-icon name="plus" [size]="16" /> Ajouter un document
   </button>
 </du-page-header>
 
-<p class="demo-note" role="note">
-  <du-icon name="alert" [size]="15" />
-  Données et fichiers de démonstration — l’ajout est simulé localement ; aucun fichier n’est téléversé
-  et rien n’est enregistré de façon permanente.
-</p>
-
 @if (messageSucces()) {
   <div class="succes" role="status">{{ messageSucces() }}</div>
+}
+
+@if (erreur()) {
+  <div class="erreur" role="alert">
+    <du-icon name="alert" [size]="16" /> {{ erreur() }}
+  </div>
 }
 
 <section class="card filtres-card">
@@ -26,7 +26,7 @@
     <div class="filtres">
       <div class="field champ-recherche">
         <label for="recherche">Recherche</label>
-        <input #q id="recherche" class="input" type="search" placeholder="Nom, référence, n° dossier…"
+        <input #q id="recherche" class="input" type="search" placeholder="Nom, type, n° dossier…"
                [value]="recherche()" (input)="setRecherche(q.value)" />
       </div>
       <div class="field">
@@ -54,7 +54,12 @@
 </section>
 
 <section class="card">
-  @if (affiches().length) {
+  @if (chargement()) {
+    <div class="empty-state">
+      <du-icon name="file" [size]="28" />
+      <p class="muted small">Chargement des documents…</p>
+    </div>
+  } @else if (documents().length) {
     <div class="table-wrap">
       <table class="table">
         <thead>
@@ -62,57 +67,51 @@
             <th>Nom du document</th>
             <th>Type</th>
             <th>N° dossier</th>
-            <th class="hide-md">Référence</th>
+            <th class="hide-md">Taille</th>
+            <th class="hide-md">Déposé par</th>
             <th>Date</th>
             <th><span class="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody>
-          @for (doc of affiches(); track doc.id) {
+          @for (doc of documents(); track doc.id) {
             <tr>
               <td>
                 <div class="doc-nom">
                   <span class="doc-icone"><du-icon name="file" [size]="16" /></span>
                   <span>{{ doc.nom }}</span>
                 </div>
-                @if (doc.objetDossier) {
-                  <span class="muted small doc-objet">{{ doc.objetDossier }}</span>
+                @if (doc.libelle) {
+                  <span class="muted small doc-objet">{{ doc.libelle }}</span>
                 }
               </td>
-              <td><span class="badge badge--info">{{ typeLabel[doc.type] }}</span></td>
-              <td><a [routerLink]="['/admin/dossiers', doc.dossierId]">{{ doc.numeroDossier }}</a></td>
-              <td class="hide-md mono">{{ doc.reference || '—' }}</td>
+              <td><span class="badge badge--info">{{ doc.typeLabel }}</span></td>
+              <td>
+                @if (doc.dossierId !== null) {
+                  <a [routerLink]="['/admin/dossiers', doc.dossierId]">{{ doc.numeroDossier }}</a>
+                } @else {
+                  {{ doc.numeroDossier }}
+                }
+              </td>
+              <td class="hide-md mono nowrap">{{ doc.taille }}</td>
+              <td class="hide-md">{{ doc.deposePar }}</td>
               <td class="nowrap">{{ doc.dateDepot | date: 'dd/MM/yyyy' }}</td>
               <td class="actions">
-                <button type="button" class="btn btn--secondary btn--sm" (click)="basculerDetails(doc.id)">
-                  {{ documentOuvert() === doc.id ? 'Fermer' : 'Détails' }}
+                <button type="button" class="btn btn--secondary btn--sm" (click)="telecharger(doc)">
+                  <du-icon name="download" [size]="15" /> Télécharger
                 </button>
-                <a [routerLink]="['/admin/dossiers', doc.dossierId]" class="btn btn--secondary btn--sm">
-                  <du-icon name="eye" [size]="15" /> Dossier
-                </a>
               </td>
             </tr>
-            @if (documentOuvert() === doc.id) {
-              <tr class="details-row">
-                <td colspan="6">
-                  <div class="details">
-                    <div><span class="details__cle">Observations</span><span>{{ doc.observations || 'Aucune observation.' }}</span></div>
-                    <div><span class="details__cle">Taille</span><span>{{ doc.taille || '—' }}</span></div>
-                    <div><span class="details__cle">Déposé par</span><span>{{ doc.deposePar || 'Non renseigné' }}</span></div>
-                  </div>
-                </td>
-              </tr>
-            }
           }
         </tbody>
       </table>
     </div>
 
     <div class="pagination">
-      <span class="muted small">{{ filtres().length }} document(s) · page {{ pageCourante() }} sur {{ totalPages() }}</span>
+      <span class="muted small">{{ pagination().total }} document(s) · page {{ pagination().page }} sur {{ pagination().dernierPage }}</span>
       <div class="pagination__nav">
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page === 1 || chargement()" (click)="allerA(pagination().page - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page === pagination().dernierPage || chargement()" (click)="allerA(pagination().page + 1)">Suivant</button>
       </div>
     </div>
   } @else {
@@ -139,26 +138,25 @@
         </div>
 
         <div class="modal__corps">
+          @if (erreurAction()) {
+            <div class="erreur" role="alert">
+              <du-icon name="alert" [size]="16" /> {{ erreurAction() }}
+            </div>
+          }
+
           <div class="form-grid">
             <div class="field full">
               <label for="dossierId">Dossier concerné *</label>
               <select id="dossierId" class="input" formControlName="dossierId" [class.is-invalid]="invalide('dossierId')">
                 <option value="">Sélectionner un dossier…</option>
                 @for (d of dossiers(); track d.id) {
-                  <option [value]="d.id">{{ d.reference }} — {{ d.complements.objet }}</option>
+                  <option [value]="d.id">{{ d.reference }}</option>
                 }
               </select>
               @if (invalide('dossierId')) { <span class="error">{{ message('dossierId') }}</span> }
             </div>
 
             <div class="field full">
-              <label for="nom">Nom du document *</label>
-              <input id="nom" class="input" formControlName="nom" placeholder="Ex. Rapport de descente"
-                     [class.is-invalid]="invalide('nom')" />
-              @if (invalide('nom')) { <span class="error">{{ message('nom') }}</span> }
-            </div>
-
-            <div class="field">
               <label for="typeForm">Type de document *</label>
               <select id="typeForm" class="input" formControlName="type" [class.is-invalid]="invalide('type')">
                 <option value="">Sélectionner un type…</option>
@@ -167,43 +165,27 @@
               @if (invalide('type')) { <span class="error">{{ message('type') }}</span> }
             </div>
 
-            <div class="field">
-              <label for="dateDepot">Date *</label>
-              <input id="dateDepot" type="date" class="input" formControlName="dateDepot" [class.is-invalid]="invalide('dateDepot')" />
-              @if (invalide('dateDepot')) { <span class="error">{{ message('dateDepot') }}</span> }
+            <div class="field full">
+              <label for="libelle">Libellé</label>
+              <input id="libelle" class="input" formControlName="libelle" placeholder="Précisions sur le document…" />
             </div>
 
             <div class="field full">
-              <label for="reference">Référence</label>
-              <input id="reference" class="input" formControlName="reference" placeholder="Ex. RD-2026-0031" />
-            </div>
-
-            <div class="field full">
-              <label for="observations">Observations</label>
-              <textarea id="observations" class="input" formControlName="observations" placeholder="Précisions, remarques…"></textarea>
-            </div>
-
-            <div class="field full">
-              <label for="fichier">Fichier (démonstration)</label>
+              <label for="fichier">Fichier * <span class="muted small">(PDF, image ou document — 50 Mo max.)</span></label>
               <input id="fichier" type="file" class="input fichier" (change)="onFichier($event)" />
               @if (fichier(); as f) {
-                <span class="fichier__info muted small">
-                  <du-icon name="file" [size]="14" /> {{ f.nom }} · {{ f.taille }} (non téléversé)
+                <span class="fichier__info small">
+                  <du-icon name="file" [size]="14" /> {{ f.nom }} · {{ f.taille }}
                 </span>
-              } @else {
-                <span class="muted small">Aucun fichier sélectionné — facultatif pour la démonstration.</span>
               }
+              @if (erreurFichier()) { <span class="error">{{ erreurFichier() }}</span> }
             </div>
           </div>
-
-          <p class="muted small" style="margin: 0.5rem 0 0;">
-            Déposé par : <strong>{{ utilisateur.nom }}</strong> · Ajout simulé localement, aucune donnée ni fichier conservé.
-          </p>
         </div>
 
         <div class="modal__pied">
           <button type="button" class="btn btn--secondary" (click)="fermerFormulaire()">Annuler</button>
-          <button type="submit" class="btn btn--primary">Ajouter le document</button>
+          <button type="submit" class="btn btn--primary" [disabled]="enCours()">Déposer le document</button>
         </div>
       </form>
     </div>
