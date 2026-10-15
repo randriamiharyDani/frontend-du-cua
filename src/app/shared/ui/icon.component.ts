@@ -30,6 +30,7 @@ const PATHS: Record<string, string> = {
   building: 'M4 21V5a2 2 0 012-2h8a2 2 0 012 2v16M16 9h3a1 1 0 011 1v11M4 21h17M8 7h4M8 11h4M8 15h4',
   filter: 'M4 5h16l-6 7.4V19l-4 1.8v-8.4L4 5z',
   download: 'M12 3v12M7 10l5 5 5-5M5 21h14',
+  upload: 'M12 21V9M7 14l5-5 5 5M5 3h14',
 };
 
 @Component({

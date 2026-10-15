@@ -1,23 +1,90 @@
 <du-page-header
   title="Canevas Excel"
-  subtitle="Tableau de synthèse du suivi des dossiers de constructions illicites — données de démonstration."
+  subtitle="Tableau de synthèse du suivi des dossiers de constructions illicites (données réelles)."
 >
   <button type="button" class="btn btn--secondary" (click)="exporterExcel()">
-    <du-icon name="sheet" [size]="16" /> Exporter Excel
+    <du-icon name="download" [size]="16" /> Télécharger le canevas
+  </button>
+  <button type="button" class="btn btn--secondary" (click)="importer()" [disabled]="enCours()">
+    <du-icon name="upload" [size]="16" /> Importer un canevas
   </button>
   <button type="button" class="btn btn--primary" (click)="imprimer()">
     <du-icon name="sheet" [size]="16" /> Imprimer
   </button>
 </du-page-header>
 
-<!-- <p class="demo-note" role="note">
-  <du-icon name="alert" [size]="15" />
-  Démonstration : le tableau réutilise les dossiers temporaires déjà présents dans le frontend.
-  L’export (CSV compatible Excel) et l’impression sont générés côté navigateur — aucun fichier ni donnée n’est enregistré.
-</p> -->
+<input
+  id="fichier-canevas"
+  type="file"
+  accept=".xlsx,.csv"
+  hidden
+  (change)="onFichierImport($event)"
+/>
 
-@if (messageExport()) {
-  <div class="succes" role="status">{{ messageExport() }}</div>
+@if (message()) {
+  <div class="succes" role="status">{{ message() }}</div>
+}
+
+@if (erreurAction()) {
+  <div class="erreur" role="alert">
+    <du-icon name="alert" [size]="16" /> {{ erreurAction() }}
+  </div>
+}
+
+@if (erreurFichier()) {
+  <div class="erreur" role="alert">
+    <du-icon name="alert" [size]="16" /> {{ erreurFichier() }}
+  </div>
+}
+
+@if (erreur()) {
+  <div class="erreur" role="alert">
+    <du-icon name="alert" [size]="16" /> {{ erreur() }}
+  </div>
+}
+
+@if (enCours()) {
+  <div class="info" role="status">
+    <du-icon name="clock" [size]="16" /> Import du canevas en cours…
+  </div>
+}
+
+@if (rapport(); as r) {
+  <section class="card rapport" aria-live="polite">
+    <div class="rapport__entete">
+      <h2>Rapport d’import</h2>
+      <div class="rapport__compteurs">
+        <span class="compteur compteur--ok">{{ r.crees }} importé(s)</span>
+        <span class="compteur compteur--warn">{{ r.doublons }} doublon(s)</span>
+        <span class="compteur compteur--warn">{{ r.ignorees }} ligne(s) vide(s)</span>
+        <span class="compteur" [class.compteur--err]="r.erreurs > 0">{{ r.erreurs }} erreur(s)</span>
+      </div>
+    </div>
+    <p class="muted small">{{ r.total_lignes }} ligne(s) lue(s) dans le fichier.</p>
+
+    @if (r.erreurs_details.length) {
+      <div class="table-wrap rapport__table">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Ligne</th>
+              <th>Colonne</th>
+              <th>Message</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of r.erreurs_details; track $index) {
+              <tr>
+                <td class="mono nowrap">{{ e.ligne }}</td>
+                <td class="nowrap">{{ e.colonne || '—' }}</td>
+                <td>{{ e.message }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
 }
 
 <section class="card filtres-card">
@@ -29,7 +96,7 @@
     <div class="filtres">
       <div class="field champ-recherche">
         <label for="recherche">Recherche</label>
-        <input #q id="recherche" class="input" type="search" placeholder="N°, objet, contrevenant, localisation…"
+        <input #q id="recherche" class="input" type="search" placeholder="N°, contrevenant, localisation…"
                [value]="recherche()" (input)="setRecherche(q.value)" />
       </div>
       <div class="field">
@@ -64,7 +131,12 @@
 </section>
 
 <section class="card">
-  @if (affiches().length) {
+  @if (chargement()) {
+    <div class="empty-state">
+      <du-icon name="sheet" [size]="28" />
+      <p class="muted small">Chargement des dossiers…</p>
+    </div>
+  } @else if (lignes().length) {
     <div class="table-scroll">
       <table class="canevas">
         <thead>
@@ -75,15 +147,16 @@
           </tr>
         </thead>
         <tbody>
-          @for (l of affiches(); track l.numero + l.objet) {
+          @for (l of lignes(); track $index) {
             <tr>
               @for (col of colonnes; track col.cle; let i = $index) {
                 <td [class.col-fixe]="i === 0" [class.nowrap]="col.cle === 'numero' || col.cle === 'dateEntree'">
-                  @switch (col.cle) {
-                    @case ('nature') { <span class="badge badge--neutral">{{ l[col.cle] }}</span> }
-                    @default {
-                      @if (l[col.cle]) { {{ l[col.cle] } } @else { <span class="vide">—</span> }
-                    }
+                  @if (col.cle === 'nature' && l[col.cle]) {
+                    <span class="badge badge--neutral">{{ l[col.cle] }}</span>
+                  } @else if (l[col.cle]) {
+                    {{ l[col.cle] }}
+                  } @else {
+                    <span class="vide">—</span>
                   }
                 </td>
               }
@@ -94,17 +167,17 @@
     </div>
 
     <div class="pagination">
-      <span class="muted small">{{ lignes().length }} ligne(s) · page {{ pageCourante() }} sur {{ totalPages() }} · 20 colonnes</span>
+      <span class="muted small">{{ pagination().total }} dossier(s) · page {{ pagination().page }} sur {{ pagination().dernierPage }} · 20 colonnes</span>
       <div class="pagination__nav">
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page === 1 || chargement()" (click)="allerA(pagination().page - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page === pagination().dernierPage || chargement()" (click)="allerA(pagination().page + 1)">Suivant</button>
       </div>
     </div>
-  } @else {
+  } @else if (!erreur()) {
     <div class="empty-state">
       <du-icon name="sheet" [size]="28" />
       <p><strong>Aucun dossier pour ces filtres.</strong></p>
-      <p class="muted small">Modifiez la recherche ou réinitialisez les filtres.</p>
+      <p class="muted small">Modifiez la recherche, réinitialisez les filtres ou importez un canevas.</p>
       <button type="button" class="btn btn--secondary btn--sm" (click)="reinitialiser()">Réinitialiser les filtres</button>
     </div>
   }

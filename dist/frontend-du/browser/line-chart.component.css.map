@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["line-chart.component.ts"],
-  "sourcesContent": ["\n      :host { display: block; }\n      .chart-svg { width: 100%; height: auto; display: block; }\n      .grid { stroke: #e5eaf2; stroke-width: 1; }\n      .grid-label { font-size: 10px; fill: #64748b; }\n      .axe { stroke: #d3dcea; stroke-width: 1.5; }\n      .courbe { fill: none; stroke: #143a6b; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }\n      .aire { fill: rgba(20, 58, 107, 0.1); stroke: none; }\n      .point { fill: #c08a2e; stroke: #fff; stroke-width: 2; }\n      .point-label { font-size: 9px; fill: #64748b; }\n      .resume { font-size: 0.84rem; color: var(--du-text-soft); margin: 0.6rem 0 0; }\n      .chart-vide { color: var(--du-muted); font-size: 0.88rem; margin: 0; padding: 0.5rem 0; }\n    "],
-  "mappings": ";AACM;AAAQ,WAAA;AAAgB;AACxB,CAAA;AAAa,SAAA;AAAa,UAAA;AAAc,WAAA;AAAgB;AACxD,CAAA;AAAQ,UAAA;AAAiB,gBAAA;AAAiB;AAC1C,CAAA;AAAc,aAAA;AAAiB,QAAA;AAAe;AAC9C,CAAA;AAAO,UAAA;AAAiB,gBAAA;AAAmB;AAC3C,CAAA;AAAU,QAAA;AAAY,UAAA;AAAiB,gBAAA;AAAmB,mBAAA;AAAwB,kBAAA;AAAuB;AACzG,CAAA;AAAQ,QAAA,KAAA,EAAA,EAAA,EAAA,EAAA,GAAA,EAAA;AAA8B,UAAA;AAAc;AACpD,CAAA;AAAS,QAAA;AAAe,UAAA;AAAc,gBAAA;AAAiB;AACvD,CAAA;AAAe,aAAA;AAAgB,QAAA;AAAe;AAC9C,CAAA;AAAU,aAAA;AAAoB,SAAA,IAAA;AAA4B,UAAA,OAAA,EAAA;AAAoB;AAC9E,CAAA;AAAc,SAAA,IAAA;AAAwB,aAAA;AAAoB,UAAA;AAAW,WAAA,OAAA;AAAmB;",
-  "names": []
-}

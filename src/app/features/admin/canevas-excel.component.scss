@@ -68,3 +68,66 @@
 .vide {
   color: var(--du-muted);
 }
+
+/* Messages d'action et d'erreur */
+.erreur {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e7b4b4;
+  border-radius: 10px;
+  background: var(--du-danger-soft, #fbeaea);
+  color: #9b2c2c;
+  font-size: 0.9rem;
+}
+.info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid var(--du-border);
+  border-radius: 10px;
+  background: var(--du-surface-2, #f4f7fb);
+  color: var(--du-muted);
+  font-size: 0.9rem;
+}
+
+/* Rapport d'import */
+.rapport {
+  padding: 1.1rem 1.4rem;
+  margin-bottom: 1.25rem;
+}
+.rapport__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+.rapport__entete h2 {
+  font-size: 1rem;
+}
+.rapport__compteurs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.compteur {
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  background: #eef1f6;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+.compteur--ok { background: var(--du-success-soft, #dff3e8); color: #14603c; }
+.compteur--warn { background: var(--du-warning-soft, #f7edd6); color: #8a5a12; }
+.compteur--err { background: var(--du-danger-soft, #fbeaea); color: #9b2c2c; }
+.rapport__table {
+  margin-top: 0.9rem;
+  max-height: 22rem;
+  overflow: auto;
+}

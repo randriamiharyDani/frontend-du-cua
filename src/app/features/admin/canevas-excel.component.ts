@@ -1,7 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import {
-  DocumentDossier,
-  Dossier,
   ETAPE_LABEL,
   ETAPES,
   EtapeDossier,
@@ -10,17 +8,14 @@ import {
   NatureDossier,
   SERVICES,
   ServiceDossier,
-  nomContrevenant,
 } from '../../core/models/dossier.model';
-import { DossierStore } from '../../core/state/dossier-store';
+import { DossierDto } from '../../core/models/dossier-api.model';
+import { FichierCanevas, formaterTaille, CanevasApiStore } from '../../core/state/canevas-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
-const normaliser = (s: string) =>
-  (s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-
 /** Formate une date ISO `yyyy-MM-dd` en `jj/mm/aaaa` (sans décalage de fuseau). */
-function formatDate(iso: string): string {
+function formatDate(iso: string | null): string {
   if (!iso) return '';
   const [a, m, j] = iso.split('-');
   return a && m && j ? `${j}/${m}/${a}` : iso;
@@ -57,8 +52,9 @@ interface ColonneCanevas {
 type LigneCanevas = Record<CleColonne, string>;
 
 /**
- * Page « Canevas Excel » : tableau de synthèse des dossiers, inspiré du canevas
- * de suivi des constructions illicites. Données temporaires du frontend uniquement.
+ * Page « Canevas Excel » : tableau de synthèse des dossiers relié à l'API
+ * réelle. Permet de télécharger le canevas (.xlsx) et d'importer un canevas
+ * rempli (`.xlsx`/`.csv`) avec validation et rapport détaillé.
  */
 @Component({
   selector: 'du-page-canevas-excel',
@@ -68,13 +64,21 @@ type LigneCanevas = Record<CleColonne, string>;
   styleUrl: './canevas-excel.component.scss',
 })
 export class CanevasExcelComponent {
-  private readonly store = inject(DossierStore);
+  private readonly store = inject(CanevasApiStore);
 
   protected readonly natures = NATURES;
   protected readonly natureLabel = NATURE_LABEL;
   protected readonly services = SERVICES;
   protected readonly etapes = ETAPES;
   protected readonly etapeLabel = ETAPE_LABEL;
+
+  protected readonly chargement = this.store.chargement;
+  protected readonly erreur = this.store.erreur;
+  protected readonly pagination = this.store.pagination;
+  protected readonly enCours = this.store.enCours;
+  protected readonly message = this.store.message;
+  protected readonly erreurAction = this.store.erreurAction;
+  protected readonly rapport = this.store.rapport;
 
   /** Les 20 colonnes officielles du canevas, dans l’ordre exact du fichier Excel. */
   protected readonly colonnes: readonly ColonneCanevas[] = [
@@ -100,130 +104,122 @@ export class CanevasExcelComponent {
     { cle: 'dateDemolition', libelle: 'DATE DEMOL OU ENLEVEMENT' },
   ];
 
-  // --- Filtres ---
+  // --- Filtres (appliqués côté serveur) ---
   protected readonly recherche = signal('');
   protected readonly nature = signal<NatureDossier | ''>('');
   protected readonly service = signal<ServiceDossier | ''>('');
   protected readonly etape = signal<EtapeDossier | ''>('');
   private readonly page = signal(1);
-  protected readonly taillePage = 6;
+  protected readonly taillePage = 10;
 
-  protected readonly messageExport = signal('');
+  // --- Import ---
+  protected readonly fichierImport = signal<FichierCanevas | null>(null);
+  protected readonly erreurFichier = signal('');
 
-  /** Dossiers filtrés, du plus récent au plus ancien. */
-  private readonly dossiersFiltres = computed(() => {
-    const q = normaliser(this.recherche().trim());
-    const nature = this.nature();
-    const service = this.service();
-    const etape = this.etape();
-    return this.store
-      .dossiers()
-      .filter((d) => {
-        if (nature && d.infos.nature !== nature) return false;
-        if (service && d.service !== service) return false;
-        if (etape && d.etape !== etape) return false;
-        if (!q) return true;
-        const hay = normaliser(
-          [
-            d.infos.numero,
-            d.reference,
-            d.complements.objet,
-            nomContrevenant(d.contrevenant),
-            d.localisation.adresse,
-            d.localisation.quartier,
-          ].join(' '),
-        );
-        return hay.includes(q);
-      })
-      .sort((a, b) => (b.infos.dateEntree || '').localeCompare(a.infos.dateEntree || ''));
-  });
-
-  /** Lignes du canevas issues des dossiers temporaires (aucune donnée ajoutée). */
-  protected readonly lignes = computed<LigneCanevas[]>(() => {
-    const docs = this.store.documents();
-    return this.dossiersFiltres().map((d) => this.versLigne(d, docs));
-  });
-
-  protected readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.lignes().length / this.taillePage)),
+  /** Lignes du canevas issues des dossiers réels de la page courante. */
+  protected readonly lignes = computed<LigneCanevas[]>(() =>
+    this.store.dossiers().map((d) => this.versLigne(d)),
   );
-  protected readonly pageCourante = computed(() => Math.min(this.page(), this.totalPages()));
-  protected readonly affiches = computed(() => {
-    const debut = (this.pageCourante() - 1) * this.taillePage;
-    return this.lignes().slice(debut, debut + this.taillePage);
-  });
+
   protected readonly filtresActifs = computed(
     () => !!(this.recherche() || this.nature() || this.service() || this.etape()),
   );
 
-  private documentDeType(id: string, docs: DocumentDossier[], type: DocumentDossier['type']) {
-    return docs
-      .filter((doc) => doc.dossierId === id && doc.type === type)
-      .sort((a, b) => b.dateDepot.localeCompare(a.dateDepot))[0];
+  constructor() {
+    this.charger();
   }
 
-  /** Projette un dossier sur une ligne du canevas (20 colonnes, ordre Excel). */
-  private versLigne(d: Dossier, docs: DocumentDossier[]): LigneCanevas {
-    const arrete =
-      this.documentDeType(d.id, docs, 'arrete_interruptif') ??
-      this.documentDeType(d.id, docs, 'arrete_scelles');
-    const scellage = this.documentDeType(d.id, docs, 'pv_scellage');
-    const demolition = this.documentDeType(d.id, docs, 'document_demolition');
-    const etude = this.documentDeType(d.id, docs, 'document_etude');
-    const loc = d.localisation;
-    const a = d.arretes;
+  /** Interroge l'API avec les filtres courants et la page courante. */
+  private charger(): void {
+    this.store.chargerListe({
+      search: this.recherche().trim(),
+      nature: this.nature(),
+      service: this.service(),
+      etape: this.etape(),
+      per_page: this.taillePage,
+      page: this.page(),
+    });
+  }
 
+  /** Projette un dossier réel sur une ligne du canevas (20 colonnes, ordre Excel). */
+  private versLigne(d: DossierDto): LigneCanevas {
     return {
-      numero: d.infos.numero || d.reference,
-      dateEntree: formatDate(d.infos.dateEntree),
-      referenceEtude: d.infos.referenceEtude || etude?.reference || '',
-      idemEtude: d.infos.idemEtude || '',
-      dateEtude: formatDate(d.infos.dateEtude || etude?.dateDepot || ''),
-      referenceArrivee: d.infos.referenceArrivee || '',
-      provenance: d.infos.provenance || '',
-      nature: NATURE_LABEL[d.infos.nature],
-      coordonnees: [loc.coordX, loc.coordY].filter(Boolean).join(' / '),
-      localisation: loc.localisation || [loc.adresse, loc.quartier].filter(Boolean).join(', '),
-      contrevenant: nomContrevenant(d.contrevenant),
-      objet: d.complements.objet,
-      emplacement: d.complements.emplacement || '',
-      dossierRelatif: d.complements.dossierRelatif || '',
-      observations: d.complements.observationsGenerales || d.motifAttention || '',
-      refArrete: a.refArrete || arrete?.reference || '',
-      dateArrete: formatDate(a.dateArrete || arrete?.dateDepot || ''),
-      objetArrete: a.objetArrete || '',
-      dateScellage: formatDate(a.dateScellage || scellage?.dateDepot || ''),
-      dateDemolition: formatDate(a.dateDemolOuEnlevement || demolition?.dateDepot || ''),
+      numero: d.num_bd ?? '',
+      dateEntree: formatDate(d.date_entree),
+      referenceEtude: d.ref_etude ?? '',
+      idemEtude: d.idem_etude ?? '',
+      dateEtude: formatDate(d.date_etude),
+      referenceArrivee: d.ref_arrivee ?? '',
+      provenance: d.provenance ?? '',
+      nature: d.nature ? NATURE_LABEL[d.nature] : '',
+      coordonnees: d.coordonnees ?? '',
+      localisation: d.localisation ?? '',
+      contrevenant: d.nom_contrevenant ?? '',
+      objet: d.objet ?? '',
+      emplacement: d.emplacement ?? '',
+      dossierRelatif: d.dossier_relatif ?? '',
+      observations: d.obs ?? '',
+      refArrete: d.ref_arrete ?? '',
+      dateArrete: formatDate(d.date_arrete),
+      objetArrete: d.objet_arrete ?? '',
+      dateScellage: formatDate(d.date_scellage),
+      dateDemolition: formatDate(d.date_demol_ou_enlevement),
     };
   }
 
-  /** Exporte la vue filtrée en CSV compatible Excel (sans dépendance externe). */
+  /** Télécharge le canevas Excel (filtres courants) généré côté serveur. */
   protected exporterExcel(): void {
-    const entetes = this.colonnes.map((c) => c.libelle);
-    const lignes = this.lignes();
-    const echapper = (v: string) => `"${(v ?? '').replace(/"/g, '""')}"`;
-    const contenu = [
-      entetes.map(echapper).join(';'),
-      ...lignes.map((l) => this.colonnes.map((c) => echapper(l[c.cle])).join(';')),
-    ].join('\r\n');
-
-    const blob = new Blob(['\uFEFF' + contenu], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `canevas-dossiers-${new Date().toISOString().slice(0, 10)}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    this.messageExport.set(
-      `Export de ${lignes.length} ligne(s) généré côté navigateur (fichier CSV ouvert par Excel).`,
-    );
-    window.setTimeout(() => this.messageExport.set(''), 6000);
+    this.store.exporter({
+      search: this.recherche().trim(),
+      nature: this.nature(),
+      service: this.service(),
+      etape: this.etape(),
+    });
   }
 
-  /** Ouvre une fenêtre d’impression contenant uniquement le tableau. */
+  /** Mémorise le fichier choisi puis lance l'import. */
+  protected onFichierImport(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const fichier = input.files?.[0];
+    input.value = '';
+    this.erreurFichier.set('');
+
+    if (!fichier) {
+      this.fichierImport.set(null);
+      return;
+    }
+
+    const extension = (fichier.name.split('.').pop() ?? '').toLowerCase();
+    if (extension !== 'xlsx' && extension !== 'csv') {
+      this.fichierImport.set(null);
+      this.erreurFichier.set('Format non supporté. Choisissez un fichier .xlsx ou .csv.');
+      return;
+    }
+
+    this.fichierImport.set({ fichier, nom: fichier.name, taille: formaterTaille(fichier.size) });
+    this.store.effacerMessages();
+    this.store.importer(fichier).subscribe({
+      next: () => {
+        this.fichierImport.set(null);
+        this.charger();
+      },
+      error: () => undefined,
+    });
+  }
+
+  /** Ouvre le sélecteur de fichier pour l'import. */
+  protected importer(): void {
+    this.store.effacerMessages();
+    this.erreurFichier.set('');
+    this.fichierImport.set(null);
+    this.inputFichier()?.click();
+  }
+
+  private inputFichier(): HTMLInputElement | null {
+    return window.document.getElementById('fichier-canevas') as HTMLInputElement | null;
+  }
+
+  /** Ouvre une fenêtre d’impression contenant uniquement le tableau affiché. */
   protected imprimer(): void {
     const entetes = this.colonnes.map((c) => c.libelle);
     const lignes = this.lignes();
@@ -232,10 +228,7 @@ export class CanevasExcelComponent {
 
     const thead = `<tr>${entetes.map((h) => `<th>${echapperHtml(h)}</th>`).join('')}</tr>`;
     const tbody = lignes
-      .map(
-        (l) =>
-          `<tr>${this.colonnes.map((c) => `<td>${echapperHtml(l[c.cle])}</td>`).join('')}</tr>`,
-      )
+      .map((l) => `<tr>${this.colonnes.map((c) => `<td>${echapperHtml(l[c.cle])}</td>`).join('')}</tr>`)
       .join('');
 
     const html = `<!doctype html><html lang="fr"><head><meta charset="utf-8" />
@@ -251,7 +244,7 @@ export class CanevasExcelComponent {
         @page { size: landscape; margin: 8mm; }
       </style></head><body>
       <h1>Canevas de suivi des dossiers — constructions illicites</h1>
-      <p>Démonstration · ${lignes.length} ligne(s) · généré le ${formatDate(new Date().toISOString().slice(0, 10))}</p>
+      <p>${lignes.length} ligne(s) · page ${this.pagination().page} / ${this.pagination().dernierPage} · généré le ${formatDate(new Date().toISOString().slice(0, 10))}</p>
       <table><thead>${thead}</thead><tbody>${tbody}</tbody></table>
       </body></html>`;
 
@@ -269,15 +262,15 @@ export class CanevasExcelComponent {
   private resetPage(): void {
     this.page.set(1);
   }
-  protected setRecherche(v: string): void { this.recherche.set(v); this.resetPage(); }
-  protected setNature(v: string): void { this.nature.set(v as NatureDossier | ''); this.resetPage(); }
-  protected setService(v: string): void { this.service.set(v as ServiceDossier | ''); this.resetPage(); }
-  protected setEtape(v: string): void { this.etape.set(v as EtapeDossier | ''); this.resetPage(); }
-  protected allerA(p: number): void { this.page.set(Math.min(Math.max(1, p), this.totalPages())); }
+  protected setRecherche(v: string): void { this.recherche.set(v); }
+  protected setNature(v: string): void { this.nature.set(v as NatureDossier | ''); }
+  protected setService(v: string): void { this.service.set(v as ServiceDossier | ''); }
+  protected setEtape(v: string): void { this.etape.set(v as EtapeDossier | ''); }
 
   /** Applique les filtres en revenant à la première page. */
   protected rechercher(): void {
     this.resetPage();
+    this.charger();
   }
 
   protected reinitialiser(): void {
@@ -285,6 +278,12 @@ export class CanevasExcelComponent {
     this.nature.set('');
     this.service.set('');
     this.etape.set('');
-    this.page.set(1);
+    this.resetPage();
+    this.charger();
+  }
+
+  protected allerA(p: number): void {
+    this.page.set(Math.min(Math.max(1, p), this.pagination().dernierPage));
+    this.charger();
   }
 }
