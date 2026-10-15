@@ -9,17 +9,14 @@ import {
   ROLES_UTILISATEUR,
   RoleUtilisateur,
   Utilisateur,
-  UtilisateurFormValue,
   nomComplet,
 } from '../../core/models/utilisateur.model';
-import { DossierStore } from '../../core/state/dossier-store';
+import { PayloadUtilisateur } from '../../core/models/utilisateur-api.model';
+import { UtilisateursApiStore } from '../../core/state/utilisateurs-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
-const normaliser = (s: string) =>
-  (s ?? '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-
-/** Page « Utilisateurs » : comptes, services, rôles et états (données fictives). */
+/** Page « Utilisateurs » : comptes, services, rôles et états (API réelle). */
 @Component({
   selector: 'du-page-utilisateurs',
   imports: [ReactiveFormsModule, IconComponent, PageHeaderComponent],
@@ -29,8 +26,16 @@ const normaliser = (s: string) =>
   host: { '(document:keydown.escape)': 'fermerFormulaire()' },
 })
 export class UtilisateursComponent {
-  private readonly store = inject(DossierStore);
+  private readonly store = inject(UtilisateursApiStore);
   private readonly fb = inject(NonNullableFormBuilder);
+
+  protected readonly utilisateurs = this.store.utilisateurs;
+  protected readonly chargement = this.store.chargement;
+  protected readonly erreur = this.store.erreur;
+  protected readonly pagination = this.store.pagination;
+  protected readonly enCours = this.store.enCours;
+  protected readonly messageSucces = this.store.message;
+  protected readonly erreurAction = this.store.erreurAction;
 
   protected readonly services = SERVICES;
   protected readonly roles = ROLES_UTILISATEUR;
@@ -47,35 +52,6 @@ export class UtilisateursComponent {
   private readonly page = signal(1);
   protected readonly taillePage = 8;
 
-  protected readonly messageSucces = signal('');
-  /** Message d’erreur de doublon d’e-mail (validé côté frontend). */
-  protected readonly erreurEmail = signal('');
-
-  protected readonly filtres = computed(() => {
-    const q = normaliser(this.recherche().trim());
-    const service = this.service();
-    const role = this.role();
-    const etat = this.etat();
-    return this.store
-      .utilisateurs()
-      .filter((u) => {
-        if (service && u.service !== service) return false;
-        if (role && u.role !== role) return false;
-        if (etat && u.etat !== etat) return false;
-        if (!q) return true;
-        return normaliser([u.nom, u.prenom, u.email].join(' ')).includes(q);
-      })
-      .sort((a, b) => a.nom.localeCompare(b.nom) || a.prenom.localeCompare(b.prenom));
-  });
-
-  protected readonly totalPages = computed(() =>
-    Math.max(1, Math.ceil(this.filtres().length / this.taillePage)),
-  );
-  protected readonly pageCourante = computed(() => Math.min(this.page(), this.totalPages()));
-  protected readonly affiches = computed(() => {
-    const debut = (this.pageCourante() - 1) * this.taillePage;
-    return this.filtres().slice(debut, debut + this.taillePage);
-  });
   protected readonly filtresActifs = computed(
     () => !!(this.recherche() || this.service() || this.role() || this.etat()),
   );
@@ -85,30 +61,50 @@ export class UtilisateursComponent {
   protected readonly editionId = signal<string | null>(null);
 
   protected readonly form = this.fb.group({
-    nom: ['', [Validators.required, Validators.minLength(2)]],
     prenom: ['', [Validators.required, Validators.minLength(2)]],
+    nom: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.minLength(8)]],
     service: ['DU' as ServiceDossier, Validators.required],
     role: ['agent' as RoleUtilisateur, Validators.required],
     etat: ['actif' as EtatCompte, Validators.required],
   });
 
   private static readonly MESSAGES: Record<string, Record<string, string>> = {
-    nom: { required: 'Le nom est obligatoire.', minlength: 'Au moins 2 caractères.' },
     prenom: { required: 'Le prénom est obligatoire.', minlength: 'Au moins 2 caractères.' },
+    nom: { required: 'Le nom est obligatoire.', minlength: 'Au moins 2 caractères.' },
     email: { required: 'L’adresse e-mail est obligatoire.', email: 'Adresse e-mail invalide.' },
+    password: { required: 'Le mot de passe est obligatoire.', minlength: 'Au moins 8 caractères.' },
     service: { required: 'Sélectionnez un service.' },
     role: { required: 'Sélectionnez un rôle.' },
     etat: { required: 'Sélectionnez un état de compte.' },
   };
 
+  constructor() {
+    this.charger();
+  }
+
+  /** Interroge l'API avec les filtres courants. */
+  private charger(): void {
+    this.store.chargerListe({
+      search: this.recherche().trim(),
+      service: this.service(),
+      role: this.role(),
+      statut: this.etat(),
+      per_page: this.taillePage,
+      page: this.page(),
+    });
+  }
+
   protected ouvrirAjout(): void {
     this.editionId.set(null);
-    this.erreurEmail.set('');
+    this.store.effacerMessages();
+    this.form.controls.password.setValidators([Validators.required, Validators.minLength(8)]);
     this.form.reset({
-      nom: '',
       prenom: '',
+      nom: '',
       email: '',
+      password: '',
       service: 'DU' as ServiceDossier,
       role: 'agent' as RoleUtilisateur,
       etat: 'actif' as EtatCompte,
@@ -118,11 +114,13 @@ export class UtilisateursComponent {
 
   protected ouvrirEdition(u: Utilisateur): void {
     this.editionId.set(u.id);
-    this.erreurEmail.set('');
+    this.store.effacerMessages();
+    this.form.controls.password.setValidators([Validators.minLength(8)]);
     this.form.reset({
-      nom: u.nom,
       prenom: u.prenom,
+      nom: u.nom,
       email: u.email,
+      password: '',
       service: u.service,
       role: u.role,
       etat: u.etat,
@@ -146,46 +144,38 @@ export class UtilisateursComponent {
     return UtilisateursComponent.MESSAGES[champ]?.[type] ?? 'Champ invalide.';
   }
 
-  /** Enregistre localement (démonstration) après vérification du doublon d’e-mail. */
+  /** Enregistre via l'API (création ou modification). */
   protected enregistrer(): void {
-    this.erreurEmail.set('');
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
-    const valeur: UtilisateurFormValue = this.form.getRawValue();
-    const email = valeur.email.trim().toLowerCase();
-    const id = this.editionId();
-    const doublon = this.store
-      .utilisateurs()
-      .some((u) => u.email.toLowerCase() === email && u.id !== id);
-    if (doublon) {
-      this.erreurEmail.set('Cette adresse e-mail est déjà utilisée par un autre compte.');
-      this.form.controls.email.markAsTouched();
-      return;
+
+    const valeur = this.form.getRawValue();
+    const payload: PayloadUtilisateur = {
+      prenom: valeur.prenom.trim(),
+      nom: valeur.nom.trim(),
+      email: valeur.email.trim(),
+      service: valeur.service,
+      role: valeur.role,
+      statut: valeur.etat,
+    };
+    if (valeur.password.trim()) {
+      payload.password = valeur.password.trim();
     }
 
-    valeur.email = valeur.email.trim();
-    if (id) {
-      this.store.updateUtilisateur(id, valeur);
-    } else {
-      this.store.addUtilisateur(valeur);
-    }
-    this.fermerFormulaire();
-    this.messageSucces.set(
-      id
-        ? 'Utilisateur modifié localement (simulation) — non enregistré de façon permanente.'
-        : 'Utilisateur ajouté localement (simulation) — non enregistré de façon permanente.',
-    );
-    window.setTimeout(() => this.messageSucces.set(''), 6000);
+    const id = this.editionId();
+    const requete = id ? this.store.modifier(id, payload) : this.store.creer(payload);
+
+    requete.subscribe({ next: () => this.fermerFormulaire() });
   }
 
   protected supprimer(u: Utilisateur): void {
     const ok =
       typeof window === 'undefined' ||
-      window.confirm(`Supprimer le compte « ${nomComplet(u)} » ? (démonstration)`);
+      window.confirm(`Supprimer le compte « ${nomComplet(u)} » ? Cette action est définitive.`);
     if (!ok) return;
-    this.store.supprimerUtilisateur(u.id);
+    this.store.supprimer(u.id).subscribe();
   }
 
   private resetPage(): void {
@@ -195,11 +185,17 @@ export class UtilisateursComponent {
   protected setService(v: string): void { this.service.set(v as ServiceDossier | ''); this.resetPage(); }
   protected setRole(v: string): void { this.role.set(v as RoleUtilisateur | ''); this.resetPage(); }
   protected setEtat(v: string): void { this.etat.set(v as EtatCompte | ''); this.resetPage(); }
-  protected allerA(p: number): void { this.page.set(Math.min(Math.max(1, p), this.totalPages())); }
+
+  protected allerA(p: number): void {
+    const cible = Math.min(Math.max(1, p), this.pagination().dernierPage);
+    this.page.set(cible);
+    this.charger();
+  }
 
   /** Applique les filtres en revenant à la première page. */
   protected rechercher(): void {
     this.resetPage();
+    this.charger();
   }
 
   protected reinitialiser(): void {
@@ -208,5 +204,6 @@ export class UtilisateursComponent {
     this.role.set('');
     this.etat.set('');
     this.page.set(1);
+    this.charger();
   }
 }

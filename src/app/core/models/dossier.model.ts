@@ -13,8 +13,8 @@ export const SERVICES: readonly ServiceDossier[] = ['DU', 'DIS', 'SCAD'];
 
 export const SERVICE_LABEL: Record<ServiceDossier, string> = {
   DU: 'Direction de l’Urbanisme',
-  DIS: 'Direction des Infrastructures Sociales',
-  SCAD: 'Service du Cadastre',
+  DIS: 'division inspection et suivi',
+  SCAD: 'Service de Coordination des activités et doléances',
 };
 
 /* ============================ Statuts ============================ */

@@ -80,13 +80,13 @@ export const PARAMETRES_DEFAUT: Parametres = {
     },
     {
       code: 'DIS',
-      libelle: 'Direction des Infrastructures Sociales',
+      libelle: 'division inspection et suivi',
       description: 'Équipements et infrastructures sociales rattachés aux dossiers.',
       actif: true,
     },
     {
       code: 'SCAD',
-      libelle: 'Service du Cadastre',
+      libelle: 'Service de Coordination des activités et doléances',
       description: 'Références foncières, plan cadastral et parcelles.',
       actif: true,
     },

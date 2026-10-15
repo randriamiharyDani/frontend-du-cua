@@ -1,20 +1,20 @@
 <du-page-header
   title="Utilisateurs"
-  subtitle="Comptes, services, rôles et états — données fictives de démonstration."
+  subtitle="Comptes, services, rôles et états."
 >
   <button type="button" class="btn btn--primary" (click)="ouvrirAjout()">
     <du-icon name="plus" [size]="16" /> Nouvel utilisateur
   </button>
 </du-page-header>
 
-<p class="demo-note" role="note">
-  <du-icon name="alert" [size]="15" />
-  Démonstration : aucune authentification réelle, aucun backend ni base de données. L’ajout et la
-  modification sont simulés localement et ne sont pas enregistrés de façon permanente.
-</p>
-
 @if (messageSucces()) {
   <div class="succes" role="status">{{ messageSucces() }}</div>
+}
+
+@if (erreur()) {
+  <div class="erreur" role="alert">
+    <du-icon name="alert" [size]="16" /> {{ erreur() }}
+  </div>
 }
 
 <section class="card filtres-card">
@@ -61,7 +61,12 @@
 </section>
 
 <section class="card">
-  @if (affiches().length) {
+  @if (chargement()) {
+    <div class="empty-state">
+      <du-icon name="users" [size]="28" />
+      <p class="muted small">Chargement des utilisateurs…</p>
+    </div>
+  } @else if (utilisateurs().length) {
     <div class="table-wrap">
       <table class="table">
         <thead>
@@ -75,7 +80,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (u of affiches(); track u.id) {
+          @for (u of utilisateurs(); track u.id) {
             <tr>
               <td>
                 <div class="user-nom">
@@ -96,10 +101,10 @@
                 </span>
               </td>
               <td class="actions">
-                <button type="button" class="btn btn--secondary btn--sm" (click)="ouvrirEdition(u)">
+                <button type="button" class="btn btn--secondary btn--sm" [disabled]="enCours()" (click)="ouvrirEdition(u)">
                   <du-icon name="edit" [size]="15" /> Modifier
                 </button>
-                <button type="button" class="btn btn--danger btn--sm" (click)="supprimer(u)">
+                <button type="button" class="btn btn--danger btn--sm" [disabled]="enCours()" (click)="supprimer(u)">
                   <du-icon name="x" [size]="15" /> Supprimer
                 </button>
               </td>
@@ -110,10 +115,10 @@
     </div>
 
     <div class="pagination">
-      <span class="muted small">{{ filtres().length }} utilisateur(s) · page {{ pageCourante() }} sur {{ totalPages() }}</span>
+      <span class="muted small">{{ pagination().total }} utilisateur(s) · page {{ pagination().page }} sur {{ pagination().dernierPage }}</span>
       <div class="pagination__nav">
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === 1" (click)="allerA(pageCourante() - 1)">Précédent</button>
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pageCourante() === totalPages()" (click)="allerA(pageCourante() + 1)">Suivant</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page === 1 || chargement()" (click)="allerA(pagination().page - 1)">Précédent</button>
+        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page === pagination().dernierPage || chargement()" (click)="allerA(pagination().page + 1)">Suivant</button>
       </div>
     </div>
   } @else {
@@ -140,14 +145,13 @@
         </div>
 
         <div class="modal__corps">
-          <div class="form-grid">
-            <div class="field">
-              <label for="nom">Nom *</label>
-              <input id="nom" class="input" formControlName="nom" autocomplete="family-name"
-                     [class.is-invalid]="invalide('nom')" />
-              @if (invalide('nom')) { <span class="error">{{ message('nom') }}</span> }
+          @if (erreurAction()) {
+            <div class="erreur" role="alert">
+              <du-icon name="alert" [size]="16" /> {{ erreurAction() }}
             </div>
+          }
 
+          <div class="form-grid">
             <div class="field">
               <label for="prenom">Prénom *</label>
               <input id="prenom" class="input" formControlName="prenom" autocomplete="given-name"
@@ -155,13 +159,30 @@
               @if (invalide('prenom')) { <span class="error">{{ message('prenom') }}</span> }
             </div>
 
+            <div class="field">
+              <label for="nom">Nom *</label>
+              <input id="nom" class="input" formControlName="nom" autocomplete="family-name"
+                     [class.is-invalid]="invalide('nom')" />
+              @if (invalide('nom')) { <span class="error">{{ message('nom') }}</span> }
+            </div>
+
             <div class="field full">
               <label for="email">Adresse e-mail *</label>
               <input id="email" type="email" class="input" formControlName="email" autocomplete="email"
-                     placeholder="prenom.nom@service.gouv"
-                     [class.is-invalid]="invalide('email') || !!erreurEmail()" />
+                     placeholder="prenom.nom@du.mg"
+                     [class.is-invalid]="invalide('email')" />
               @if (invalide('email')) { <span class="error">{{ message('email') }}</span> }
-              @if (erreurEmail()) { <span class="error">{{ erreurEmail() }}</span> }
+            </div>
+
+            <div class="field full">
+              <label for="password">
+                {{ editionId() ? 'Nouveau mot de passe' : 'Mot de passe *' }}
+              </label>
+              <input id="password" type="password" class="input" formControlName="password"
+                     autocomplete="new-password"
+                     [placeholder]="editionId() ? 'Laisser vide pour conserver l’actuel' : 'Au moins 8 caractères'"
+                     [class.is-invalid]="invalide('password')" />
+              @if (invalide('password')) { <span class="error">{{ message('password') }}</span> }
             </div>
 
             <div class="field">
@@ -187,13 +208,13 @@
           </div>
 
           <p class="muted small" style="margin: 0.5rem 0 0;">
-            Formulaire de démonstration — aucune authentification réelle, aucune donnée conservée.
+            Un compte « Inactif » ou « Suspendu » ne peut pas se connecter.
           </p>
         </div>
 
         <div class="modal__pied">
           <button type="button" class="btn btn--secondary" (click)="fermerFormulaire()">Annuler</button>
-          <button type="submit" class="btn btn--primary">
+          <button type="submit" class="btn btn--primary" [disabled]="enCours()">
             {{ editionId() ? 'Enregistrer les modifications' : 'Créer le compte' }}
           </button>
         </div>
