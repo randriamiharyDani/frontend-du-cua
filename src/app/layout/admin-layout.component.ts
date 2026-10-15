@@ -1,10 +1,12 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map, mergeMap } from 'rxjs';
 import { ADMIN_NAV_ITEMS } from './admin-navigation';
 import { AdminSidebarComponent } from './admin-sidebar.component';
 import { AdminTopbarComponent } from './admin-topbar.component';
+import { AuthService } from '../core/services/auth.service';
+import { NotificationsStore } from '../core/state/notifications.store';
 
 /**
  * Coquille de l’espace admin : sidebar + topbar + zone centrale.
@@ -17,9 +19,11 @@ import { AdminTopbarComponent } from './admin-topbar.component';
   templateUrl: './admin-layout.component.html',
   styleUrl: './admin-layout.component.scss',
 })
-export class AdminLayoutComponent {
+export class AdminLayoutComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly auth = inject(AuthService);
+  private readonly notifications = inject(NotificationsStore);
 
   /** Sidebar repliée (écran large). */
   protected readonly sidebarRepliee = signal(false);
@@ -58,5 +62,14 @@ export class AdminLayoutComponent {
 
   protected fermerMenuMobile(): void {
     this.menuMobileOuvert.set(false);
+  }
+
+  /** Démarre le temps réel si connecté ; arrête à la sortie du layout. */
+  ngOnInit(): void {
+    if (this.auth.estConnecte()) this.notifications.demarrer();
+  }
+
+  ngOnDestroy(): void {
+    this.notifications.arreter();
   }
 }

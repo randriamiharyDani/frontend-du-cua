@@ -49,7 +49,151 @@
 
 .topbar__profil {
   position: relative;
+  margin-left: 0.25rem;
+}
+
+/* --- Cloche de notifications (ajout uniquement, existant inchangé) --- */
+.topbar__cloche {
+  position: relative;
   margin-left: auto;
+}
+
+.topbar__profil {
+  margin-left: 0;
+}
+
+.topbar__btn--cloche {
+  position: relative;
+}
+
+.cloche__compteur {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 5px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--du-danger);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  border: 2px solid #fff;
+}
+
+.cloche__panneau {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  z-index: 19;
+  width: 360px;
+  max-width: min(360px, calc(100vw - 2rem));
+  max-height: 420px;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--du-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(16, 24, 40, 0.14);
+  overflow: hidden;
+}
+
+.cloche__entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--du-border);
+  font-size: 0.9rem;
+}
+
+.cloche__entete .link {
+  border: 0;
+  background: transparent;
+  color: var(--du-primary);
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.cloche__etat {
+  margin: 0;
+  padding: 1.25rem;
+  text-align: center;
+  color: var(--du-muted);
+  font-size: 0.85rem;
+}
+
+.cloche__liste {
+  list-style: none;
+  margin: 0;
+  padding: 0.4rem;
+  overflow-y: auto;
+}
+
+.cloche__liste li button {
+  display: grid;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0.65rem 0.7rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--du-primary-soft-2);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cloche__liste li + li {
+  margin-top: 0.3rem;
+}
+
+.cloche__liste li button:hover {
+  background: var(--du-primary-soft);
+}
+
+.cloche__liste li.lue button {
+  background: transparent;
+  opacity: 0.75;
+}
+
+.cloche__type {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--du-primary);
+}
+
+.cloche__titre {
+  font-size: 0.87rem;
+  font-weight: 700;
+  color: var(--du-text);
+}
+
+.cloche__message {
+  font-size: 0.8rem;
+  color: var(--du-text-soft);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cloche__date {
+  font-size: 0.72rem;
+  color: var(--du-muted);
+}
+
+.link {
+  color: var(--du-primary);
+  font-weight: 600;
 }
 
 .topbar__user {

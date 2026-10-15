@@ -1,6 +1,9 @@
+import { DatePipe } from '@angular/common';
 import { Component, EventEmitter, Input, Output, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
+import { NotificationsStore } from '../core/state/notifications.store';
+import { TYPE_NOTIFICATION_LABEL } from '../core/models/notification.model';
 import { SERVICE_LABEL } from '../core/models/dossier.model';
 import { IconComponent } from '../shared/ui/icon.component';
 import { ADMIN_CURRENT_USER, AdminUser } from './admin-navigation';
@@ -15,17 +18,19 @@ function initiales(nom: string): string {
     .join('');
 }
 
-/** Barre supérieure : bouton menu, titre de page, profil utilisateur connecté. */
+/** Barre supérieure : bouton menu, titre de page, cloche notifications, profil utilisateur connecté. */
 @Component({
   selector: 'du-admin-topbar',
   standalone: true,
-  imports: [RouterLink, IconComponent],
+  imports: [RouterLink, IconComponent, DatePipe],
   templateUrl: './admin-topbar.component.html',
   styleUrl: './admin-topbar.component.scss',
 })
 export class AdminTopbarComponent {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  protected readonly notifications = inject(NotificationsStore);
+  protected readonly typeLabel = TYPE_NOTIFICATION_LABEL;
 
   /** Titre de la page courante, fourni par le layout. */
   @Input() titrePage = 'Tableau de bord';
@@ -38,6 +43,7 @@ export class AdminTopbarComponent {
   @Output() basculerRepli = new EventEmitter<void>();
 
   protected readonly profilOuvert = signal(false);
+  protected readonly clocheOuverte = signal(false);
 
   /** Utilisateur connecté (repli neutre si la session n'est pas chargée). */
   protected readonly utilisateur = computed<AdminUser>(() => {
@@ -53,10 +59,30 @@ export class AdminTopbarComponent {
 
   protected basculerProfil(): void {
     this.profilOuvert.update((v) => !v);
+    if (this.profilOuvert()) this.clocheOuverte.set(false);
   }
 
   protected fermerProfil(): void {
     this.profilOuvert.set(false);
+  }
+
+  /** Cloche : ouvre le panneau + recharge + démarre le temps réel. */
+  protected basculerCloche(): void {
+    this.clocheOuverte.update((v) => !v);
+    if (this.clocheOuverte()) {
+      this.profilOuvert.set(false);
+      this.notifications.demarrer();
+      this.notifications.rafraichir();
+    }
+  }
+
+  protected fermerCloche(): void {
+    this.clocheOuverte.set(false);
+  }
+
+  protected ouvrirDossier(id: number | null): void {
+    this.fermerCloche();
+    if (id !== null) void this.router.navigate(['/admin/dossiers', id]);
   }
 
   /** Déconnexion : révoque le jeton côté serveur puis retourne à la connexion. */
