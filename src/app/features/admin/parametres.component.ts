@@ -1,10 +1,10 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  WritableSignal,
+  OnInit,
+  computed,
   effect,
   inject,
-  signal,
 } from '@angular/core';
 import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
@@ -28,11 +28,12 @@ import {
   PreferencesParametres,
   ProfilParametres,
 } from '../../core/models/parametres.model';
+import { AuthService } from '../../core/services/auth.service';
 import { ParametresStore } from '../../core/state/parametres-store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
-/** Page « Paramètres » : configuration locale de l’espace administrateur (démonstration). */
+/** Page « Paramètres » : configuration de l'espace administrateur (API Laravel). */
 @Component({
   selector: 'du-page-parametres',
   standalone: true,
@@ -41,11 +42,23 @@ import { PageHeaderComponent } from '../../shared/ui/page-header.component';
   templateUrl: './parametres.component.html',
   styleUrl: './parametres.component.scss',
 })
-export class ParametresComponent {
+export class ParametresComponent implements OnInit {
   private readonly store = inject(ParametresStore);
+  private readonly auth = inject(AuthService);
   private readonly fb = inject(NonNullableFormBuilder);
 
   protected readonly parametres = this.store.parametres;
+  protected readonly chargement = this.store.chargement;
+  protected readonly erreur = this.store.erreur;
+  protected readonly enCours = this.store.enCours;
+  protected readonly messageSucces = this.store.message;
+  protected readonly erreurAction = this.store.erreurAction;
+
+  /** Sections « Application » et « Services » réservées aux rôles privilégiés. */
+  protected readonly estPrivilegie = computed(() => {
+    const role = this.auth.utilisateur()?.role;
+    return role === 'admin_systeme' || role === 'administrateur';
+  });
 
   // Référentiels affichés en lecture seule (types, statuts, priorité…).
   protected readonly servicesDisponibles = SERVICES;
@@ -63,12 +76,6 @@ export class ParametresComponent {
 
   protected readonly formatsDate: readonly FormatDate[] = ['dd/MM/yyyy', 'dd-MM-yyyy', 'yyyy-MM-dd'];
 
-  // --- Messages de confirmation par section ---
-  protected readonly messageProfil = signal('');
-  protected readonly messagePreferences = signal('');
-  protected readonly messageApplication = signal('');
-  protected readonly messageServices = signal('');
-
   // --- Formulaires ---
   protected readonly formProfil = this.fb.group({
     nom: ['', [Validators.required, Validators.minLength(2)]],
@@ -81,11 +88,7 @@ export class ParametresComponent {
   protected readonly formPreferences = this.fb.group({
     langue: ['fr' as 'fr'],
     formatDate: ['dd/MM/yyyy' as FormatDate, Validators.required],
-    elementsParPage: this.fb.control(8, [
-      Validators.required,
-      Validators.min(5),
-      Validators.max(50),
-    ]),
+    elementsParPage: this.fb.control(8, [Validators.required, Validators.min(5), Validators.max(50)]),
     afficherPriorites: this.fb.control(true),
     notificationsEmail: this.fb.control(false),
   });
@@ -118,8 +121,7 @@ export class ParametresComponent {
   };
 
   constructor() {
-    // Reflète les valeurs chargées depuis le stockage local (après le premier rendu),
-    // sans écraser des modifications en cours de saisie.
+    // Reflète les valeurs chargées depuis l'API sans écraser une saisie en cours.
     effect(() => {
       const p = this.parametres();
       if (this.formProfil.pristine) this.formProfil.reset(p.profil);
@@ -128,19 +130,34 @@ export class ParametresComponent {
     });
   }
 
+  ngOnInit(): void {
+    if (!this.estPrivilegie()) {
+      this.formProfil.controls.service.disable();
+    }
+    this.store.charger();
+  }
+
+  /** Recharge les paramètres depuis l'API (bouton « Réessayer »). */
+  protected chargerPage(): void {
+    this.store.charger();
+  }
+
   // --- Profil ---
   protected enregistrerProfil(): void {
     if (this.formProfil.invalid) {
       this.formProfil.markAllAsTouched();
       return;
     }
-    this.store.enregistrerProfil(this.formProfil.getRawValue() as ProfilParametres);
-    this.formProfil.markAsPristine();
-    this.confirmer(this.messageProfil, 'Profil enregistré localement (navigateur).');
+    const valeur = this.formProfil.getRawValue() as ProfilParametres;
+    this.store.enregistrerProfil(valeur).subscribe({
+      next: () => this.formProfil.markAsPristine(),
+      error: () => undefined,
+    });
   }
 
   protected annulerProfil(): void {
     this.formProfil.reset(this.parametres().profil);
+    if (!this.estPrivilegie()) this.formProfil.controls.service.disable();
   }
 
   // --- Préférences ---
@@ -149,28 +166,28 @@ export class ParametresComponent {
       this.formPreferences.markAllAsTouched();
       return;
     }
-    this.store.enregistrerPreferences(
-      this.formPreferences.getRawValue() as PreferencesParametres,
-    );
-    this.formPreferences.markAsPristine();
-    this.confirmer(this.messagePreferences, 'Préférences d’affichage enregistrées localement.');
+    const valeur = this.formPreferences.getRawValue() as PreferencesParametres;
+    this.store.enregistrerPreferences(valeur).subscribe({
+      next: () => this.formPreferences.markAsPristine(),
+      error: () => undefined,
+    });
   }
 
   protected annulerPreferences(): void {
     this.formPreferences.reset(this.parametres().preferences);
   }
 
-  // --- Informations de l’application ---
+  // --- Informations de l'application ---
   protected enregistrerApplication(): void {
     if (this.formApplication.invalid) {
       this.formApplication.markAllAsTouched();
       return;
     }
-    this.store.enregistrerApplication(
-      this.formApplication.getRawValue() as ApplicationParametres,
-    );
-    this.formApplication.markAsPristine();
-    this.confirmer(this.messageApplication, 'Informations de l’application enregistrées localement.');
+    const valeur = this.formApplication.getRawValue() as ApplicationParametres;
+    this.store.enregistrerApplication(valeur).subscribe({
+      next: () => this.formApplication.markAsPristine(),
+      error: () => undefined,
+    });
   }
 
   protected annulerApplication(): void {
@@ -178,26 +195,8 @@ export class ParametresComponent {
   }
 
   // --- Services ---
-  protected basculerService(code: ServiceDossier, libelle: string): void {
-    this.store.basculerService(code);
-    const actif = this.parametres().services.find((s) => s.code === code)?.actif;
-    this.confirmer(
-      this.messageServices,
-      `Service ${code} ${actif ? 'activé' : 'désactivé'} (démonstration, hors permissions).`,
-    );
-  }
-
-  // --- Réinitialisation ---
-  protected reinitialiser(): void {
-    const ok =
-      typeof window === 'undefined' ||
-      window.confirm('Rétablir tous les paramètres par défaut ? (démonstration)');
-    if (!ok) return;
-    this.store.reinitialiser();
-    this.formProfil.reset(this.parametres().profil);
-    this.formPreferences.reset(this.parametres().preferences);
-    this.formApplication.reset(this.parametres().application);
-    this.confirmer(this.messageApplication, 'Paramètres rétablis aux valeurs par défaut.');
+  protected basculerService(code: ServiceDossier): void {
+    this.store.basculerService(code).subscribe({ error: () => undefined });
   }
 
   // --- Aides ---
@@ -213,18 +212,10 @@ export class ParametresComponent {
     return ParametresComponent.MESSAGES[champ]?.[type] ?? 'Champ invalide.';
   }
 
-  private control(
-    form: 'profil' | 'preferences' | 'application',
-    champ: string,
-  ) {
+  private control(form: 'profil' | 'preferences' | 'application', champ: string) {
     if (form === 'profil') return this.formProfil.get(champ);
     if (form === 'preferences') return this.formPreferences.get(champ);
     return this.formApplication.get(champ);
-  }
-
-  private confirmer(cible: WritableSignal<string>, texte: string): void {
-    cible.set(texte);
-    window.setTimeout(() => cible.set(''), 6000);
   }
 
   protected formatDateExemple(format: FormatDate): string {

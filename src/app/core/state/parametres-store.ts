@@ -1,87 +1,105 @@
-import { Injectable, afterNextRender, signal } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
+import { Observable, finalize, map, tap } from 'rxjs';
 import { ServiceDossier } from '../models/dossier.model';
 import {
   ApplicationParametres,
-  CLE_STOCKAGE_PARAMETRES,
   Parametres,
   PreferencesParametres,
   ProfilParametres,
   parametresParDefaut,
 } from '../models/parametres.model';
+import { ParametresApiService } from '../services/parametres-api.service';
+import { messageErreur } from './dossier-api.store';
 
 /**
- * Paramètres de l’espace administrateur.
- * Conservation locale uniquement (stockage navigateur) — aucune synchronisation serveur.
- * Le chargement est différé après le premier rendu pour rester compatible avec le rendu SSR.
+ * État de la page « Paramètres » alimenté par l'API Laravel : profil de
+ * l'utilisateur connecté, préférences d'affichage personnelles, informations
+ * globales de l'application et état des services. Aucune donnée simulée ni
+ * stockage navigateur.
  */
 @Injectable({ providedIn: 'root' })
 export class ParametresStore {
+  private readonly api = inject(ParametresApiService);
+
   private readonly _parametres = signal<Parametres>(parametresParDefaut());
+  private readonly _chargement = signal(true);
+  private readonly _erreur = signal('');
+  private readonly _enCours = signal(false);
+  private readonly _message = signal('');
+  private readonly _erreurAction = signal('');
+
   readonly parametres = this._parametres.asReadonly();
+  readonly chargement = this._chargement.asReadonly();
+  readonly erreur = this._erreur.asReadonly();
+  readonly enCours = this._enCours.asReadonly();
+  readonly message = this._message.asReadonly();
+  readonly erreurAction = this._erreurAction.asReadonly();
 
-  constructor() {
-    afterNextRender(() => this._parametres.set(this.charger()));
-  }
+  /** Charge l'état complet des paramètres depuis l'API. */
+  charger(): void {
+    this._chargement.set(true);
+    this._erreur.set('');
 
-  /** Lit les paramètres depuis le stockage local (navigateur uniquement). */
-  private charger(): Parametres {
-    if (typeof window === 'undefined' || !window.localStorage) return parametresParDefaut();
-    try {
-      const brut = window.localStorage.getItem(CLE_STOCKAGE_PARAMETRES);
-      if (!brut) return parametresParDefaut();
-      return this.fusionner(JSON.parse(brut) as Partial<Parametres>);
-    } catch {
-      return parametresParDefaut();
-    }
-  }
-
-  /** Complète une valeur partielle avec les valeurs par défaut. */
-  private fusionner(partiel: Partial<Parametres>): Parametres {
-    const defaut = parametresParDefaut();
-    const services = defaut.services.map((s) => {
-      const trouve = partiel.services?.find((x) => x.code === s.code);
-      return trouve ? { ...s, ...trouve } : s;
+    this.api.charger().subscribe({
+      next: (reponse) => {
+        this._parametres.set(reponse.parametres);
+        this._chargement.set(false);
+      },
+      error: (erreur: unknown) => {
+        this._erreur.set(messageErreur(erreur));
+        this._chargement.set(false);
+      },
     });
-    return {
-      profil: { ...defaut.profil, ...partiel.profil },
-      preferences: { ...defaut.preferences, ...partiel.preferences },
-      application: { ...defaut.application, ...partiel.application },
-      services,
-    };
   }
 
-  private persister(valeur: Parametres): void {
-    this._parametres.set(valeur);
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    try {
-      window.localStorage.setItem(CLE_STOCKAGE_PARAMETRES, JSON.stringify(valeur));
-    } catch {
-      /* stockage indisponible : on conserve en mémoire uniquement */
-    }
+  /** Enregistre le profil puis met à jour l'état local. */
+  enregistrerProfil(profil: ProfilParametres): Observable<Parametres> {
+    return this.muter(() => this.api.enregistrerProfil(profil));
   }
 
-  enregistrerProfil(profil: ProfilParametres): void {
-    this.persister({ ...this._parametres(), profil });
+  /** Enregistre les préférences d'affichage puis met à jour l'état local. */
+  enregistrerPreferences(preferences: PreferencesParametres): Observable<Parametres> {
+    return this.muter(() => this.api.enregistrerPreferences(preferences));
   }
 
-  enregistrerPreferences(preferences: PreferencesParametres): void {
-    this.persister({ ...this._parametres(), preferences });
+  /** Enregistre les informations de l'application puis met à jour l'état local. */
+  enregistrerApplication(application: ApplicationParametres): Observable<Parametres> {
+    return this.muter(() => this.api.enregistrerApplication(application));
   }
 
-  enregistrerApplication(application: ApplicationParametres): void {
-    this.persister({ ...this._parametres(), application });
+  /** Active / désactive un service (réservé aux rôles privilégiés). */
+  basculerService(code: ServiceDossier): Observable<Parametres> {
+    const actuel = this._parametres().services.find((s) => s.code === code)?.actif ?? false;
+    return this.muter(() => this.api.basculerService(code, !actuel));
   }
 
-  /** Active / désactive un service (démonstration, sans impact sur les permissions). */
-  basculerService(code: ServiceDossier): void {
-    const services = this._parametres().services.map((s) =>
-      s.code === code ? { ...s, actif: !s.actif } : s,
+  /** Réinitialise les messages d'action. */
+  effacerMessages(): void {
+    this._message.set('');
+    this._erreurAction.set('');
+  }
+
+  /**
+   * Enveloppe commune des écritures : verrouille l'action, applique l'opération,
+   * met à jour l'état depuis la réponse et gère les erreurs.
+   */
+  private muter(
+    operation: () => Observable<{ message: string; parametres: Parametres }>,
+  ): Observable<Parametres> {
+    this._enCours.set(true);
+    this._message.set('');
+    this._erreurAction.set('');
+
+    return operation().pipe(
+      tap((reponse) => {
+        this._parametres.set(reponse.parametres);
+        this._message.set(reponse.message);
+      }),
+      map((reponse) => reponse.parametres),
+      tap({
+        error: (erreur: unknown) => this._erreurAction.set(messageErreur(erreur)),
+      }),
+      finalize(() => this._enCours.set(false)),
     );
-    this.persister({ ...this._parametres(), services });
-  }
-
-  /** Rétablit tous les paramètres par défaut. */
-  reinitialiser(): void {
-    this.persister(parametresParDefaut());
   }
 }
