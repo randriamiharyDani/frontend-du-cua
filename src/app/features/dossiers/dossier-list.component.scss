@@ -13,38 +13,8 @@
   max-width: 280px;
 }
 
-.nowrap {
-  white-space: nowrap;
-}
-
-td.actions {
-  white-space: nowrap;
-}
-
 td.actions .btn + .btn {
   margin-left: 0.4rem;
-}
-
-.pagination__nav {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.empty-state {
-  display: grid;
-  justify-items: center;
-  gap: 0.4rem;
-  color: var(--du-muted);
-}
-
-.empty-state p {
-  margin: 0;
-}
-
-@media (max-width: 1200px) {
-  .hide-lg {
-    display: none;
-  }
 }
 
 @media (max-width: 640px) {

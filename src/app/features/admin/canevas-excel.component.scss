@@ -69,31 +69,7 @@
   color: var(--du-muted);
 }
 
-/* Messages d'action et d'erreur */
-.erreur {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.7rem 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid #e7b4b4;
-  border-radius: 10px;
-  background: var(--du-danger-soft, #fbeaea);
-  color: #9b2c2c;
-  font-size: 0.9rem;
-}
-.info {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.7rem 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid var(--du-border);
-  border-radius: 10px;
-  background: var(--du-surface-2, #f4f7fb);
-  color: var(--du-muted);
-  font-size: 0.9rem;
-}
+/* Messages d'action et d'erreur : utiliser .succes / .erreur / .info globaux. */
 
 /* Rapport d'import */
 .rapport {

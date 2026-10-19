@@ -24,23 +24,3 @@
   align-items: flex-end;
 }
 
-.succes {
-  margin: 0 0 1rem;
-  padding: 0.6rem 0.85rem;
-  border-radius: var(--du-radius);
-  background: #e8f6ee;
-  border: 1px solid #bfe6cf;
-  color: #1e7a43;
-  font-size: 0.85rem;
-}
-
-.erreur {
-  margin: 0 0 1rem;
-  padding: 0.6rem 0.85rem;
-  border-radius: var(--du-radius);
-  background: var(--du-danger-soft, #fdecec);
-  border: 1px solid #f3c1c1;
-  color: var(--du-danger, #b42318);
-  font-size: 0.85rem;
-}
-
