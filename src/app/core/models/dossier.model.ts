@@ -37,22 +37,6 @@ export const STATUT_LABEL: Record<StatutDossier, string> = {
   cloture: 'Clôturé',
 };
 
-/** État synthétique (badge) dérivé du statut métier. */
-export type EtatDossier = 'ouvert' | 'en_cours' | 'cloture';
-
-export const ETAT_LABEL: Record<EtatDossier, string> = {
-  ouvert: 'Ouvert',
-  en_cours: 'En cours',
-  cloture: 'Clôturé',
-};
-
-/** Déduit l’état synthétique (badge) à partir du statut métier. */
-export function etatDossier(statut: StatutDossier): EtatDossier {
-  if (statut === 'en_attente') return 'ouvert';
-  if (statut === 'cloture') return 'cloture';
-  return 'en_cours';
-}
-
 /* ============================ Étapes ============================ */
 
 export type EtapeDossier =

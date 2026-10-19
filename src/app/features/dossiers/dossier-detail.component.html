@@ -198,9 +198,6 @@
             <div><dt>Agent responsable</dt><dd>{{ d.agent || '—' }}</dd></div>
             <div><dt>Attention particulière</dt><dd>{{ d.attentionRequise ? ('Oui' + (d.motifAttention ? ' — ' + d.motifAttention : '')) : 'Non' }}</dd></div>
           </dl>
-          @if (etapeCourante()) {
-            <p class="muted small" style="margin-top: 0.75rem;">Étape du circuit : <strong>{{ etapeCourante() }}</strong></p>
-          }
           <div class="actions-stack">
             @if (transitions().length) {
               @for (t of transitions(); track t.code) {

@@ -93,10 +93,7 @@
               <td class="objet">{{ d.complements.objet }}</td>
               <td class="hide-lg">{{ d.localisation.adresse || '—' }}</td>
               <td><span class="badge badge--neutral">{{ d.service }}</span></td>
-              <td>
-                @let etat = etatDe(d.statut);
-                <span class="badge" [class.badge--success]="etat === 'cloture'" [class.badge--warning]="etat === 'ouvert'" [class.badge--info]="etat === 'en_cours'">{{ etatLabel[etat] }}</span>
-              </td>
+              <td><du-status-badge [statut]="d.statut" /></td>
               <td class="actions">
                 <a [routerLink]="['/admin/dossiers', d.id]" class="btn btn--secondary btn--sm"><du-icon name="eye" [size]="15" /> Consulter</a>
                 <a [routerLink]="['/admin/dossiers', d.id, 'modifier']" class="btn btn--secondary btn--sm"><du-icon name="edit" [size]="15" /> Modifier</a>

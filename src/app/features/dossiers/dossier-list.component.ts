@@ -2,17 +2,18 @@ import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
-  ETAT_LABEL, NATURE_LABEL, NATURES, NatureDossier,
-  nomContrevenant, SERVICES, ServiceDossier, STATUT_LABEL, STATUTS, StatutDossier, etatDossier,
+  NATURE_LABEL, NATURES, NatureDossier,
+  nomContrevenant, SERVICES, ServiceDossier, STATUT_LABEL, STATUTS, StatutDossier,
 } from '../../core/models/dossier.model';
 import { DossierApiStore } from '../../core/state/dossier-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
+import { StatusBadgeComponent } from '../../shared/ui/status-badge.component';
 
 /** Page « Gestion des dossiers » : recherche, filtres, pagination (API). */
 @Component({
   selector: 'du-dossier-list',
-  imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent],
+  imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent, StatusBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dossier-list.component.html',
   styleUrl: './dossier-list.component.scss',
@@ -30,8 +31,6 @@ export class DossierListComponent {
   protected readonly statuts = STATUTS;
   protected readonly natureLabel = NATURE_LABEL;
   protected readonly statutLabel = STATUT_LABEL;
-  protected readonly etatLabel = ETAT_LABEL;
-  protected readonly etatDe = etatDossier;
   protected readonly nomContrevenant = nomContrevenant;
 
   protected readonly recherche = signal('');

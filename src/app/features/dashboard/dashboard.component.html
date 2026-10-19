@@ -31,8 +31,8 @@
   <section class="stats" aria-label="Indicateurs clés">
     <du-stat-card label="Dossiers actifs" [value]="totalActifs()" icon="folder" />
     <du-stat-card label="En attente" [value]="enAttente()" icon="clock" />
-    <du-stat-card label="En cours" [value]="enCours()" icon="search" />
-    <du-stat-card label="Terminés" [value]="termines()" icon="check" />
+    <du-stat-card label="Traitement" [value]="enCours()" icon="search" />
+    <du-stat-card label="Clôturés" [value]="clotures()" icon="check" />
     <du-stat-card [label]="'Créés sur ' + periodeRecente() + ' j'" [value]="recents()" icon="plus" />
     <du-stat-card label="Transferts en attente" [value]="transfertsEnAttente()" icon="swap" />
   </section>

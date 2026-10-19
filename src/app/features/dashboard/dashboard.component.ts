@@ -107,7 +107,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected readonly totalActifs = computed(() => this.dossiers()?.total_actifs ?? 0);
   protected readonly enAttente = computed(() => this.dossiers()?.en_attente ?? 0);
   protected readonly enCours = computed(() => this.dossiers()?.en_cours ?? 0);
-  protected readonly termines = computed(() => this.dossiers()?.termines ?? 0);
+  protected readonly clotures = computed(() => this.dossiers()?.clotures ?? 0);
   protected readonly recents = computed(() => this.dossiers()?.recemment_crees ?? 0);
   protected readonly periodeRecente = computed(() => this.dossiers()?.periode_recente_jours ?? 30);
 

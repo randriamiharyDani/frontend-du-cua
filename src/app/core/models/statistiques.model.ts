@@ -18,7 +18,7 @@ export interface StatistiquesDossiers {
   total_actifs: number;
   en_attente: number;
   en_cours: number;
-  termines: number;
+  clotures: number;
   recemment_crees: number;
   periode_recente_jours: number;
   par_nature: Record<NatureDossier, number>;

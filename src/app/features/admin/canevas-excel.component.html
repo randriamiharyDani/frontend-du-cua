@@ -113,13 +113,6 @@
           @for (x of services; track x) { <option [value]="x">{{ x }}</option> }
         </select>
       </div>
-      <div class="field">
-        <label for="etape">Étape actuelle</label>
-        <select #e id="etape" class="input" [value]="etape()" (change)="setEtape(e.value)">
-          <option value="">Toutes</option>
-          @for (x of etapes; track x) { <option [value]="x">{{ etapeLabel[x] }}</option> }
-        </select>
-      </div>
       <div class="filtres__actions">
         <button type="button" class="btn btn--primary" (click)="rechercher()">
           <du-icon name="search" [size]="15" /> Rechercher

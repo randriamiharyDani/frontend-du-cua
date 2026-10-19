@@ -254,9 +254,6 @@ export class DossierDetailComponent {
     () => this.workflow()?.available_transitions ?? [],
   );
 
-  /** Étape courante du circuit (libellé). */
-  protected readonly etapeCourante = computed(() => this.workflow()?.current_step?.label ?? '');
-
   /** Transfert encore en attente de traitement (au plus un). */
   protected readonly transfertEnAttente = computed<MouvementDto | null>(
     () => this.transferts().find((m) => m.state === 'envoye') ?? null,

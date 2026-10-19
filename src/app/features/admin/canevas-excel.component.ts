@@ -1,8 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import {
-  ETAPE_LABEL,
-  ETAPES,
-  EtapeDossier,
   NATURE_LABEL,
   NATURES,
   NatureDossier,
@@ -69,8 +66,6 @@ export class CanevasExcelComponent {
   protected readonly natures = NATURES;
   protected readonly natureLabel = NATURE_LABEL;
   protected readonly services = SERVICES;
-  protected readonly etapes = ETAPES;
-  protected readonly etapeLabel = ETAPE_LABEL;
 
   protected readonly chargement = this.store.chargement;
   protected readonly erreur = this.store.erreur;
@@ -108,7 +103,6 @@ export class CanevasExcelComponent {
   protected readonly recherche = signal('');
   protected readonly nature = signal<NatureDossier | ''>('');
   protected readonly service = signal<ServiceDossier | ''>('');
-  protected readonly etape = signal<EtapeDossier | ''>('');
   private readonly page = signal(1);
   protected readonly taillePage = 10;
 
@@ -122,7 +116,7 @@ export class CanevasExcelComponent {
   );
 
   protected readonly filtresActifs = computed(
-    () => !!(this.recherche() || this.nature() || this.service() || this.etape()),
+    () => !!(this.recherche() || this.nature() || this.service()),
   );
 
   constructor() {
@@ -135,7 +129,6 @@ export class CanevasExcelComponent {
       search: this.recherche().trim(),
       nature: this.nature(),
       service: this.service(),
-      etape: this.etape(),
       per_page: this.taillePage,
       page: this.page(),
     });
@@ -173,7 +166,6 @@ export class CanevasExcelComponent {
       search: this.recherche().trim(),
       nature: this.nature(),
       service: this.service(),
-      etape: this.etape(),
     });
   }
 
@@ -265,7 +257,6 @@ export class CanevasExcelComponent {
   protected setRecherche(v: string): void { this.recherche.set(v); }
   protected setNature(v: string): void { this.nature.set(v as NatureDossier | ''); }
   protected setService(v: string): void { this.service.set(v as ServiceDossier | ''); }
-  protected setEtape(v: string): void { this.etape.set(v as EtapeDossier | ''); }
 
   /** Applique les filtres en revenant à la première page. */
   protected rechercher(): void {
@@ -277,7 +268,6 @@ export class CanevasExcelComponent {
     this.recherche.set('');
     this.nature.set('');
     this.service.set('');
-    this.etape.set('');
     this.resetPage();
     this.charger();
   }
