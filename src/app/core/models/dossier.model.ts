@@ -19,29 +19,21 @@ export const SERVICE_LABEL: Record<ServiceDossier, string> = {
 
 /* ============================ Statuts ============================ */
 
+/** 3 statuts du formulaire : Traitement (en cours), En attente, Clôturé. */
 export type StatutDossier =
-  | 'signale'
-  | 'en_verification'
-  | 'mise_en_demeure'
-  | 'en_regularisation'
-  | 'regularise'
+  | 'en_cours'
+  | 'en_attente'
   | 'cloture';
 
 export const STATUTS: readonly StatutDossier[] = [
-  'signale',
-  'en_verification',
-  'mise_en_demeure',
-  'en_regularisation',
-  'regularise',
+  'en_cours',
+  'en_attente',
   'cloture',
 ];
 
 export const STATUT_LABEL: Record<StatutDossier, string> = {
-  signale: 'Signalé',
-  en_verification: 'En vérification',
-  mise_en_demeure: 'Mise en demeure',
-  en_regularisation: 'En régularisation',
-  regularise: 'Régularisé',
+  en_cours: 'Traitement',
+  en_attente: 'En attente',
   cloture: 'Clôturé',
 };
 
@@ -56,8 +48,8 @@ export const ETAT_LABEL: Record<EtatDossier, string> = {
 
 /** Déduit l’état synthétique (badge) à partir du statut métier. */
 export function etatDossier(statut: StatutDossier): EtatDossier {
-  if (statut === 'signale') return 'ouvert';
-  if (statut === 'regularise' || statut === 'cloture') return 'cloture';
+  if (statut === 'en_attente') return 'ouvert';
+  if (statut === 'cloture') return 'cloture';
   return 'en_cours';
 }
 
@@ -267,8 +259,9 @@ export interface Dossier {
   historique: HistoriqueItem[];
 }
 
-/** Valeurs du formulaire de création / modification d’un dossier. */
-export type DossierFormValue = Omit<Dossier, 'id' | 'reference' | 'historique'>;
+/** Valeurs du formulaire de création / modification d’un dossier. L'étape
+ *  n'est jamais saisie : elle reste pilotée par le workflow côté serveur. */
+export type DossierFormValue = Omit<Dossier, 'id' | 'reference' | 'historique' | 'etape'>;
 
 /* ============================ Priorités ============================ */
 

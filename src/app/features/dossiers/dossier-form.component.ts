@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/cor
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import {
-  ARRONDISSEMENTS, DossierFormValue, ETAPE_LABEL, ETAPES, EtapeDossier, NATURE_LABEL, NATURES, NatureDossier,
+  ARRONDISSEMENTS, DossierFormValue, NATURE_LABEL, NATURES, NatureDossier,
   PRIORITE_LABEL, PRIORITES, PrioriteDossier, SERVICE_LABEL, SERVICES, ServiceDossier,
   STATUT_LABEL, STATUTS, StatutDossier, TYPE_LABEL, TYPES, TypeInfraction,
 } from '../../core/models/dossier.model';
@@ -75,28 +75,25 @@ export class DossierFormComponent {
   protected readonly arrondissements = ARRONDISSEMENTS;
   protected readonly services = SERVICES;
   protected readonly natures = NATURES;
-  protected readonly etapes = ETAPES;
   protected readonly typeLabel = TYPE_LABEL;
   protected readonly statutLabel = STATUT_LABEL;
   protected readonly prioriteLabel = PRIORITE_LABEL;
   protected readonly serviceLabel = SERVICE_LABEL;
   protected readonly natureLabel = NATURE_LABEL;
-  protected readonly etapeLabel = ETAPE_LABEL;
 
   /** Empêche de patcher plusieurs fois le formulaire en mode édition. */
   private patchApplique = false;
 
   /**
    * Formulaire réparti par sections.
-   * Les champs sans équivalent API (type, priorité, agent, prénom, quartier…)
-   * restent affichés mais ne sont ni requis ni envoyés au serveur.
+   * Tous les champs sont transmis à l'API et persistés en base.
+   * Le statut (Traitement / En attente / Clôturé) est obligatoire.
    */
   protected readonly form = this.fb.group({
-    // Suivi du traitement (service envoyé à la création ; étape/statut pilotés serveur).
+    // Suivi du traitement (service envoyé à la création ; statut modifiable).
     type: ['construction_sans_permis' as TypeInfraction],
     service: [this.serviceConnecte, Validators.required],
-    etape: ['constat' as EtapeDossier],
-    statut: ['signale' as StatutDossier],
+    statut: ['en_cours' as StatutDossier, Validators.required],
     priorite: ['moyenne' as PrioriteDossier],
     agent: [''],
     attentionRequise: [false],
@@ -170,6 +167,7 @@ export class DossierFormComponent {
     'localisation.latitude': { coordonnee: 'Latitude invalide (ex. 9.5370).' },
     'localisation.longitude': { coordonnee: 'Longitude invalide (ex. -13.6773).' },
     'complements.objet': { required: 'L’objet est obligatoire.', minlength: 'Au moins 5 caractères.' },
+    'statut': { required: 'Sélectionnez le statut du dossier.' },
   };
 
   constructor() {

@@ -6,7 +6,7 @@ import { map } from 'rxjs';
 import { formatTaille } from '../../core/mappers/dossier.mapper';
 import { DocumentDto, MouvementDto, TransitionOption } from '../../core/models/dossier-api.model';
 import {
-  ETAPE_LABEL, NATURE_LABEL, nomContrevenant, SERVICE_LABEL, SERVICES, ServiceDossier,
+  NATURE_LABEL, nomContrevenant, PRIORITE_LABEL, SERVICE_LABEL, SERVICES, ServiceDossier,
   TYPE_LABEL,
 } from '../../core/models/dossier.model';
 import { AuthService } from '../../core/services/auth.service';
@@ -213,9 +213,9 @@ export class DossierDetailComponent {
   protected readonly erreurAction = this.store.erreurAction;
 
   protected readonly natureLabel = NATURE_LABEL;
-  protected readonly etapeLabel = ETAPE_LABEL;
   protected readonly serviceLabel = SERVICE_LABEL;
   protected readonly typeLabel = TYPE_LABEL;
+  protected readonly prioriteLabel = PRIORITE_LABEL;
   protected readonly nomContrevenant = nomContrevenant;
   protected readonly formatTaille = formatTaille;
   protected readonly services = SERVICES;

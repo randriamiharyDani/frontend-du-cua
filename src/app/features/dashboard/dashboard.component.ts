@@ -46,12 +46,9 @@ const COULEUR_NATURE: Record<NatureDossier, string> = {
 };
 
 const COULEUR_STATUT: Record<StatutDossier, string> = {
-  signale: '#b7791f',
-  en_verification: '#1d4ed8',
-  mise_en_demeure: '#c0392b',
-  en_regularisation: '#7c3aed',
-  regularise: '#16794c',
-  cloture: '#0d294d',
+  en_cours: '#1d4ed8',
+  en_attente: '#b7791f',
+  cloture: '#16794c',
 };
 
 const COULEUR_ETAPE: Record<EtapeDossier, string> = {

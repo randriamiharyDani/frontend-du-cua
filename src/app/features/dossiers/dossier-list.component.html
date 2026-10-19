@@ -36,13 +36,6 @@
         </select>
       </div>
       <div class="field">
-        <label for="etape">Étape actuelle</label>
-        <select #e id="etape" class="input" [value]="etape()" (change)="setEtape(e.value)">
-          <option value="">Toutes</option>
-          @for (x of etapes; track x) { <option [value]="x">{{ etapeLabel[x] }}</option> }
-        </select>
-      </div>
-      <div class="field">
         <label for="du">Du</label>
         <input #d1 id="du" type="date" class="input" [value]="du()" (change)="setDu(d1.value)" />
       </div>
@@ -86,7 +79,6 @@
             <th>Objet</th>
             <th class="hide-lg">Localisation</th>
             <th>Service</th>
-            <th class="hide-lg">Étape</th>
             <th>Statut</th>
             <th><span class="sr-only">Actions</span></th>
           </tr>
@@ -101,7 +93,6 @@
               <td class="objet">{{ d.complements.objet }}</td>
               <td class="hide-lg">{{ d.localisation.adresse || '—' }}</td>
               <td><span class="badge badge--neutral">{{ d.service }}</span></td>
-              <td class="hide-lg">{{ etapeLabel[d.etape] }}</td>
               <td>
                 @let etat = etatDe(d.statut);
                 <span class="badge" [class.badge--success]="etat === 'cloture'" [class.badge--warning]="etat === 'ouvert'" [class.badge--info]="etat === 'en_cours'">{{ etatLabel[etat] }}</span>

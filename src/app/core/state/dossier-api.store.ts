@@ -71,6 +71,8 @@ export class DossierApiStore {
   private readonly _dossiers = signal<Dossier[]>([]);
   private readonly _chargementListe = signal(false);
   private readonly _erreurListe = signal('');
+  /** Derniers filtres appliqués (pour recharger après une mutation). */
+  private derniersFiltres: FiltresDossiers = {};
   private readonly _pagination = signal<PaginationListe>({
     page: 1,
     parPage: 15,
@@ -110,6 +112,7 @@ export class DossierApiStore {
 
   /** Charge la liste paginée correspondant aux filtres fournis. */
   chargerListe(filtres: FiltresDossiers): void {
+    this.derniersFiltres = { ...filtres };
     this._chargementListe.set(true);
     this._erreurListe.set('');
 
@@ -175,6 +178,7 @@ export class DossierApiStore {
       tap((dossier) => {
         this._dossier.set(dossier);
         this._messageAction.set(`Dossier ${dossier.reference || `#${dossier.id}`} créé avec succès.`);
+        this.rechargerListe();
       }),
       tap({
         error: (erreur: unknown) => {
@@ -195,6 +199,7 @@ export class DossierApiStore {
       tap((dossier) => {
         this._dossier.set(dossier);
         this._messageAction.set('Dossier modifié avec succès.');
+        this.rechargerListe();
       }),
       tap({
         error: (erreur: unknown) => {
@@ -266,6 +271,11 @@ export class DossierApiStore {
   effacerMessages(): void {
     this._messageAction.set('');
     this._erreurAction.set('');
+  }
+
+  /** Recharge la liste avec les derniers filtres (après ajout / modification). */
+  private rechargerListe(): void {
+    this.chargerListe(this.derniersFiltres);
   }
 
   /**

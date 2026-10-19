@@ -17,8 +17,8 @@
   </section>
 } @else {
 <p class="api-note" role="note">
-  Les champs indiqués « non enregistré par l’API » restent affichés (canevas Excel) mais ne sont pas persistés :
-  l’API Laravel ne gère que les 20 champs métier du dossier.
+  Tous les champs du formulaire sont enregistrés en base via l’API Laravel
+  et relus à la consultation et à la modification.
 </p>
 
 @if (erreurAction()) {
@@ -95,20 +95,17 @@
         <div class="field">
           <label for="prenom">Prénom</label>
           <input id="prenom" class="input" formControlName="prenom" autocomplete="given-name" />
-          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field">
           <label for="telephone">Téléphone</label>
           <input id="telephone" type="tel" class="input" formControlName="telephone" placeholder="034 00 000 00" [class.is-invalid]="invalide('contrevenant.telephone')" />
-          <span class="hint hint--absent">Non enregistré par l’API.</span>
           @if (invalide('contrevenant.telephone')) { <span class="error">{{ message('contrevenant.telephone') }}</span> }
         </div>
 
         <div class="field">
           <label for="adresseContrevenant">Adresse</label>
           <input id="adresseContrevenant" class="input" formControlName="adresse" />
-          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field full">
@@ -134,7 +131,6 @@
         <div class="field">
           <label for="quartier">Quartier</label>
           <input id="quartier" class="input" formControlName="quartier" />
-          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field">
@@ -143,7 +139,6 @@
             <option value="">Sélectionner…</option>
             @for (a of arrondissements; track a) { <option [value]="a">{{ a }}</option> }
           </select>
-          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field full">
@@ -254,8 +249,8 @@
     <div class="card__header"><h2>Suivi du dossier</h2></div>
     <div class="card__body">
       <p class="hint" style="margin: 0 0 0.75rem;">
-        Le service n’est transmis qu’à la création ; l’étape et le statut sont pilotés par le serveur (workflow).
-        Les autres champs de cette section ne sont pas enregistrés par l’API.
+        Le service n’est transmis qu’à la création ; le statut est enregistré en base
+        et modifiable (Traitement / En attente / Clôturé).
       </p>
       <div class="form-grid">
         <div class="field">
@@ -263,7 +258,6 @@
           <select id="type" class="input" formControlName="type">
             @for (t of types; track t) { <option [value]="t">{{ typeLabel[t] }}</option> }
           </select>
-          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field">
@@ -279,19 +273,11 @@
         </div>
 
         <div class="field">
-          <label for="etape">Étape actuelle</label>
-          <select id="etape" class="input" formControlName="etape">
-            @for (e of etapes; track e) { <option [value]="e">{{ etapeLabel[e] }}</option> }
-          </select>
-          <span class="hint">Pilotée par le serveur (workflow).</span>
-        </div>
-
-        <div class="field">
-          <label for="statut">Statut</label>
-          <select id="statut" class="input" formControlName="statut">
+          <label for="statut">Statut *</label>
+          <select id="statut" class="input" formControlName="statut" [class.is-invalid]="invalide('statut')">
             @for (s of statuts; track s) { <option [value]="s">{{ statutLabel[s] }}</option> }
           </select>
-          <span class="hint">Piloté par le serveur (workflow).</span>
+          @if (invalide('statut')) { <span class="error">{{ message('statut') }}</span> }
         </div>
 
         <div class="field">
@@ -299,13 +285,11 @@
           <select id="priorite" class="input" formControlName="priorite">
             @for (p of priorites; track p) { <option [value]="p">{{ prioriteLabel[p] }}</option> }
           </select>
-          <span class="hint hint--absent">Non enregistrée par l’API.</span>
         </div>
 
         <div class="field">
           <label for="agent">Agent responsable</label>
           <input id="agent" class="input" formControlName="agent" />
-          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field full">
@@ -313,13 +297,11 @@
             <input type="checkbox" formControlName="attentionRequise" />
             <span>Signaler ce dossier en « attention particulière »</span>
           </label>
-          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
 
         <div class="field full">
           <label for="motifAttention">Motif de l’attention</label>
           <input id="motifAttention" class="input" formControlName="motifAttention" placeholder="Ex. mise en demeure proche, pièce manquante…" />
-          <span class="hint hint--absent">Non enregistré par l’API.</span>
         </div>
       </div>
     </div>

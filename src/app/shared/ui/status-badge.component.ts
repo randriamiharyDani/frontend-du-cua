@@ -7,23 +7,17 @@ import { STATUT_LABEL, StatutDossier } from '../../core/models/dossier.model';
   template: `<span class="badge" [class]="classe">{{ STATUT_LABEL[statut] }}</span>`,
 })
 export class StatusBadgeComponent {
-  @Input() statut: StatutDossier = 'signale';
+  @Input() statut: StatutDossier = 'en_attente';
   protected readonly STATUT_LABEL = STATUT_LABEL;
 
   protected get classe(): string {
     switch (this.statut) {
-      case 'signale':
+      case 'en_cours':
+        return 'badge badge--info';
+      case 'en_attente':
         return 'badge badge--warning';
-      case 'en_verification':
-        return 'badge badge--info';
-      case 'mise_en_demeure':
-        return 'badge badge--danger';
-      case 'en_regularisation':
-        return 'badge badge--info';
-      case 'regularise':
-        return 'badge badge--success';
       case 'cloture':
-        return 'badge badge--neutral';
+        return 'badge badge--success';
       default:
         return 'badge badge--neutral';
     }

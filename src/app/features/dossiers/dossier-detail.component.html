@@ -29,7 +29,7 @@
     <p class="message message--erreur" role="alert">{{ erreurAction() }}</p>
   }
 
-  <!-- En-tête : Nature, Statut, Service, Étape -->
+  <!-- En-tête : Nature, Statut, Service -->
   <section class="card" style="margin-bottom: 1rem;">
     <div class="meta">
       <div class="meta__item">
@@ -43,10 +43,6 @@
       <div class="meta__item">
         <span class="meta__label">Service actuel</span>
         <span class="meta__value"><span class="badge badge--neutral">{{ d.service }}</span> {{ serviceLabel[d.service] }}</span>
-      </div>
-      <div class="meta__item">
-        <span class="meta__label">Étape actuelle</span>
-        <span class="meta__value">{{ etapeLabel[d.etape] }}</span>
       </div>
       <div class="meta__item">
         <span class="meta__label">Référence</span>
@@ -71,12 +67,12 @@
             <div><dt>Date d’étude</dt><dd>{{ d.infos.dateEtude ? (d.infos.dateEtude | date: 'd MMMM y') : '—' }}</dd></div>
             <div><dt>Provenance</dt><dd>{{ d.infos.provenance || '—' }}</dd></div>
             <div><dt>Nature</dt><dd>{{ natureLabel[d.infos.nature] }}</dd></div>
-            <div><dt>Type d’infraction</dt><dd><span class="absent">Non géré par l’API</span></dd></div>
-            <div><dt>Priorité</dt><dd><span class="absent">Non gérée par l’API</span></dd></div>
+            <div><dt>Type d’infraction</dt><dd>{{ typeLabel[d.type] }}</dd></div>
+            <div><dt>Priorité</dt><dd>{{ prioriteLabel[d.priorite] }}</dd></div>
             <div><dt>Agent responsable</dt><dd>{{ d.agent || 'Non affecté' }}</dd></div>
             <div class="full">
               <dt>Attention particulière</dt>
-              <dd><span class="absent">Non gérée par l’API</span></dd>
+              <dd>@if (d.attentionRequise) { Oui @if (d.motifAttention) { — {{ d.motifAttention }} } } @else { <span class="absent">Non</span> }</dd>
             </div>
           </dl>
         </div>
@@ -108,9 +104,14 @@
         <div class="card__header"><h2>Localisation</h2></div>
         <div class="card__body">
           <dl class="dl">
+            <div class="full"><dt>Adresse</dt>
+              <dd>@if (d.localisation.adresse) { {{ d.localisation.adresse }} } @else { <span class="absent">Non renseignée</span> }</dd>
+            </div>
             <div class="full"><dt>Localisation</dt>
               <dd>@if (d.localisation.localisation) { {{ d.localisation.localisation }} } @else { <span class="absent">Non renseignée</span> }</dd>
             </div>
+            <div><dt>Quartier</dt><dd>{{ d.localisation.quartier || '—' }}</dd></div>
+            <div><dt>Arrondissement</dt><dd>{{ d.localisation.arrondissement || '—' }}</dd></div>
             <div class="full"><dt>Coordonnées</dt>
               <dd>@if (d.localisation.description) { {{ d.localisation.description }} } @else { <span class="absent">Non renseignées</span> }</dd>
             </div>
@@ -191,7 +192,11 @@
         <div class="card__body">
           <dl class="dl">
             <div><dt>Service actuel</dt><dd>{{ d.service }} — {{ serviceLabel[d.service] }}</dd></div>
-            <div><dt>Étape</dt><dd>{{ etapeLabel[d.etape] }}</dd></div>
+            <div><dt>Statut</dt><dd><du-status-badge [statut]="d.statut" /></dd></div>
+            <div><dt>Type d’infraction</dt><dd>{{ typeLabel[d.type] }}</dd></div>
+            <div><dt>Priorité</dt><dd>{{ prioriteLabel[d.priorite] }}</dd></div>
+            <div><dt>Agent responsable</dt><dd>{{ d.agent || '—' }}</dd></div>
+            <div><dt>Attention particulière</dt><dd>{{ d.attentionRequise ? ('Oui' + (d.motifAttention ? ' — ' + d.motifAttention : '')) : 'Non' }}</dd></div>
           </dl>
           @if (etapeCourante()) {
             <p class="muted small" style="margin-top: 0.75rem;">Étape du circuit : <strong>{{ etapeCourante() }}</strong></p>
