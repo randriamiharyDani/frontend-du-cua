@@ -219,81 +219,76 @@
           <span class="badge badge--neutral">{{ transferts().length }}</span>
         </div>
         <div class="card__body">
-          @if (transfertEnAttente(); as enAttente) {
-            <div class="transfert-item">
-              <div class="transfert-item__entete">
-                <span class="badge badge--warning">En attente</span>
-                <span class="badge badge--neutral">{{ enAttente.service_depart }}</span>
-                <span class="flux">→</span>
-                <span class="badge badge--info">{{ enAttente.service_arrivee }}</span>
+          @if (peutTransferer()) {
+            <div class="transfert-form">
+              <div class="field">
+                <label for="serviceDestination">Service destinataire</label>
+                <select id="serviceDestination" class="input"
+                        [value]="serviceDestination()"
+                        (change)="serviceDestination.set($any($event.target).value)">
+                  @for (s of destinationsTransfert(); track s) { <option [value]="s">{{ s }} — {{ serviceLabel[s] }}</option> }
+                </select>
               </div>
-              <p class="muted small">{{ enAttente.motif || 'Sans motif' }}</p>
-              @if (peutReceptionner()) {
-                <div class="transfert-form">
-                  <div class="field">
-                    <label for="noteReception">Note de réception (facultatif)</label>
-                    <input id="noteReception" class="input" [value]="noteReception()" (input)="noteReception.set($any($event.target).value)" />
-                  </div>
-                  <div class="actions-ligne">
-                    <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours()" (click)="receptionner(enAttente)">Réceptionner</button>
-                  </div>
-                  <div class="field">
-                    <label for="motifRetour">Motif de retour (obligatoire pour retourner)</label>
-                    <input id="motifRetour" class="input" [value]="motifRetour()" (input)="motifRetour.set($any($event.target).value)" />
-                  </div>
-                  <div class="actions-ligne">
-                    <button type="button" class="btn btn--secondary btn--sm" [disabled]="enCours() || !motifRetour().trim()" (click)="retourner(enAttente)">Retourner à l’expéditeur</button>
-                  </div>
-                </div>
-              } @else {
-                <p class="muted small">En attente de traitement par le service {{ enAttente.service_arrivee }}.</p>
-              }
+              <div class="field">
+                <label for="motifTransfert">Motif (facultatif)</label>
+                <input id="motifTransfert" class="input" [value]="motifTransfert()" (input)="motifTransfert.set($any($event.target).value)" />
+              </div>
+              <div class="actions-ligne">
+                <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours()" (click)="transferer()">
+                  <du-icon name="swap" [size]="15" /> Transférer le dossier
+                </button>
+              </div>
             </div>
-          } @else {
-            @if (peutTransferer()) {
-              <div class="transfert-form">
-                <div class="field">
-                  <label for="serviceDestination">Service destinataire</label>
-                  <select id="serviceDestination" class="input"
-                          [value]="serviceDestination()"
-                          (change)="serviceDestination.set($any($event.target).value)">
-                    @for (s of destinationsTransfert(); track s) { <option [value]="s">{{ s }} — {{ serviceLabel[s] }}</option> }
-                  </select>
+          }
+
+          @if (transferts().length) {
+            @for (m of transferts(); track m.id; let i = $index) {
+              <div class="transfert-item">
+                <div class="transfert-item__entete">
+                  <span class="badge badge--neutral">N° {{ i + 1 }}</span>
+                  <span class="badge badge--neutral">{{ m.service_depart }}</span>
+                  <span class="flux">→</span>
+                  <span class="badge badge--info">{{ m.service_arrivee }}</span>
+                  @switch (m.state) {
+                    @case ('envoye') { <span class="badge badge--warning">En attente</span> }
+                    @case ('recu') { <span class="badge badge--success">Reçu</span> }
+                    @case ('retourne') { <span class="badge badge--danger">Retourné</span> }
+                  }
                 </div>
-                <div class="field">
-                  <label for="motifTransfert">Motif (facultatif)</label>
-                  <input id="motifTransfert" class="input" [value]="motifTransfert()" (input)="motifTransfert.set($any($event.target).value)" />
-                </div>
-                <div class="actions-ligne">
-                  <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours()" (click)="transferer()">
-                    <du-icon name="swap" [size]="15" /> Transférer le dossier
-                  </button>
-                </div>
+                <p class="muted small">
+                  Envoi : {{ m.date_expedition ? (m.date_expedition | date: 'dd/MM/yyyy') : '—' }}
+                  · Réception : {{ m.date_reception ? (m.date_reception | date: 'dd/MM/yyyy') : '—' }}
+                  @if (m.date_retour) {
+                    · Retour : {{ m.date_retour | date: 'dd/MM/yyyy' }}
+                  }
+                  @if (m.motif) { · {{ m.motif }} }
+                </p>
+                @if (m.state === 'envoye') {
+                  @if (peutReceptionner()) {
+                    <div class="transfert-form">
+                      <div class="field">
+                        <label for="noteReception">Note de réception (facultatif)</label>
+                        <input id="noteReception" class="input" [value]="noteReception()" (input)="noteReception.set($any($event.target).value)" />
+                      </div>
+                      <div class="actions-ligne">
+                        <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours()" (click)="receptionner(m)">Réceptionner</button>
+                      </div>
+                      <div class="field">
+                        <label for="motifRetour">Motif de retour (obligatoire pour retourner)</label>
+                        <input id="motifRetour" class="input" [value]="motifRetour()" (input)="motifRetour.set($any($event.target).value)" />
+                      </div>
+                      <div class="actions-ligne">
+                        <button type="button" class="btn btn--secondary btn--sm" [disabled]="enCours() || !motifRetour().trim()" (click)="retourner(m)">Retourner à l’expéditeur</button>
+                      </div>
+                    </div>
+                  } @else {
+                    <p class="muted small">En attente de traitement par le service {{ m.service_arrivee }}.</p>
+                  }
+                }
               </div>
             }
-
-            @if (transferts().length) {
-              @for (m of transferts(); track m.id) {
-                <div class="transfert-item">
-                  <div class="transfert-item__entete">
-                    <span class="badge badge--neutral">{{ m.service_depart }}</span>
-                    <span class="flux">→</span>
-                    <span class="badge badge--info">{{ m.service_arrivee }}</span>
-                    @switch (m.state) {
-                      @case ('envoye') { <span class="badge badge--warning">Envoyé</span> }
-                      @case ('recu') { <span class="badge badge--success">Reçu</span> }
-                      @case ('retourne') { <span class="badge badge--danger">Retourné</span> }
-                    }
-                  </div>
-                  <p class="muted small">
-                    {{ m.date_expedition ? (m.date_expedition | date: 'dd/MM/yyyy') : '—' }}
-                    @if (m.motif) { · {{ m.motif }} }
-                  </p>
-                </div>
-              }
-            } @else {
-              <p class="absent">Aucun transfert enregistré pour ce dossier.</p>
-            }
+          } @else {
+            <p class="absent">Aucun transfert enregistré pour ce dossier.</p>
           }
         </div>
       </section>

@@ -100,6 +100,7 @@
         <thead>
           <tr>
             <th>Date d'expédition</th>
+            <th>Réception</th>
             <th>N° dossier</th>
             <th>Départ</th>
             <th>Arrivée</th>
@@ -114,6 +115,12 @@
           @for (m of mouvements(); track m.id) {
             <tr>
               <td class="nowrap">{{ m.date_expedition ? (m.date_expedition | date: 'dd/MM/yyyy') : '—' }}</td>
+              <td class="nowrap">
+                {{ m.date_reception ? (m.date_reception | date: 'dd/MM/yyyy') : '—' }}
+                @if (m.date_retour) {
+                  <div class="muted small">Retour : {{ m.date_retour | date: 'dd/MM/yyyy' }}</div>
+                }
+              </td>
               <td>
                 @if (peutConsulter(m)) {
                   <a [routerLink]="['/admin/dossiers', m.dossier_id]">{{ refDossier(m) }}</a>
@@ -185,6 +192,8 @@
 </section>
 
 <p class="muted small" style="margin: 0.75rem 0 0;">
-  Les transferts se créent depuis la fiche dossier (workflow métier). Cette page liste,
-  réceptionne et retourne les transferts en attente.
+  Tous les transferts sont affichés (aucun masquage par service, expéditeur,
+  destinataire ou statut), du premier envoi à la réception. Les transferts se
+  créent depuis la fiche dossier (workflow métier) ; cette page consulte,
+  réceptionne et retourne les mouvements en attente.
 </p>

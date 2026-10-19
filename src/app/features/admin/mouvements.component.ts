@@ -32,7 +32,9 @@ const ETAT_BADGE: Record<MouvementState, string> = {
  * Page « Mouvements » : liste globale des transferts réels (`GET /api/transferts`).
  * Lecture seule + réception / retour du transfert en attente via les endpoints
  * métier existants (`POST .../reception`, `POST .../retour`).
- * Aucune donnée simulée : tout transite par le backend (portée par service).
+ * Aucune donnée simulée : tout transite par le backend. Tous les transferts
+ * sont visibles (aucun masquage selon le service, l'expéditeur, le
+ * destinataire ou le statut) ; le filtre « service » est un simple critère.
  */
 @Component({
   selector: 'du-page-mouvements',
