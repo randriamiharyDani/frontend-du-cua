@@ -10,7 +10,7 @@
   </div>
 
   <nav class="sidebar__nav">
-    @for (item of menus; track item.path) {
+    @for (item of menusVisibles(); track item.path) {
       <a
         [routerLink]="item.path"
         routerLinkActive="is-active"

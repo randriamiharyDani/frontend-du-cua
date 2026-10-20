@@ -69,10 +69,15 @@ export class LoginComponent {
           void this.router.navigateByUrl(retour || '/admin/dashboard');
         },
         error: (erreur: unknown) => {
+          const status = (erreur as { status?: number })?.status;
           this.erreurConnexion.set(
-            (erreur as { status?: number })?.status === 401
+            status === 401
               ? 'Adresse e-mail ou mot de passe incorrect.'
-              : messageErreur(erreur),
+              : status === 403
+                ? (messageErreur(erreur) || 'Ce compte ne peut pas se connecter. Contactez un administrateur.')
+                : status === 429
+                  ? 'Trop de tentatives. Patientez une minute puis réessayez.'
+                  : messageErreur(erreur),
           );
         },
       });

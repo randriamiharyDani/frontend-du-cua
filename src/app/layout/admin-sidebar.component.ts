@@ -1,7 +1,8 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IconComponent } from '../shared/ui/icon.component';
 import { ADMIN_NAV_ITEMS, AdminNavItem } from './admin-navigation';
+import { AuthService } from '../core/services/auth.service';
 
 /** Barre latérale de l’espace admin : logo DU + menus + bouton de repli. */
 @Component({
@@ -22,4 +23,11 @@ export class AdminSidebarComponent {
   @Output() naviguer = new EventEmitter<void>();
 
   protected readonly menus: AdminNavItem[] = ADMIN_NAV_ITEMS;
+  private readonly auth = inject(AuthService);
+
+  /** Menus visibles selon le rôle : « Utilisateurs » réservé à l'admin système. */
+  protected readonly menusVisibles = computed(() => {
+    const estAdminSysteme = this.auth.utilisateur()?.role === 'admin_systeme';
+    return this.menus.filter((m) => !m.adminSystemeUniquement || estAdminSysteme);
+  });
 }

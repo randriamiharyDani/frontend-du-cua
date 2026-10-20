@@ -51,8 +51,9 @@ export function messageErreur(erreur: unknown): string {
     }
     if (erreur.status === 0) return 'Serveur injoignable. Vérifiez que l’API Laravel est démarrée.';
     if (erreur.status === 401) return 'Session expirée. Reconnectez-vous.';
-    if (erreur.status === 403) return 'Accès refusé à cette ressource.';
+    if (erreur.status === 403) return 'Accès refusé : cette page est réservée à l’administrateur système.';
     if (erreur.status === 404) return 'Ressource introuvable.';
+    if (erreur.status === 429) return 'Trop de tentatives. Patientez une minute puis réessayez.';
     if (erreur.status >= 500) return 'Erreur serveur. Réessayez plus tard.';
     return `Erreur ${erreur.status}.`;
   }

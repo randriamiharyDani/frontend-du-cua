@@ -48,5 +48,11 @@ export class StatistiquesStore {
   /** Libère la souscription (déconnexion du composant). */
   detruire(): void {
     this.abonnement()?.unsubscribe();
+    this.abonnement.set(null);
+    // Si on quitte la page pendant le chargement, l'Observable est annulé
+    // sans passer par `next`/`error` : il faut retomber à `false`, sinon le
+    // prochain `charger()` sort immédiatement (`if (_chargement) return`)
+    // et le tableau de bord reste bloqué sur « Chargement des statistiques… ».
+    this._chargement.set(false);
   }
 }

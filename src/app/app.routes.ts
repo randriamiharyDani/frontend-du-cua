@@ -12,6 +12,7 @@ import { UtilisateursComponent } from './features/admin/utilisateurs.component';
 import { CanevasExcelComponent } from './features/admin/canevas-excel.component';
 import { ParametresComponent } from './features/admin/parametres.component';
 import { authGuard } from './core/guards/auth.guard';
+import { adminSystemeGuard } from './core/guards/admin.guard';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'connexion', pathMatch: 'full' },
@@ -34,7 +35,7 @@ export const routes: Routes = [
       { path: 'mouvements', component: MouvementsComponent, title: 'Mouvements — DU' },
       { path: 'localisations', component: LocalisationsComponent, title: 'Localisations — DU' },
       { path: 'documents', component: DocumentsComponent, title: 'Documents — DU' },
-      { path: 'utilisateurs', component: UtilisateursComponent, title: 'Utilisateurs — DU' },
+      { path: 'utilisateurs', component: UtilisateursComponent, title: 'Utilisateurs — DU', canActivate: [adminSystemeGuard] },
       { path: 'canevas-excel', component: CanevasExcelComponent, title: 'Canevas Excel — DU' },
       { path: 'parametres', component: ParametresComponent, title: 'Paramètres — DU' },
     ],
