@@ -11,17 +11,93 @@
   gap: 0.6rem;
   min-height: 62px;
   padding: 0.5rem 1.75rem;
-  background: rgba(255, 255, 255, 0.85);
+  background: radial-gradient(circle, rgb(66, 102, 150) 0%, rgba(19, 19, 17, 1) 100%);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--du-border);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
+/* --- Animation de fond : textes à image animée (remplace aurore/reflet) --- */
+/* Pseudo-éléments sous le contenu (z-index: -1), sans overflow: hidden
+   sur .topbar pour ne pas couper les menus déroulants. */
+.topbar::before,
+.topbar::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: -1;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  pointer-events: none;
+  white-space: nowrap;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 800;
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  background-repeat: repeat;
+  background-size: 300% auto;
+}
+
+/* Moitié gauche : texte collé au centre */
+.topbar::before {
+  content: "Direction de";
+  left: 0;
+  right: 50%;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
+  opacity: 0.85;
+  background-image: url("/images/img.webp");
+  animation: topbar-texte 12s ease-in-out infinite alternate;
+}
+
+/* Moitié droite : texte collé au centre, sens inverse */
+.topbar::after {
+  content: "l'urbanisme";
+  left: 50%;
+  right: 0;
+  justify-content: flex-start;
+  padding-left: 0.5rem;
+  background-image: url("/images/img1.webp");
+  animation: topbar-texte-inverse 12s ease-in-out infinite alternate;
+}
+
+@keyframes topbar-texte {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes topbar-texte-inverse {
+  from {
+    background-position: 100% 50%;
+  }
+  to {
+    background-position: 0% 50%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .topbar::before,
+  .topbar::after {
+    animation: none;
+  }
+}
+/* --- Fin animation de fond --- */
+
 .topbar__titre {
   font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: -0.015em;
-  color: var(--du-primary-dark);
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -35,12 +111,12 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: var(--du-primary);
+  color: #fff;
   cursor: pointer;
 }
 
 .topbar__btn:hover {
-  background: var(--du-primary-soft);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .topbar__btn--menu {
@@ -210,7 +286,7 @@
 }
 
 .topbar__user:hover {
-  background: var(--du-primary-soft);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .topbar__avatar {
@@ -230,11 +306,12 @@
   display: block;
   font-size: 0.88rem;
   line-height: 1.2;
+  color: #fff;
 }
 
 .topbar__identite small {
   display: block;
-  color: var(--du-muted);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.76rem;
   max-width: 220px;
   white-space: nowrap;
@@ -309,6 +386,12 @@
   }
 
   .topbar__btn--repli {
+    display: none;
+  }
+
+  /* Textes de fond masqués sur petit écran pour garder la barre lisible */
+  .topbar::before,
+  .topbar::after {
     display: none;
   }
 }
