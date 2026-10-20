@@ -5,10 +5,9 @@
 
 <!-- État de chargement -->
 @if (chargement()) {
-  <div class="etat" role="status" aria-live="polite">
-    <span class="spinner" aria-hidden="true"></span>
-    <p>Chargement des statistiques…</p>
-  </div>
+  <section class="card">
+    <du-loader label="Chargement des statistiques…" [plein]="true" />
+  </section>
 } @else if (erreur()) {
   <!-- État d'erreur -->
   <div class="etat etat--erreur" role="alert">

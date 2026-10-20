@@ -62,10 +62,7 @@
 
 <section class="card">
   @if (chargement()) {
-    <div class="empty-state">
-      <du-icon name="users" [size]="28" />
-      <p class="muted small">Chargement des utilisateurs…</p>
-    </div>
+    <du-loader label="Chargement des utilisateurs…" [plein]="true" />
   } @else if (utilisateurs().length) {
     <div class="table-wrap">
       <table class="table">

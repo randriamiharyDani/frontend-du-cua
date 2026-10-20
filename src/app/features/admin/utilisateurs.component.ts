@@ -14,12 +14,13 @@ import {
 import { PayloadUtilisateur } from '../../core/models/utilisateur-api.model';
 import { UtilisateursApiStore } from '../../core/state/utilisateurs-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 /** Page « Utilisateurs » : comptes, services, rôles et états (API réelle). */
 @Component({
   selector: 'du-page-utilisateurs',
-  imports: [ReactiveFormsModule, IconComponent, PageHeaderComponent],
+  imports: [ReactiveFormsModule, IconComponent, LoaderComponent, PageHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './utilisateurs.component.html',
   styleUrl: './utilisateurs.component.scss',

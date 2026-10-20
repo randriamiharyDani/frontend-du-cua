@@ -11,6 +11,7 @@ import {
 import { DossierApiService } from '../../core/services/dossier-api.service';
 import { AuthService } from '../../core/services/auth.service';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 /** États de transfert (alignés sur l'enum backend MouvementState). */
@@ -38,7 +39,7 @@ const ETAT_BADGE: Record<MouvementState, string> = {
  */
 @Component({
   selector: 'du-page-mouvements',
-  imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent],
+  imports: [RouterLink, DatePipe, IconComponent, LoaderComponent, PageHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './mouvements.component.html',
   styleUrl: './mouvements.component.scss',

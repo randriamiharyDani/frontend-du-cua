@@ -14,7 +14,7 @@
 
 @if (chargement()) {
   <section class="card parametres__section">
-    <div class="card__body"><p class="muted">Chargement des paramètres…</p></div>
+    <du-loader label="Chargement des paramètres…" [plein]="true" />
   </section>
 } @else if (erreur()) {
   <section class="card parametres__section">

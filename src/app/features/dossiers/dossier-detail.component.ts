@@ -13,6 +13,7 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { DossierApiStore } from '../../core/state/dossier-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge.component';
 
@@ -31,7 +32,7 @@ interface EvenementAffiche {
 
 @Component({
   selector: 'du-dossier-detail',
-  imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent, StatusBadgeComponent],
+  imports: [RouterLink, DatePipe, IconComponent, LoaderComponent, PageHeaderComponent, StatusBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dossier-detail.component.html',
   styles: `

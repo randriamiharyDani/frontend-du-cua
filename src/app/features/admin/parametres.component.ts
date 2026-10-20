@@ -31,13 +31,14 @@ import {
 import { AuthService } from '../../core/services/auth.service';
 import { ParametresStore } from '../../core/state/parametres-store';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 /** Page « Paramètres » : configuration de l'espace administrateur (API Laravel). */
 @Component({
   selector: 'du-page-parametres',
   standalone: true,
-  imports: [ReactiveFormsModule, IconComponent, PageHeaderComponent],
+  imports: [ReactiveFormsModule, IconComponent, LoaderComponent, PageHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './parametres.component.html',
   styleUrl: './parametres.component.scss',

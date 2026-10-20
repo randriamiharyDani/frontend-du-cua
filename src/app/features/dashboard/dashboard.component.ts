@@ -17,6 +17,7 @@ import {
 } from '../../core/models/dossier.model';
 import { StatistiquesStore } from '../../core/state/statistiques.store';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { BarChartComponent } from './charts/bar-chart.component';
 import { DonutChartComponent } from './charts/donut-chart.component';
 import { LineChartComponent } from './charts/line-chart.component';
@@ -73,7 +74,7 @@ const COULEUR_SERVICE: Record<ServiceDossier, string> = {
  */
 @Component({
   selector: 'du-dashboard',
-  imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent, StatCardComponent, StatusBadgeComponent, BarChartComponent, DonutChartComponent, LineChartComponent],
+  imports: [RouterLink, DatePipe, IconComponent, LoaderComponent, PageHeaderComponent, StatCardComponent, StatusBadgeComponent, BarChartComponent, DonutChartComponent, LineChartComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',

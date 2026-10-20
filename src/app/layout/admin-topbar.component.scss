@@ -11,7 +11,7 @@
   gap: 0.6rem;
   min-height: 62px;
   padding: 0.5rem 1.75rem;
-  background: radial-gradient(circle, rgb(66, 102, 150) 0%, rgba(19, 19, 17, 1) 100%);
+  background: radial-gradient(circle, rgb(182, 205, 235) 0%, rgba(46, 42, 138, 1) 50%);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--du-border);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
@@ -52,7 +52,7 @@
   justify-content: flex-end;
   padding-right: 0.5rem;
   opacity: 0.85;
-  background-image: url("/images/img3.jpg");
+  background-image: url("/images/img.webp");
   animation: topbar-texte 12s ease-in-out infinite alternate;
 }
 
@@ -63,7 +63,7 @@
   right: 0;
   justify-content: flex-start;
   padding-left: 0.5rem;
-  background-image: url("/images/img3.jpg");
+  background-image: url("/images/img.webp");
   animation: topbar-texte-inverse 12s ease-in-out infinite alternate;
 }
 

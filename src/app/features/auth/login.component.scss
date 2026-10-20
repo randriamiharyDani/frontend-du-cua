@@ -436,21 +436,6 @@ form > *:nth-child(5) { animation-delay: 1.5s; }
   }
 }
 
-.login-card__spinner {
-  width: 1rem;
-  height: 1rem;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-top-color: #fff;
-  animation: login-spin 0.7s linear infinite;
-}
-
-@keyframes login-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .login-card__pied {
   margin: 1.25rem 0 0;
   text-align: center;
@@ -481,10 +466,6 @@ form > *:nth-child(5) { animation-delay: 1.5s; }
   .login-card__submit,
   .login-card__submit::after,
   .login-card__pied {
-    animation: none;
-  }
-
-  .login-card__spinner {
     animation: none;
   }
 }

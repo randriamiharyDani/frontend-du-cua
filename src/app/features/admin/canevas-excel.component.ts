@@ -9,6 +9,7 @@ import {
 import { DossierDto } from '../../core/models/dossier-api.model';
 import { FichierCanevas, formaterTaille, CanevasApiStore } from '../../core/state/canevas-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 /** Formate une date ISO `yyyy-MM-dd` en `jj/mm/aaaa` (sans décalage de fuseau). */
@@ -55,7 +56,7 @@ type LigneCanevas = Record<CleColonne, string>;
  */
 @Component({
   selector: 'du-page-canevas-excel',
-  imports: [IconComponent, PageHeaderComponent],
+  imports: [IconComponent, LoaderComponent, PageHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './canevas-excel.component.html',
   styleUrl: './canevas-excel.component.scss',

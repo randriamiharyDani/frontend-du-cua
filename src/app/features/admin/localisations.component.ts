@@ -5,6 +5,7 @@ import { LocalisationLigne } from '../../core/mappers/localisation.mapper';
 import { AuthService } from '../../core/services/auth.service';
 import { LocalisationsApiStore } from '../../core/state/localisations-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 /** Champ facultatif : n’accepte que des chiffres, signes + / - et point décimal. */
@@ -19,7 +20,7 @@ type FiltreAssociation = '' | 'avec' | 'sans';
 /** Page « Localisations » : référentiel des zones et de leurs coordonnées. */
 @Component({
   selector: 'du-page-localisations',
-  imports: [ReactiveFormsModule, IconComponent, PageHeaderComponent],
+  imports: [ReactiveFormsModule, IconComponent, LoaderComponent, PageHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './localisations.component.html',
   styleUrl: './localisations.component.scss',

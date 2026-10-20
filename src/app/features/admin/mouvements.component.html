@@ -85,9 +85,7 @@
 
 <section class="card">
   @if (chargement()) {
-    <div class="empty-state">
-      <p><strong>Chargement des mouvements…</strong></p>
-    </div>
+    <du-loader label="Chargement des mouvements…" [plein]="true" />
   } @else if (erreur()) {
     <div class="empty-state">
       <du-icon name="close" [size]="28" />

@@ -79,6 +79,75 @@ body {
   font-feature-settings: 'tnum' 1, 'cv05' 1;
 }
 
+/* --------------------------------------------------------------------------
+   Fond animé du tableau de bord (ajout)
+   Couches fixes derrière tout le contenu (z-index: -1).
+   -------------------------------------------------------------------------- */
+$fond-dark-900: #0f0f0f;
+$fond-dark-800: #181818;
+$fond-dark-700: #252525;
+$fond-bleu: #3b82f6;
+$fond-rose: #ec4899;
+$fond-violet: #a855f7;
+$fond-cyan: #06b6d4;
+
+body::before,
+body::after {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Base sombre + grands halos colorés qui flottent */
+body::before {
+  inset: -10%;
+  background:
+    radial-gradient(circle 420px at 15% 20%, rgba($fond-violet, 0.55), transparent 70%),
+    radial-gradient(circle 480px at 85% 15%, rgba($fond-cyan, 0.45), transparent 70%),
+    radial-gradient(circle 440px at 75% 85%, rgba($fond-rose, 0.45), transparent 70%),
+    radial-gradient(circle 380px at 20% 85%, rgba($fond-bleu, 0.5), transparent 70%),
+    linear-gradient(160deg, $fond-dark-900, $fond-dark-800 55%, $fond-dark-700);
+  animation: fond-derive 22s ease-in-out infinite alternate;
+}
+
+/* Grille fine par-dessus, qui flotte en sens inverse */
+body::after {
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 48px 48px;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
+  mask-image: radial-gradient(ellipse at center, #000 30%, transparent 80%);
+  animation: fond-flotte-inverse 5s ease-in-out infinite;
+}
+
+@keyframes fond-derive {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(3%, -2%, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-3%, 3%, 0) scale(1.15);
+  }
+}
+
+@keyframes fond-flotte-inverse {
+  0%, 100% { transform: translateY(-5px); }
+  50% { transform: translateY(5px); }
+}
+
+@media print {
+  body::before,
+  body::after {
+    display: none;
+  }
+}
+/* --- Fin fond animé --- */
+
 button,
 input,
 select,

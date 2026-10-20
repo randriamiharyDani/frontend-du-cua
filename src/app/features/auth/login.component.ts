@@ -5,6 +5,7 @@ import { finalize } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { messageErreur } from '../../core/state/dossier-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 
 /**
  * Page de connexion de l'espace administrateur DU.
@@ -15,7 +16,7 @@ import { IconComponent } from '../../shared/ui/icon.component';
 @Component({
   selector: 'du-login',
   standalone: true,
-  imports: [ReactiveFormsModule, IconComponent],
+  imports: [ReactiveFormsModule, IconComponent, LoaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',

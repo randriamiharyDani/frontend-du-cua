@@ -8,6 +8,7 @@ import {
 } from '../../core/models/dossier.model';
 import { AuthService } from '../../core/services/auth.service';
 import { DossierApiStore } from '../../core/state/dossier-api.store';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 /** Aujourd’hui au format ISO `yyyy-MM-dd` (valeur par défaut des champs date). */
@@ -22,7 +23,7 @@ function coordonneeValide(control: AbstractControl): ValidationErrors | null {
 
 @Component({
   selector: 'du-dossier-form',
-  imports: [ReactiveFormsModule, RouterLink, PageHeaderComponent],
+  imports: [ReactiveFormsModule, RouterLink, LoaderComponent, PageHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dossier-form.component.html',
   styles: `

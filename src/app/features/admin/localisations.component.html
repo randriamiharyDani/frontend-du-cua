@@ -57,7 +57,7 @@
 
 <section class="card">
   @if (chargement()) {
-    <div class="empty-state"><p class="muted">Chargement des localisations…</p></div>
+    <du-loader label="Chargement des localisations…" [plein]="true" />
   } @else if (erreur()) {
     <div class="empty-state">
       <du-icon name="alert" [size]="28" />

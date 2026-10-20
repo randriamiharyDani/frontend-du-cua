@@ -125,10 +125,7 @@
 
 <section class="card">
   @if (chargement()) {
-    <div class="empty-state">
-      <du-icon name="sheet" [size]="28" />
-      <p class="muted small">Chargement des dossiers…</p>
-    </div>
+    <du-loader label="Chargement des dossiers…" [plein]="true" />
   } @else if (lignes().length) {
     <div class="table-scroll">
       <table class="canevas">

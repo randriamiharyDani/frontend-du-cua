@@ -4,9 +4,7 @@
 
 @if (edition && chargementDetail()) {
   <section class="card">
-    <div class="card__body">
-      <p><strong>Chargement du dossier…</strong></p>
-    </div>
+    <du-loader label="Chargement du dossier…" [plein]="true" />
   </section>
 } @else if (edition && erreurDetail()) {
   <section class="card">

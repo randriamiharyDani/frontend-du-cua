@@ -8,13 +8,14 @@ import {
 } from '../../core/models/dossier.model';
 import { DossierApiStore } from '../../core/state/dossier-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 import { StatusBadgeComponent } from '../../shared/ui/status-badge.component';
 
 /** Page « Gestion des dossiers » : recherche, filtres, pagination (API). */
 @Component({
   selector: 'du-dossier-list',
-  imports: [RouterLink, DatePipe, IconComponent, PageHeaderComponent, StatusBadgeComponent],
+  imports: [RouterLink, DatePipe, IconComponent, LoaderComponent, PageHeaderComponent, StatusBadgeComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './dossier-list.component.html',
   styleUrl: './dossier-list.component.scss',

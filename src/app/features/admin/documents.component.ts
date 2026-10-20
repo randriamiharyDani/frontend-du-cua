@@ -10,6 +10,7 @@ import {
 import { DocumentLigne } from '../../core/mappers/document.mapper';
 import { DocumentsApiStore } from '../../core/state/documents-api.store';
 import { IconComponent } from '../../shared/ui/icon.component';
+import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
 
 /** Formate une taille de fichier en unité lisible. */
@@ -31,7 +32,7 @@ interface FichierChoisi {
 /** Page « Documents » : pièces jointes des dossiers (API réelle). */
 @Component({
   selector: 'du-page-documents',
-  imports: [ReactiveFormsModule, RouterLink, DatePipe, IconComponent, PageHeaderComponent],
+  imports: [ReactiveFormsModule, RouterLink, DatePipe, IconComponent, LoaderComponent, PageHeaderComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './documents.component.html',
   styleUrl: './documents.component.scss',
