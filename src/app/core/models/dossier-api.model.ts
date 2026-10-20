@@ -28,6 +28,14 @@ export interface DossierDto {
   objet_arrete: string | null;
   date_scellage: string | null;
   date_demol_ou_enlevement: string | null;
+  date_notification: string | null;
+  suite_dossier: SuiteDossierDto | null;
+  montant_amende: string | null;
+  nature_intervention: NatureInterventionDto | null;
+  date_regularisation: string | null;
+  ref_arrete_ouverture: string | null;
+  date_arrete_ouverture: string | null;
+  date_ouverture: string | null;
   service: ServiceDossier | null;
   etape: EtapeDossier | null;
   statut: StatutDossier | null;
@@ -117,6 +125,12 @@ export interface UtilisateurResume {
   name: string;
 }
 
+/** Décision SCAD après l'étape 6 : amende (CAS A) ou étude (CAS B). */
+export type SuiteDossierDto = 'amende' | 'etude';
+
+/** Nature de l'intervention terrain décidée à l'étape 7. */
+export type NatureInterventionDto = 'scellage' | 'demolition';
+
 /** Transition disponible (workflow). */
 export interface TransitionOption {
   order: number;
@@ -138,6 +152,14 @@ export interface WorkflowState {
     service: ServiceDossier | null;
   } | null;
   available_transitions: TransitionOption[];
+  /** Services vers lesquels un transfert est valide à ce stade du circuit. */
+  allowed_transfer_targets: ServiceDossier[];
+  /** Vrai si le dossier doit changer de service pour la suite du circuit. */
+  transfert_attendu: boolean;
+  /** Service de la prochaine étape (`null` si le circuit est terminé). */
+  service_destinataire: ServiceDossier | null;
+  /** Exigences métiers à satisfaire pour la prochaine transition. */
+  exigences: string[];
 }
 
 /** Mouvement embarqué dans un événement d'historique. */
@@ -206,6 +228,8 @@ export interface ReponseRessource<T> {
   data: T;
   message?: string;
   transitions_autorisees?: string[];
+  /** Services de transfert valides après une transition. */
+  allowed_transfer_targets?: ServiceDossier[];
 }
 
 /** Filtres acceptés par `GET /dossiers` (IndexDossierRequest). */

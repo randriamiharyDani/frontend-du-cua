@@ -62,6 +62,30 @@ export const ETAPE_LABEL: Record<EtapeDossier, string> = {
   cloture: 'Clôture',
 };
 
+/* ============================ Suites du dossier (décision SCAD) ============================ */
+
+/** Suite donnée après l'étape 6 : amende (CAS A) ou étude (CAS B). */
+export type SuiteDossier = 'amende' | 'etude';
+
+export const SUITES: readonly SuiteDossier[] = ['amende', 'etude'];
+
+export const SUITE_LABEL: Record<SuiteDossier, string> = {
+  amende: 'Amende',
+  etude: 'Étude',
+};
+
+/* ============================ Nature d'intervention ============================ */
+
+/** Intervention terrain décidée à l'étape 7 du circuit. */
+export type NatureIntervention = 'scellage' | 'demolition';
+
+export const INTERVENTIONS: readonly NatureIntervention[] = ['scellage', 'demolition'];
+
+export const INTERVENTION_LABEL: Record<NatureIntervention, string> = {
+  scellage: 'Scellage',
+  demolition: 'Démolition / enlèvement',
+};
+
 /* ============================ Natures ============================ */
 
 export type NatureDossier = 'plainte' | 'signalement' | 'ratissage';
@@ -222,6 +246,20 @@ export interface HistoriqueItem {
   libelle: string;
 }
 
+/** Données de suivi du circuit métier (enregistrées par les transitions).
+ *  `suite` et `natureIntervention` sont des décisions réservées aux
+ *  transitions de workflow ; les dates sont complétées par le serveur. */
+export interface SuiviDossier {
+  suite: SuiteDossier | '';
+  montantAmende: string;
+  natureIntervention: NatureIntervention | '';
+  dateNotification: string;
+  dateRegularisation: string;
+  refArreteOuverture: string;
+  dateArreteOuverture: string;
+  dateOuverture: string;
+}
+
 /* ============================ Dossier ============================ */
 
 export interface Dossier {
@@ -232,6 +270,7 @@ export interface Dossier {
   localisation: LocalisationDossier;
   complements: ComplementsDossier;
   arretes: ArretesDossier;
+  suivi: SuiviDossier;
   type: TypeInfraction;
   service: ServiceDossier;
   etape: EtapeDossier;
@@ -244,8 +283,10 @@ export interface Dossier {
 }
 
 /** Valeurs du formulaire de création / modification d’un dossier. L'étape
- *  n'est jamais saisie : elle reste pilotée par le workflow côté serveur. */
-export type DossierFormValue = Omit<Dossier, 'id' | 'reference' | 'historique' | 'etape'>;
+ *  n'est jamais saisie : elle reste pilotée par le workflow côté serveur.
+ *  Le suivi du circuit (suite, intervention, dates de workflow) relève des
+ *  transitions et n'est donc jamais modifiable depuis le formulaire. */
+export type DossierFormValue = Omit<Dossier, 'id' | 'reference' | 'historique' | 'etape' | 'suivi'>;
 
 /* ============================ Priorités ============================ */
 

@@ -6,8 +6,9 @@ import { map } from 'rxjs';
 import { formatTaille } from '../../core/mappers/dossier.mapper';
 import { DocumentDto, MouvementDto, TransitionOption } from '../../core/models/dossier-api.model';
 import {
-  NATURE_LABEL, nomContrevenant, PRIORITE_LABEL, SERVICE_LABEL, SERVICES, ServiceDossier,
-  TYPE_LABEL,
+  ETAPE_LABEL, INTERVENTIONS, INTERVENTION_LABEL, NATURE_LABEL, NatureIntervention, nomContrevenant,
+  PRIORITE_LABEL, SERVICE_LABEL, SERVICES, ServiceDossier, SUITE_LABEL, SUITES,
+  SuiteDossier, TYPE_LABEL,
 } from '../../core/models/dossier.model';
 import { AuthService } from '../../core/services/auth.service';
 import { DossierApiStore } from '../../core/state/dossier-api.store';
@@ -171,6 +172,15 @@ interface EvenementAffiche {
     /* Actions de workflow / transfert */
     .actions-stack { display: flex; flex-direction: column; gap: 0.6rem; margin-top: 1rem; }
     .actions-ligne { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: flex-end; }
+    .exigences {
+      margin: 0;
+      padding: 0.6rem 0.75rem 0.6rem 2rem;
+      border-radius: var(--du-radius);
+      background: var(--du-warning-soft, #fff4e5);
+      color: var(--du-warning-dark, #8a5a00);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
     .transfert-form { display: grid; gap: 0.6rem; margin: 0.75rem 0 1rem; }
     .transfert-item { padding: 0.6rem 0; border-top: 1px solid var(--du-border); }
     .transfert-item__entete { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
@@ -219,6 +229,11 @@ export class DossierDetailComponent {
   protected readonly nomContrevenant = nomContrevenant;
   protected readonly formatTaille = formatTaille;
   protected readonly services = SERVICES;
+  protected readonly etapeLabel = ETAPE_LABEL;
+  protected readonly suites = SUITES;
+  protected readonly suiteLabel = SUITE_LABEL;
+  protected readonly interventions = INTERVENTIONS;
+  protected readonly interventionLabel = INTERVENTION_LABEL;
 
   /** Champ de saisie des actions de transfert. */
   protected readonly motifTransfert = signal('');
@@ -226,6 +241,12 @@ export class DossierDetailComponent {
   protected readonly motifRetour = signal('');
   protected readonly fichierSelectionne = signal<File | null>(null);
   protected readonly libelleDocument = signal('');
+
+  /** Décisions et références saisies au moment d'une transition. */
+  protected readonly suiteDemandee = signal<SuiteDossier | ''>('');
+  protected readonly montantAmende = signal('');
+  protected readonly natureIntervention = signal<NatureIntervention | ''>('');
+  protected readonly refArreteOuverture = signal('');
 
   /** Utilisateur connecté (service + rôle) pour filtrer les actions proposées. */
   private readonly auth = inject(AuthService);
@@ -240,12 +261,15 @@ export class DossierDetailComponent {
       if (id) this.store.chargerDetail(id);
     });
     // Synchronise la destination par défaut dès que le dossier est connu :
-    // premier service différent du service actuel (jamais d'auto-transfert proposé).
+    // premier service autorisé par le circuit, jamais le service actuel.
     effect(() => {
       const actuel = this.dossier()?.service;
       if (!actuel) return;
-      const premier = SERVICES.find((s) => s !== actuel) ?? actuel;
-      if (this.serviceDestination() === actuel) this.serviceDestination.set(premier);
+      const premier = this.destinationsTransfert()[0];
+      if (premier && this.serviceDestination() === actuel) this.serviceDestination.set(premier);
+      if (premier && !this.destinationsTransfert().includes(this.serviceDestination())) {
+        this.serviceDestination.set(premier);
+      }
     });
   }
 
@@ -254,16 +278,52 @@ export class DossierDetailComponent {
     () => this.workflow()?.available_transitions ?? [],
   );
 
+  /** Prochaine transition du circuit (au plus une). */
+  protected readonly prochaineTransition = computed<TransitionOption | null>(
+    () => this.transitions()[0] ?? null,
+  );
+
+  /** Exigences métiers (décisions, références) exigées par le serveur. */
+  protected readonly exigences = computed<string[]>(() => this.workflow()?.exigences ?? []);
+
+  /** Vrai si les décisions requises par la prochaine transition sont saisies. */
+  protected readonly transitionCompletable = computed(() => {
+    const transition = this.prochaineTransition();
+    if (!transition) return true;
+
+    if (transition.code === 'amende-ou-etude') {
+      return this.suiteDemandee() !== '';
+    }
+    if (transition.code === 'scellage-demolition') {
+      return this.natureIntervention() !== '';
+    }
+    if (transition.code === 'leve-scelles') {
+      const nature = this.dossier()?.suivi.natureIntervention ?? '';
+      return nature !== 'scellage' || this.refArreteOuverture().trim() !== '';
+    }
+    return true;
+  });
+
   /** Transfert encore en attente de traitement (au plus un). */
   protected readonly transfertEnAttente = computed<MouvementDto | null>(
     () => this.transferts().find((m) => m.state === 'envoye') ?? null,
   );
 
-  /** Destinations proposées : tous les services sauf le service actuel du dossier. */
+  /**
+   * Destinations proposées : services admis par le circuit à l'étape
+   * courante (`GET .../workflow`), hors service actuel. Sans workflow,
+   * tous les services autres que l'actuel restent proposés.
+   */
   protected readonly destinationsTransfert = computed<ServiceDossier[]>(() => {
     const actuel = this.dossier()?.service;
-    return SERVICES.filter((s) => s !== actuel);
+    const cibles = this.workflow()?.allowed_transfer_targets ?? SERVICES;
+    return cibles.filter((s) => s !== actuel);
   });
+
+  /** Le serveur refuse tout transfert depuis l'étape actuelle du circuit. */
+  protected readonly transfertIndisponible = computed(
+    () => this.destinationsTransfert().length === 0,
+  );
 
   /**
    * L'utilisateur connecté peut-il expédier ce dossier ?
@@ -330,10 +390,43 @@ export class DossierDetailComponent {
     }));
   });
 
-  /** Applique une transition de workflow (avec confirmation). */
+  /** Applique la prochaine transition (décisions attendues comprises). */
   protected avancer(transition: TransitionOption): void {
+    if (this.enCours() || !this.transitionCompletable()) return;
     if (!this.confirmer(`Appliquer « ${transition.label} » à ce dossier ?`)) return;
-    this.store.executerTransition(this.id(), transition.code).subscribe();
+    this.store
+      .executerTransition(this.id(), transition.code, this.corpsTransition(transition))
+      .subscribe({ next: () => this.effacerDecisions() });
+  }
+
+  /** Champs métier portés par la transition en cours (décisions SCAD, références). */
+  private corpsTransition(transition: TransitionOption): Record<string, unknown> {
+    const corps: Record<string, unknown> = {};
+
+    if (transition.code === 'amende-ou-etude') {
+      const suite = this.suiteDemandee();
+      if (suite) corps['suite_dossier'] = suite;
+      const montant = this.montantAmende().trim();
+      if (suite === 'amende' && montant) corps['montant_amende'] = montant;
+    }
+
+    if (transition.code === 'scellage-demolition' && this.natureIntervention()) {
+      corps['nature_intervention'] = this.natureIntervention();
+    }
+
+    if (transition.code === 'leve-scelles' && this.refArreteOuverture().trim()) {
+      corps['ref_arrete_ouverture'] = this.refArreteOuverture().trim();
+    }
+
+    return corps;
+  }
+
+  /** Réinitialise les saisies propres à la transition exécutée. */
+  private effacerDecisions(): void {
+    this.suiteDemandee.set('');
+    this.montantAmende.set('');
+    this.natureIntervention.set('');
+    this.refArreteOuverture.set('');
   }
 
   /** Expédie le dossier vers le service choisi (jamais vers le service actuel). */
@@ -342,6 +435,8 @@ export class DossierDetailComponent {
     const destination = this.serviceDestination();
     const actuel = this.dossier()?.service;
     if (!destination || (actuel && destination === actuel)) return;
+    // Le serveur refuse toute destination non prévue par l'étape courante.
+    if (!this.destinationsTransfert().includes(destination)) return;
     if (!this.confirmer(`Transférer le dossier vers ${destination} ?`)) return;
     this.store
       .envoyerTransfert(this.id(), {

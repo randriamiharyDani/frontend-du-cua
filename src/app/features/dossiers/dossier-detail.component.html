@@ -131,6 +131,24 @@
             </div>
             <div><dt>Date de scellage</dt><dd>{{ d.arretes.dateScellage ? (d.arretes.dateScellage | date: 'd MMMM y') : '—' }}</dd></div>
             <div><dt>Démolition / enlèvement</dt><dd>{{ d.arretes.dateDemolOuEnlevement ? (d.arretes.dateDemolOuEnlevement | date: 'd MMMM y') : '—' }}</dd></div>
+            <div><dt>Notification de l’arrêté</dt>
+              <dd>{{ d.suivi.dateNotification ? (d.suivi.dateNotification | date: 'd MMMM y') : '—' }}</dd>
+            </div>
+            <div><dt>Suite du dossier</dt>
+              <dd>@if (d.suivi.suite) { {{ suiteLabel[d.suivi.suite] }}@if (d.suivi.montantAmende) { — {{ d.suivi.montantAmende }} } } @else { <span class="absent">Non décidée</span> }</dd>
+            </div>
+            <div><dt>Nature de l’intervention</dt>
+              <dd>@if (d.suivi.natureIntervention) { {{ interventionLabel[d.suivi.natureIntervention] }} } @else { <span class="absent">Non décidée</span> }</dd>
+            </div>
+            <div><dt>Régularisation</dt>
+              <dd>{{ d.suivi.dateRegularisation ? (d.suivi.dateRegularisation | date: 'd MMMM y') : '—' }}</dd>
+            </div>
+            <div><dt>Arrêté d’ouverture</dt>
+              <dd>@if (d.suivi.refArreteOuverture) { {{ d.suivi.refArreteOuverture }}@if (d.suivi.dateArreteOuverture) { — {{ d.suivi.dateArreteOuverture | date: 'd MMMM y' }} } } @else { <span class="absent">—</span> }</dd>
+            </div>
+            <div><dt>Ouverture / levée des scellés</dt>
+              <dd>{{ d.suivi.dateOuverture ? (d.suivi.dateOuverture | date: 'd MMMM y') : '—' }}</dd>
+            </div>
           </dl>
         </div>
       </section>
@@ -191,6 +209,7 @@
         <div class="card__header"><h2>Suivi</h2><du-status-badge [statut]="d.statut" /></div>
         <div class="card__body">
           <dl class="dl">
+            <div><dt>Étape du circuit</dt><dd>{{ etapeLabel[d.etape] }}</dd></div>
             <div><dt>Service actuel</dt><dd>{{ d.service }} — {{ serviceLabel[d.service] }}</dd></div>
             <div><dt>Statut</dt><dd><du-status-badge [statut]="d.statut" /></dd></div>
             <div><dt>Type d’infraction</dt><dd>{{ typeLabel[d.type] }}</dd></div>
@@ -199,12 +218,58 @@
             <div><dt>Attention particulière</dt><dd>{{ d.attentionRequise ? ('Oui' + (d.motifAttention ? ' — ' + d.motifAttention : '')) : 'Non' }}</dd></div>
           </dl>
           <div class="actions-stack">
-            @if (transitions().length) {
-              @for (t of transitions(); track t.code) {
-                <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours()" (click)="avancer(t)">
-                  {{ t.label }}@if (t.admin_only) { <span class="muted small"> (administrateur système)</span> }
-                </button>
+            @if (exigences().length) {
+              <ul class="exigences" role="alert">
+                @for (exigence of exigences(); track exigence) { <li>{{ exigence }}</li> }
+              </ul>
+            }
+
+            @if (prochaineTransition(); as transition) {
+              @switch (transition.code) {
+                @case ('amende-ou-etude') {
+                  <div class="field">
+                    <label for="suiteDossier">Suite du dossier (obligatoire)</label>
+                    <select id="suiteDossier" class="input"
+                            [value]="suiteDemandee()"
+                            (change)="suiteDemandee.set($any($event.target).value)">
+                      <option value="">Choisir…</option>
+                      @for (s of suites; track s) { <option [value]="s">{{ suiteLabel[s] }}</option> }
+                    </select>
+                  </div>
+                  @if (suiteDemandee() === 'amende') {
+                    <div class="field">
+                      <label for="montantAmende">Montant de l’amende</label>
+                      <input id="montantAmende" class="input" type="number" min="0" step="0.01"
+                             [value]="montantAmende()" (input)="montantAmende.set($any($event.target).value)" />
+                    </div>
+                  }
+                }
+                @case ('scellage-demolition') {
+                  <div class="field">
+                    <label for="natureIntervention">Nature de l’intervention (obligatoire)</label>
+                    <select id="natureIntervention" class="input"
+                            [value]="natureIntervention()"
+                            (change)="natureIntervention.set($any($event.target).value)">
+                      <option value="">Choisir…</option>
+                      @for (n of interventions; track n) { <option [value]="n">{{ interventionLabel[n] }}</option> }
+                    </select>
+                  </div>
+                }
+                @case ('leve-scelles') {
+                  @if (d.suivi.natureIntervention === 'scellage') {
+                    <div class="field">
+                      <label for="refArreteOuverture">Référence de l’arrêté d’ouverture (obligatoire)</label>
+                      <input id="refArreteOuverture" class="input"
+                             [value]="refArreteOuverture()" (input)="refArreteOuverture.set($any($event.target).value)" />
+                    </div>
+                  }
+                }
               }
+
+              <button type="button" class="btn btn--primary btn--sm"
+                      [disabled]="enCours() || !transitionCompletable()" (click)="avancer(transition)">
+                {{ transition.label }}@if (transition.admin_only) { <span class="muted small"> (administrateur système)</span> }
+              </button>
             } @else {
               <p class="absent">Aucune transition disponible depuis cet état.</p>
             }
@@ -220,25 +285,36 @@
         </div>
         <div class="card__body">
           @if (peutTransferer()) {
-            <div class="transfert-form">
-              <div class="field">
-                <label for="serviceDestination">Service destinataire</label>
-                <select id="serviceDestination" class="input"
-                        [value]="serviceDestination()"
-                        (change)="serviceDestination.set($any($event.target).value)">
-                  @for (s of destinationsTransfert(); track s) { <option [value]="s">{{ s }} — {{ serviceLabel[s] }}</option> }
-                </select>
+            @if (transfertIndisponible()) {
+              <p class="absent">Aucun transfert autorisé à l’étape actuelle du circuit.</p>
+            } @else {
+              @if (workflow()?.transfert_attendu && workflow()?.service_destinataire) {
+                <p class="muted small">
+                  Le circuit attend un transfert vers <strong>{{ workflow()?.service_destinataire }}</strong>
+                  avant la prochaine étape.
+                </p>
+              }
+              <div class="transfert-form">
+                <div class="field">
+                  <label for="serviceDestination">Service destinataire</label>
+                  <select id="serviceDestination" class="input"
+                          [value]="serviceDestination()"
+                          (change)="serviceDestination.set($any($event.target).value)">
+                    @for (s of destinationsTransfert(); track s) { <option [value]="s">{{ s }} — {{ serviceLabel[s] }}</option> }
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="motifTransfert">Motif (facultatif)</label>
+                  <input id="motifTransfert" class="input" [value]="motifTransfert()" (input)="motifTransfert.set($any($event.target).value)" />
+                </div>
+                <div class="actions-ligne">
+                  <button type="button" class="btn btn--primary btn--sm"
+                          [disabled]="enCours() || !destinationsTransfert().length" (click)="transferer()">
+                    <du-icon name="swap" [size]="15" /> Transférer le dossier
+                  </button>
+                </div>
               </div>
-              <div class="field">
-                <label for="motifTransfert">Motif (facultatif)</label>
-                <input id="motifTransfert" class="input" [value]="motifTransfert()" (input)="motifTransfert.set($any($event.target).value)" />
-              </div>
-              <div class="actions-ligne">
-                <button type="button" class="btn btn--primary btn--sm" [disabled]="enCours()" (click)="transferer()">
-                  <du-icon name="swap" [size]="15" /> Transférer le dossier
-                </button>
-              </div>
-            </div>
+            }
           }
 
           @if (transferts().length) {

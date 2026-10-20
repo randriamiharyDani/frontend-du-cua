@@ -222,9 +222,12 @@ export class DossierApiStore {
     );
   }
 
-  /** Exécute une transition de workflow puis rafraîchit le détail. */
-  executerTransition(id: number | string, code: string, description?: string): Observable<Dossier> {
-    const corps = description && description.trim() ? { description: description.trim() } : {};
+  /** Exécute une transition de workflow (décisions et dates comprises) puis rafraîchit le détail. */
+  executerTransition(
+    id: number | string,
+    code: string,
+    corps: Record<string, unknown> = {},
+  ): Observable<Dossier> {
     return this.muter(id, () => this.api.executerTransition(id, code, corps));
   }
 
