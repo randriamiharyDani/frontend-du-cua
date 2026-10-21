@@ -133,8 +133,16 @@
               <dd>{{ d.suivi.dateNotification ? (d.suivi.dateNotification | date: 'd MMMM y') : '—' }}</dd>
             </div>
             <div><dt>Suite du dossier</dt>
-              <dd>@if (d.suivi.suite) { {{ suiteLabel[d.suivi.suite] }}@if (d.suivi.montantAmende) { — {{ d.suivi.montantAmende }} } } @else { <span class="absent">Non décidée</span> }</dd>
+              <dd>@if (d.suivi.suite) { {{ suiteLabel[d.suivi.suite] }} } @else { <span class="absent">Non décidée</span> }</dd>
             </div>
+            @if (d.suivi.suite === 'amende') {
+              <div><dt>Montant de l’amende</dt>
+                <dd>{{ d.suivi.montantAmende || '—' }}</dd>
+              </div>
+              <div><dt>Avis de paiement</dt>
+                <dd>{{ d.suivi.numeroAvisPaiement || '—' }}</dd>
+              </div>
+            }
             <div><dt>Nature de l’intervention</dt>
               <dd>@if (d.suivi.natureIntervention) { {{ interventionLabel[d.suivi.natureIntervention] }} } @else { <span class="absent">Non décidée</span> }</dd>
             </div>
@@ -255,6 +263,11 @@
                       <label for="montantAmende">Montant de l’amende</label>
                       <input id="montantAmende" class="input" type="number" min="0" step="0.01"
                              [value]="montantAmende()" (input)="montantAmende.set($any($event.target).value)" />
+                    </div>
+                    <div class="field">
+                      <label for="numeroAvisPaiement">Numéro de l’avis de paiement</label>
+                      <input id="numeroAvisPaiement" class="input" type="text" maxlength="255"
+                             [value]="numeroAvisPaiement()" (input)="numeroAvisPaiement.set($any($event.target).value)" />
                     </div>
                   }
                 }

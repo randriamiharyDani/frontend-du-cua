@@ -250,6 +250,7 @@ export class DossierDetailComponent {
   /** Décisions et références saisies au moment d'une transition. */
   protected readonly suiteDemandee = signal<SuiteDossier | ''>('');
   protected readonly montantAmende = signal('');
+  protected readonly numeroAvisPaiement = signal('');
   protected readonly natureIntervention = signal<NatureIntervention | ''>('');
   protected readonly refArreteOuverture = signal('');
 
@@ -302,6 +303,8 @@ export class DossierDetailComponent {
     return {
       ordre: ordre as EtatCircuit['ordre'],
       suite: d.suivi.suite ?? '',
+      montant: d.suivi.montantAmende ?? '',
+      avisPaiement: d.suivi.numeroAvisPaiement ?? '',
       natureIntervention: d.suivi.natureIntervention ?? '',
       refArreteOuverture: d.suivi.refArreteOuverture ?? '',
     };
@@ -456,6 +459,8 @@ export class DossierDetailComponent {
       if (suite) corps['suite_dossier'] = suite;
       const montant = this.montantAmende().trim();
       if (suite === 'amende' && montant) corps['montant_amende'] = montant;
+      const avis = this.numeroAvisPaiement().trim();
+      if (suite === 'amende' && avis) corps['numero_avis_paiement'] = avis;
     }
 
     if (transition.code === 'scellage-demolition' && this.natureIntervention()) {
@@ -473,6 +478,7 @@ export class DossierDetailComponent {
   private effacerDecisions(): void {
     this.suiteDemandee.set('');
     this.montantAmende.set('');
+    this.numeroAvisPaiement.set('');
     this.natureIntervention.set('');
     this.refArreteOuverture.set('');
   }

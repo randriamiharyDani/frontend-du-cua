@@ -19,6 +19,8 @@ import {
 const etat = (partial: Partial<EtatCircuit> = {}): EtatCircuit => ({
   ordre: 1,
   suite: '',
+  montant: '',
+  avisPaiement: '',
   natureIntervention: '',
   refArreteOuverture: '',
   ...partial,
@@ -144,12 +146,32 @@ describe('workflow-du — validation avant envoi', () => {
     expect(validerTransition({ ...base, natureIntervention: 'demolition' }, 'leve-scelles', {}).valide).toBe(true);
   });
 
-  it('étape amende : exige le choix de la suite', () => {
+  it('étape amende : exige le choix de la suite, le montant positif et l’avis', () => {
     const base = etat({ ordre: 5 });
     const sansSuite = validerTransition(base, 'amende-ou-etude', {});
     expect(sansSuite.valide).toBe(false);
     expect(sansSuite.erreurs[0]?.champ).toBe('suite_dossier');
-    expect(validerTransition(base, 'amende-ou-etude', { suite_dossier: 'amende', montant_amende: '450000' }).valide).toBe(true);
+
+    const amendeSansMontant = validerTransition(base, 'amende-ou-etude', { suite_dossier: 'amende' });
+    expect(amendeSansMontant.valide).toBe(false);
+    expect(amendeSansMontant.erreurs[0]).toEqual({
+      code: 'CHAMP_MANQUANT',
+      message: "Le montant de l'amende doit être supérieur à 0.",
+      champ: 'montant_amende',
+    });
+
+    const amendeSansAvis = validerTransition(base, 'amende-ou-etude', { suite_dossier: 'amende', montant_amende: '450000' });
+    expect(amendeSansAvis.valide).toBe(false);
+    expect(amendeSansAvis.erreurs[0]).toEqual({
+      code: 'CHAMP_MANQUANT',
+      message: "Le numéro de l'avis de paiement doit être renseigné.",
+      champ: 'numero_avis_paiement',
+    });
+
+    expect(validerTransition(base, 'amende-ou-etude', { suite_dossier: 'amende', montant_amende: '450000', numero_avis_paiement: 'AV-2026-07' }).valide).toBe(true);
+    expect(validerTransition(base, 'amende-ou-etude', { suite_dossier: 'etude' }).valide).toBe(true);
+    // montant + avis déjà persistés au dossier : exigence satisfaite sans payload
+    expect(validerTransition(etat({ ordre: 5, suite: 'amende', montant: '450000', avisPaiement: 'AV-2026-07' }), 'amende-ou-etude', {}).valide).toBe(true);
   });
 
   it('formats : liste et dates réelles', () => {
@@ -159,6 +181,10 @@ describe('workflow-du — validation avant envoi', () => {
 
     const montantNegatif = validerTransition(base, 'amende-ou-etude', { suite_dossier: 'amende', montant_amende: '-5' });
     expect(montantNegatif.erreurs.some((e) => e.champ === 'montant_amende')).toBe(true);
+
+    const montantNul = validerTransition(base, 'amende-ou-etude', { suite_dossier: 'amende', montant_amende: '0' });
+    expect(montantNul.valide).toBe(false);
+    expect(montantNul.erreurs.some((e) => e.champ === 'montant_amende' && e.code === 'VALEUR_INVALIDE')).toBe(true);
 
     const dateImpossible = validerTransition(etat({ ordre: 4 }), 'notification-arrete', { date_notification: '2026-02-30' });
     expect(dateImpossible.erreurs.some((e) => e.champ === 'date_notification')).toBe(true);
@@ -181,6 +207,13 @@ describe('workflow-du — exigences affichables', () => {
     expect(exigences(etat({ ordre: 6 }), 'amende-ou-etude')).toEqual([
       'La suite du dossier (amende ou étude) doit être choisie.',
     ]);
+    expect(exigences(etat({ ordre: 6, suite: 'amende' }), 'amende-ou-etude')).toEqual([
+      "Le montant de l'amende doit être supérieur à 0.",
+    ]);
+    expect(exigences(etat({ ordre: 6, suite: 'amende', montant: '450000' }), 'amende-ou-etude')).toEqual([
+      "Le numéro de l'avis de paiement doit être renseigné.",
+    ]);
+    expect(exigences(etat({ ordre: 6, suite: 'amende', montant: '450000', avisPaiement: 'AV-2026-07' }), 'amende-ou-etude')).toEqual([]);
     expect(exigences(etat({ ordre: 6, suite: 'etude' }), 'scellage-demolition', {})).toEqual([
       "La nature de l'intervention (scellage ou démolition) doit être enregistrée.",
     ]);

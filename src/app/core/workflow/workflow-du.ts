@@ -85,6 +85,10 @@ export interface EtatCircuit {
   ordre: OrdreEtape;
   /** `dossier.suite_dossier` persisté. */
   suite: SuiteDossier | '';
+  /** `dossier.montant_amende` persisté (branche amende, doit être > 0). */
+  montant: string;
+  /** `dossier.numero_avis_paiement` persisté (branche amende, obligatoire). */
+  avisPaiement: string;
   /** `dossier.nature_intervention` persistée. */
   natureIntervention: NatureIntervention | '';
   /** `dossier.ref_arrete_ouverture` persistée. */
@@ -180,6 +184,8 @@ export function ciblesTransfert(etat: EtatCircuit, serviceCourant: ServiceDossie
 const MESSAGE_NATURE = "La nature de l'intervention (scellage ou démolition) doit être enregistrée.";
 const MESSAGE_ARRETE_OUVERTURE = "Un arrêté d'ouverture valide est requis avant la levée des scellés.";
 const MESSAGE_SUITE = 'La suite du dossier (amende ou étude) doit être choisie.';
+const MESSAGE_MONTANT = "Le montant de l'amende doit être supérieur à 0.";
+const MESSAGE_AVIS = "Le numéro de l'avis de paiement doit être renseigné.";
 const MESSAGE_ADMIN = 'Accès refusé : cette transition est réservée à l’administrateur système.';
 const messageEtape = (code: string): string => `Transition « ${code} » impossible depuis l'état actuel du dossier.`;
 
@@ -199,8 +205,21 @@ export function exigences(
   const refOuverture = ((payload['ref_arrete_ouverture'] ?? etat.refArreteOuverture) as string) || '';
 
   switch (code) {
-    case 'amende-ou-etude':
-      return ((payload['suite_dossier'] as string) || etat.suite) ? [] : [MESSAGE_SUITE];
+    case 'amende-ou-etude': {
+      const suite = ((payload['suite_dossier'] as string) || etat.suite) as SuiteDossier | '';
+      if (!suite) return [MESSAGE_SUITE];
+      if (suite === 'amende') {
+        const montant = payload['montant_amende'] ?? etat.montant;
+        if (montant === undefined || montant === null || String(montant).trim() === '') {
+          return [MESSAGE_MONTANT];
+        }
+        const avis = payload['numero_avis_paiement'] ?? etat.avisPaiement;
+        if (avis === undefined || avis === null || String(avis).trim() === '') {
+          return [MESSAGE_AVIS];
+        }
+      }
+      return [];
+    }
     case 'scellage-demolition':
       return nature === null ? [MESSAGE_NATURE] : [];
     case 'leve-scelles':
@@ -254,9 +273,13 @@ export function validerTransition(
     const champ =
       message === MESSAGE_SUITE
         ? 'suite_dossier'
-        : message === MESSAGE_NATURE
-          ? 'nature_intervention'
-          : 'ref_arrete_ouverture';
+          : message === MESSAGE_MONTANT
+            ? 'montant_amende'
+            : message === MESSAGE_AVIS
+              ? 'numero_avis_paiement'
+              : message === MESSAGE_NATURE
+            ? 'nature_intervention'
+            : 'ref_arrete_ouverture';
     erreurs.push({ code: 'CHAMP_MANQUANT', message, champ });
   }
 
@@ -274,8 +297,8 @@ export function validerTransition(
   const montant = payload['montant_amende'];
   if (montant !== undefined && montant !== null && montant !== '') {
     const nombre = typeof montant === 'number' ? montant : Number(String(montant).replace(',', '.'));
-    if (!Number.isFinite(nombre) || nombre < 0) {
-      erreurs.push({ code: 'VALEUR_INVALIDE', message: `Montant d'amende invalide : « ${String(montant)} ».`, champ: 'montant_amende' });
+    if (!Number.isFinite(nombre) || nombre <= 0) {
+      erreurs.push({ code: 'VALEUR_INVALIDE', message: `Montant d'amende invalide : « ${String(montant)} » (attendu strictement positif).`, champ: 'montant_amende' });
     }
   }
 

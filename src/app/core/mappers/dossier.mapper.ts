@@ -120,6 +120,7 @@ export function dossierDepuisApi(dto: DossierDto): Dossier {
     suivi: {
       suite: dto.suite_dossier ?? '',
       montantAmende: dto.montant_amende ?? '',
+      numeroAvisPaiement: dto.numero_avis_paiement ?? '',
       natureIntervention: dto.nature_intervention ?? '',
       dateNotification: dto.date_notification ?? '',
       dateRegularisation: dto.date_regularisation ?? '',

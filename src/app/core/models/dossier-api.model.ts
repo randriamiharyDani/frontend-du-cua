@@ -31,6 +31,7 @@ export interface DossierDto {
   date_notification: string | null;
   suite_dossier: SuiteDossierDto | null;
   montant_amende: string | null;
+  numero_avis_paiement: string | null;
   nature_intervention: NatureInterventionDto | null;
   date_regularisation: string | null;
   ref_arrete_ouverture: string | null;

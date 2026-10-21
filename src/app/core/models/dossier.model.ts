@@ -252,6 +252,7 @@ export interface HistoriqueItem {
 export interface SuiviDossier {
   suite: SuiteDossier | '';
   montantAmende: string;
+  numeroAvisPaiement: string;
   natureIntervention: NatureIntervention | '';
   dateNotification: string;
   dateRegularisation: string;
