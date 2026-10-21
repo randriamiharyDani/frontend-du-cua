@@ -12,6 +12,10 @@ import {
 } from '../../core/models/dossier.model';
 import { AuthService } from '../../core/services/auth.service';
 import { DossierApiStore } from '../../core/state/dossier-api.store';
+import {
+  EtatCircuit, ErreurWorkflow, etapeCourante, progression,
+  transitionsDisponibles, validerTransition,
+} from '../../core/workflow/workflow-du';
 import { IconComponent } from '../../shared/ui/icon.component';
 import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
@@ -287,23 +291,66 @@ export class DossierDetailComponent {
   /** Exigences métiers (décisions, références) exigées par le serveur. */
   protected readonly exigences = computed<string[]>(() => this.workflow()?.exigences ?? []);
 
-  /** Vrai si les décisions requises par la prochaine transition sont saisies. */
-  protected readonly transitionCompletable = computed(() => {
-    const transition = this.prochaineTransition();
-    if (!transition) return true;
-
-    if (transition.code === 'amende-ou-etude') {
-      return this.suiteDemandee() !== '';
-    }
-    if (transition.code === 'scellage-demolition') {
-      return this.natureIntervention() !== '';
-    }
-    if (transition.code === 'leve-scelles') {
-      const nature = this.dossier()?.suivi.natureIntervention ?? '';
-      return nature !== 'scellage' || this.refArreteOuverture().trim() !== '';
-    }
-    return true;
+  /**
+   * État du circuit selon le miroir local (workflow-du), déduit de l'étape
+   * courante renvoyée par le serveur et des décisions déjà persistées.
+   */
+  protected readonly etatCircuit = computed<EtatCircuit | null>(() => {
+    const ordre = this.workflow()?.current_step?.order;
+    const d = this.dossier();
+    if (!ordre || !d) return null;
+    return {
+      ordre: ordre as EtatCircuit['ordre'],
+      suite: d.suivi.suite ?? '',
+      natureIntervention: d.suivi.natureIntervention ?? '',
+      refArreteOuverture: d.suivi.refArreteOuverture ?? '',
+    };
   });
+
+  /** 0-100 : avancement du circuit (miroir local). */
+  protected readonly avancement = computed(() => {
+    const etat = this.etatCircuit();
+    return etat ? progression(etat) : 0;
+  });
+
+  /** Étape courante du circuit local (ordre + libellé), affichée dans Suivi. */
+  protected readonly etapeCircuit = computed(() => {
+    const etat = this.etatCircuit();
+    return etat ? etapeCourante(etat) : null;
+  });
+
+  /**
+   * Contrôle local AVANT l'envoi : miroir des refus serveur (404/422/403)
+   * pour l'étape, le rôle, les champs obligatoires et les formats.
+   */
+  protected readonly controleLocal = computed<ErreurWorkflow[]>(() => {
+    const transition = this.prochaineTransition();
+    const etat = this.etatCircuit();
+    if (!transition || !etat) return [];
+    return validerTransition(etat, transition.code, this.corpsTransition(transition), {
+      role: this.utilisateurConnecte()?.role ?? undefined,
+    }).erreurs;
+  });
+
+  /**
+   * Divergence entre le miroir et le serveur : le serveur propose une
+   * transition que le circuit local n'attend pas (affiché, non bloquant).
+   */
+  protected readonly divergenceMoteur = computed<string | null>(() => {
+    const transition = this.prochaineTransition();
+    const etat = this.etatCircuit();
+    if (!transition || !etat) return null;
+    const attendue = transitionsDisponibles(etat)[0]?.code;
+    if (!attendue) return null;
+    return attendue === transition.code
+      ? null
+      : `Le serveur propose « ${transition.label} » alors que le circuit local attend l’étape suivante (${attendue}).`;
+  });
+
+  /** Vrai si les décisions requises par la prochaine transition sont saisies. */
+  protected readonly transitionCompletable = computed(
+    () => this.controleLocal().length === 0,
+  );
 
   /** Transfert encore en attente de traitement (au plus un). */
   protected readonly transfertEnAttente = computed<MouvementDto | null>(

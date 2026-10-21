@@ -3,21 +3,21 @@
 }
 
 .topbar {
+  --topbar-h: 62px;
   position: sticky;
   top: 0;
   z-index: 10;
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  min-height: 62px;
-  padding: 0.5rem 1.75rem;
-  background: radial-gradient(circle, rgb(182, 205, 235) 0%, rgba(46, 42, 138, 1) 50%);
-  backdrop-filter: blur(8px);
+  min-height: var(--topbar-h);
+  padding: 0.5rem max(1.75rem, env(safe-area-inset-right)) 0.5rem max(1.75rem, env(safe-area-inset-left));
+  background: radial-gradient(circle, rgb(249, 249, 250) 0%, rgba(46, 42, 138, 1) 50%);
   border-bottom: 1px solid var(--du-border);
   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
-/* --- Animation de fond : textes à image animée (remplace aurore/reflet) --- */
+/* --- Animation de fond : textes à image animée --- */
 /* Pseudo-éléments sous le contenu (z-index: -1), sans overflow: hidden
    sur .topbar pour ne pas couper les menus déroulants. */
 .topbar::before,
@@ -30,10 +30,11 @@
   align-items: center;
   overflow: hidden;
   pointer-events: none;
+  user-select: none;
   white-space: nowrap;
   font-family: Georgia, "Times New Roman", serif;
   font-weight: 800;
-  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  font-size: clamp(1.4rem, 2.6vw, 2.6rem);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: transparent;
@@ -42,9 +43,9 @@
   background-clip: text;
   background-repeat: repeat;
   background-size: 300% auto;
+  will-change: background-position;
 }
 
-/* Moitié gauche : texte collé au centre */
 .topbar::before {
   content: "Direction de";
   left: 0;
@@ -56,7 +57,6 @@
   animation: topbar-texte 12s ease-in-out infinite alternate;
 }
 
-/* Moitié droite : texte collé au centre, sens inverse */
 .topbar::after {
   content: "l'urbanisme";
   left: 50%;
@@ -68,21 +68,13 @@
 }
 
 @keyframes topbar-texte {
-  from {
-    background-position: 0% 50%;
-  }
-  to {
-    background-position: 100% 50%;
-  }
+  from { background-position: 0% 50%; }
+  to   { background-position: 100% 50%; }
 }
 
 @keyframes topbar-texte-inverse {
-  from {
-    background-position: 100% 50%;
-  }
-  to {
-    background-position: 0% 50%;
-  }
+  from { background-position: 100% 50%; }
+  to   { background-position: 0% 50%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -94,29 +86,110 @@
 /* --- Fin animation de fond --- */
 
 .topbar__titre {
-  font-size: 1.15rem;
+  flex: 0 1 auto;
+  min-width: 0;
+  font-size: clamp(0.95rem, 0.6rem + 0.9vw, 1.15rem);
   font-weight: 700;
   letter-spacing: -0.015em;
   color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
+/* --- Responsive : animation de fond + titre --- */
+
+/* Grand écran réduit : texte de fond plus petit pour ne pas
+   passer sous le titre / le profil */
+@media (max-width: 1400px) {
+  .topbar::before,
+  .topbar::after {
+    font-size: clamp(1.1rem, 2vw, 1.8rem);
+    letter-spacing: 0.02em;
+  }
+
+  .topbar::before {
+    padding-right: 0.35rem;
+  }
+
+  .topbar::after {
+    padding-left: 0.35rem;
+  }
+
+  .topbar__titre {
+    max-width: 28vw;
+  }
+}
+
+/* Tablette : texte de fond masqué, animation stoppée (économie batterie) */
+@media (max-width: 1100px) {
+  .topbar::before,
+  .topbar::after {
+    display: none;
+    animation: none;
+  }
+
+  .topbar__titre {
+    max-width: 45vw;
+  }
+}
+
+/* Mobile */
+@media (max-width: 900px) {
+  .topbar__titre {
+    max-width: 50vw;
+    text-shadow: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .topbar__titre {
+    max-width: 42vw;
+    font-size: 0.95rem;
+  }
+}
+
+/* Très petit écran : le titre cède la place aux boutons */
+@media (max-width: 360px) {
+  .topbar__titre {
+    max-width: 34vw;
+    font-size: 0.88rem;
+  }
+}
+
 .topbar__btn {
   display: inline-grid;
   place-items: center;
-  width: 2.25rem;
-  height: 2.25rem;
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
   border: 0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   color: #fff;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
 .topbar__btn:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.topbar__btn:focus-visible,
+.topbar__user:focus-visible,
+.topbar__menu a:focus-visible,
+.topbar__menu button:focus-visible,
+.cloche__liste li button:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.topbar__menu a:focus-visible,
+.topbar__menu button:focus-visible,
+.cloche__liste li button:focus-visible {
+  outline-color: var(--du-primary);
+  outline-offset: -2px;
 }
 
 .topbar__btn--menu {
@@ -125,17 +198,15 @@
 
 .topbar__profil {
   position: relative;
-  margin-left: 0.25rem;
+  flex-shrink: 0;
+  margin-left: 0;
 }
 
-/* --- Cloche de notifications (ajout uniquement, existant inchangé) --- */
+/* --- Cloche de notifications --- */
 .topbar__cloche {
   position: relative;
+  flex-shrink: 0;
   margin-left: auto;
-}
-
-.topbar__profil {
-  margin-left: 0;
 }
 
 .topbar__btn--cloche {
@@ -166,8 +237,8 @@
   top: calc(100% + 0.5rem);
   z-index: 19;
   width: 360px;
-  max-width: min(360px, calc(100vw - 2rem));
-  max-height: 420px;
+  max-width: calc(100vw - 2rem);
+  max-height: min(420px, 70vh);
   display: flex;
   flex-direction: column;
   background: #fff;
@@ -211,6 +282,7 @@
   margin: 0;
   padding: 0.4rem;
   overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .cloche__liste li button {
@@ -272,21 +344,24 @@
   font-weight: 600;
 }
 
+/* --- Profil --- */
 .topbar__user {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.3rem 0.4rem;
-  border: 1px solid transparent;
-  border-radius: 10px;
-  background: transparent;
+  padding: 0.3rem 0.5rem 0.3rem 0.3rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
   font: inherit;
   cursor: pointer;
   text-align: left;
+  transition: background 0.15s ease;
 }
 
 .topbar__user:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.26);
 }
 
 .topbar__avatar {
@@ -300,6 +375,11 @@
   color: #fff;
   font-size: 0.82rem;
   font-weight: 700;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+}
+
+.topbar__identite {
+  min-width: 0;
 }
 
 .topbar__identite strong {
@@ -307,13 +387,14 @@
   font-size: 0.88rem;
   line-height: 1.2;
   color: #fff;
+  white-space: nowrap;
 }
 
 .topbar__identite small {
   display: block;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.75);
   font-size: 0.76rem;
-  max-width: 220px;
+  max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -331,10 +412,11 @@
   top: calc(100% + 0.5rem);
   z-index: 19;
   width: 250px;
+  max-width: calc(100vw - 2rem);
   padding: 0.4rem;
   background: #fff;
   border: 1px solid var(--du-border);
-  border-radius: 10px;
+  border-radius: 12px;
   box-shadow: 0 10px 30px rgba(16, 24, 40, 0.14);
 }
 
@@ -376,9 +458,26 @@
   background: var(--du-primary-soft);
 }
 
+/* --- Responsive --- */
+
+/* Tablette : on libère le centre pour l'identité / la cloche */
+@media (max-width: 1100px) {
+  .topbar::before,
+  .topbar::after {
+    display: none;
+  }
+
+  /* Sans texte de fond, le centre blanc rendrait le texte illisible */
+  .topbar {
+    background: linear-gradient(90deg, rgba(46, 42, 138, 1) 0%, rgba(62, 58, 170, 1) 100%);
+  }
+}
+
 @media (max-width: 900px) {
   .topbar {
-    padding: 0.5rem 1rem;
+    --topbar-h: 56px;
+    gap: 0.4rem;
+    padding: 0.4rem max(1rem, env(safe-area-inset-right)) 0.4rem max(1rem, env(safe-area-inset-left));
   }
 
   .topbar__btn--menu {
@@ -389,10 +488,17 @@
     display: none;
   }
 
-  /* Textes de fond masqués sur petit écran pour garder la barre lisible */
-  .topbar::before,
-  .topbar::after {
-    display: none;
+  /* Le panneau se cale sur la largeur de l'écran, pas sur la cloche */
+  .topbar__cloche {
+    position: static;
+  }
+
+  .cloche__panneau {
+    left: 0.5rem;
+    right: 0.5rem;
+    top: calc(100% + 0.25rem);
+    width: auto;
+    max-width: none;
   }
 }
 
@@ -402,7 +508,23 @@
     display: none;
   }
 
+  .topbar__user {
+    padding: 0.2rem;
+    border-radius: 50%;
+  }
+
   .topbar__titre {
     font-size: 1rem;
+  }
+
+  .topbar__btn {
+    width: 2.75rem;
+    height: 2.75rem; /* cible tactile confortable */
+  }
+}
+
+@media (max-width: 360px) {
+  .topbar__titre {
+    font-size: 0.92rem;
   }
 }

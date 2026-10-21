@@ -207,7 +207,15 @@
         <div class="card__header"><h2>Suivi</h2><du-status-badge [statut]="d.statut" /></div>
         <div class="card__body">
           <dl class="dl">
-            <div><dt>Étape du circuit</dt><dd>{{ etapeLabel[d.etape] }}</dd></div>
+            <div>
+              <dt>Étape du circuit</dt>
+              <dd>
+                {{ etapeLabel[d.etape] }}
+                @if (etapeCircuit(); as etape) {
+                  <span class="muted small"> — étape {{ etape.ordre }}/10 ({{ avancement() }} %)</span>
+                }
+              </dd>
+            </div>
             <div><dt>Service actuel</dt><dd>{{ d.service }} — {{ serviceLabel[d.service] }}</dd></div>
             <div><dt>Statut</dt><dd><du-status-badge [statut]="d.statut" /></dd></div>
             <div><dt>Type d’infraction</dt><dd>{{ typeLabel[d.type] }}</dd></div>
@@ -220,6 +228,14 @@
               <ul class="exigences" role="alert">
                 @for (exigence of exigences(); track exigence) { <li>{{ exigence }}</li> }
               </ul>
+            }
+            @if (controleLocal().length) {
+              <ul class="exigences" role="alert">
+                @for (erreur of controleLocal(); track erreur.message) { <li>{{ erreur.message }}</li> }
+              </ul>
+            }
+            @if (divergenceMoteur(); as divergence) {
+              <p class="muted small">{{ divergence }}</p>
             }
 
             @if (prochaineTransition(); as transition) {
