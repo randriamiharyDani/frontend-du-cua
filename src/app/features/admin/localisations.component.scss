@@ -1,9 +1,81 @@
-.ligne-detail {
-  display: none;
+// --- Layout liste + carte ---
+.localises {
+  display: grid;
+  grid-template-columns: 1fr;          // par défaut : une seule colonne (liste seule)
+  gap: 1rem;
+  padding: 0 1rem 1rem;
+  align-items: start;
+
+  // Quand un dossier est sélectionné → liste + carte côte à côte
+  &.localises--carte {
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 1.2fr);
+
+    @media (max-width: 1024px) {
+      grid-template-columns: 1fr;     // mobile / tablette : empilé
+    }
+  }
 }
 
-@media (max-width: 900px) {
-  .ligne-detail {
+.localises__liste {
+  min-width: 0;                       // important pour le grid
+  max-height: 440px;
+  overflow: auto;
+}
+
+.localises__carte {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+
+  // Sur mobile, on met la carte au-dessus de la liste
+  @media (max-width: 1024px) {
+    order: -1;
+  }
+
+  du-carte-localisation {
+    display: block;
+    height: 100%;
+    width: 100%;
+  }
+}
+
+// --- Table cliquable ---
+.table--cliquable tbody tr {
+  cursor: pointer;
+
+  &:hover td,
+  &:focus-visible td {
+    background: rgba(59, 130, 246, 0.08);
+  }
+
+  &.is-selected td {
+    background: rgba(59, 130, 246, 0.16);
+  }
+
+  &:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: -2px;
+  }
+}
+
+// --- En-tête de la carte ---
+.carte-detail__entete {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.carte-detail__fermer {
+  margin-left: auto;
+}
+
+// (optionnel – si vous l’utilisez encore)
+.ligne-detail {
+  display: none;
+
+  @media (max-width: 900px) {
     display: block;
     margin-top: 0.15rem;
   }

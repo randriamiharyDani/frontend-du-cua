@@ -1,14 +1,15 @@
 <du-page-header
   title="Localisations"
-  subtitle="Référentiel des zones et coordonnées des dossiers (coordonnées présentées textuellement)."
+  subtitle="Localisation des dossiers et coordonnées (la carte s’affiche au clic sur un dossier)."
 >
-  @if (estPrivilegie()) {
-    <button type="button" class="btn btn--primary" (click)="ouvrirAjout()">
-      <du-icon name="plus" [size]="16" /> Ajouter une localisation
-    </button>
-  }
+  <button type="button" class="btn btn--primary" (click)="ouvrirDossierFormulaire()">
+    <du-icon name="plus" [size]="16" /> Ajouter un dossier
+  </button>
 </du-page-header>
 
+@if (dossierSucces()) {
+  <div class="succes" role="status">{{ dossierSucces() }}</div>
+}
 @if (messageSucces()) {
   <div class="succes" role="status">{{ messageSucces() }}</div>
 }
@@ -18,6 +19,7 @@
   </div>
 }
 
+<!-- Filtres (appliqués aux dossiers localisés) -->
 <section class="card filtres-card">
   <div class="filtres-card__entete">
     <span class="filtres-card__icone"><du-icon name="filter" [size]="16" /></span>
@@ -27,8 +29,9 @@
     <div class="filtres">
       <div class="field champ-recherche">
         <label for="recherche">Recherche</label>
-        <input #q id="recherche" class="input" type="search" placeholder="Adresse, quartier, arrondissement…"
-               [value]="recherche()" (input)="setRecherche(q.value)" (keyup.enter)="rechercher()" />
+        <input #q id="recherche" class="input" type="search"
+               placeholder="Référence, adresse, quartier, coordonnées…"
+               [value]="recherche()" (input)="setRecherche(q.value)" />
       </div>
       <div class="field">
         <label for="arrondissement">Arrondissement</label>
@@ -38,102 +41,224 @@
         </select>
       </div>
       <div class="field">
-        <label for="association">Dossiers associés</label>
-        <select #d id="association" class="input" [value]="association()" (change)="setAssociation(d.value)">
-          <option value="">Tous</option>
-          <option value="avec">Avec dossiers</option>
-          <option value="sans">Sans dossier</option>
+        <label for="coordonnees">Coordonnées</label>
+        <select #c id="coordonnees" class="input" [value]="coordonneesFiltre()" (change)="setCoordonnees(c.value)">
+          <option value="">Toutes</option>
+          <option value="gps">Avec GPS (sur la carte)</option>
+          <option value="sans-gps">Sans GPS valide</option>
         </select>
       </div>
       <div class="filtres__actions">
-        <button type="button" class="btn btn--primary" (click)="rechercher()">
-          <du-icon name="search" [size]="15" /> Rechercher
-        </button>
         <button type="button" class="btn btn--secondary" [disabled]="!filtresActifs()" (click)="reinitialiser()">Réinitialiser</button>
       </div>
     </div>
   </div>
 </section>
 
+<!-- Dossiers localisés (la carte s'affiche au clic sur un dossier) -->
 <section class="card">
-  @if (chargement()) {
-    <du-loader label="Chargement des localisations…" [plein]="true" />
-  } @else if (erreur()) {
+  <div class="filtres-card__entete">
+    <span class="filtres-card__icone"><du-icon name="pin" [size]="16" /></span>
+    <h2>Dossiers localisés</h2>
+    @if (dossiersLocalises().length) {
+      <span class="muted small">{{ dossiersFiltres().length }} sur {{ dossiersLocalises().length }}</span>
+    }
+  </div>
+  @if (chargementDossiers()) {
+    <du-loader label="Chargement des dossiers…" [plein]="true" />
+  } @else if (erreurDossiers()) {
     <div class="empty-state">
       <du-icon name="alert" [size]="28" />
-      <p><strong>Impossible de charger les localisations.</strong></p>
-      <p class="muted small">{{ erreur() }}</p>
-      <button type="button" class="btn btn--secondary btn--sm" (click)="rechercher()">Réessayer</button>
+      <p><strong>Impossible de charger les dossiers.</strong></p>
+      <p class="muted small">{{ erreurDossiers() }}</p>
     </div>
-  } @else if (lignes().length) {
-    <div class="table-wrap">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Adresse</th>
-            <th class="hide-md">Quartier</th>
-            <th>Arrondissement</th>
-            <th class="hide-lg">Coord. X / Y</th>
-            <th class="hide-lg">Latitude / Longitude</th>
-            <th class="centered">Dossiers</th>
-            @if (estPrivilegie()) { <th><span class="sr-only">Actions</span></th> }
-          </tr>
-        </thead>
-        <tbody>
-          @for (l of lignes(); track l.id) {
-            <tr>
-              <td>
-                {{ l.adresse }}
-                <span class="muted small ligne-detail">{{ l.quartier }}</span>
-              </td>
-              <td class="hide-md">{{ l.quartier }}</td>
-              <td><span class="badge badge--info">{{ l.arrondissement }}</span></td>
-              <td class="hide-lg nowrap mono">{{ l.coordX }} / {{ l.coordY }}</td>
-              <td class="hide-lg nowrap mono">{{ l.latitude }} / {{ l.longitude }}</td>
-              <td class="centered">
-                <span class="badge" [class.badge--neutral]="l.nombre === 0" [class.badge--info]="l.nombre > 0">{{ l.nombre }}</span>
-              </td>
-              @if (estPrivilegie()) {
-                <td class="actions">
-                  <button type="button" class="btn btn--secondary btn--sm" (click)="ouvrirEdition(l)">
-                    <du-icon name="edit" [size]="15" /> Modifier
-                  </button>
-                  <button type="button" class="btn btn--danger btn--sm" [disabled]="enCours()" (click)="supprimer(l)">
-                    <du-icon name="x" [size]="15" /> Supprimer
-                  </button>
-                </td>
-              }
-            </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-
-    <div class="pagination">
-      <span class="muted small">{{ pagination().total }} localisation(s) · page {{ pagination().page }} sur {{ pagination().dernierPage }}</span>
-      <div class="pagination__nav">
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page <= 1" (click)="allerA(pagination().page - 1)">Précédent</button>
-        <button type="button" class="btn btn--secondary btn--sm" [disabled]="pagination().page >= pagination().dernierPage" (click)="allerA(pagination().page + 1)">Suivant</button>
-      </div>
-    </div>
-  } @else {
+  } @else if (!dossiersLocalises().length) {
     <div class="empty-state">
       <du-icon name="pin" [size]="28" />
-      <p><strong>Aucune localisation trouvée.</strong></p>
+      <p><strong>Aucun dossier localisé.</strong></p>
+      <p class="muted small">Utilisez « Ajouter un dossier » pour renseigner ses coordonnées.</p>
+    </div>
+  } @else if (!dossiersFiltres().length) {
+    <div class="empty-state">
+      <du-icon name="search" [size]="28" />
+      <p><strong>Aucun dossier ne correspond aux filtres.</strong></p>
       <p class="muted small">Modifiez la recherche ou réinitialisez les filtres.</p>
       <button type="button" class="btn btn--secondary btn--sm" (click)="reinitialiser()">Réinitialiser les filtres</button>
+    </div>
+  } @else {
+    <div class="localises" [class.localises--carte]="!!dossierSelectionne()">
+      <div class="localises__liste table-wrap">
+        <table class="table table--cliquable">
+          <thead>
+            <tr>
+              <th>Référence</th>
+              <th>Nature</th>
+              <th>Localisation</th>
+              <th class="hide-lg">Coordonnées</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of dossiersFiltres(); track d.id) {
+              <tr
+                tabindex="0"
+                [class.is-selected]="d.id === selectionId()"
+                [attr.aria-selected]="d.id === selectionId()"
+                (click)="choisir(d.id)"
+                (keydown.enter)="choisir(d.id)"
+              >
+                <td class="nowrap"><strong>{{ d.reference }}</strong></td>
+                <td>
+                  @if (d.natureCode) {
+                    <span class="badge badge--info">{{ natureLabel[d.natureCode] }}</span>
+                  } @else {
+                    —
+                  }
+                </td>
+                <td>{{ d.localisation || '—' }}</td>
+                <td class="hide-lg nowrap mono">{{ d.coordonnees || '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (dossierSelectionne(); as s) {
+        <div class="localises__carte">
+          <div class="carte-detail__entete">
+            <strong>{{ s.reference }}</strong>
+            @if (s.natureCode) {
+              <span class="badge badge--info">{{ natureLabel[s.natureCode] }}</span>
+            }
+            <button type="button" class="btn btn--secondary btn--sm carte-detail__fermer" (click)="deselectionner()">
+              Fermer la carte
+            </button>
+          </div>
+
+          @if (s.lat !== null) {
+            <du-carte-localisation [points]="pointsCarte()" />
+            <a class="small" [href]="lienOsm()" target="_blank" rel="noopener">Ouvrir dans OpenStreetMap</a>
+          } @else {
+            <p class="muted small">
+              Ce dossier n’a pas de latitude / longitude valides en base : il ne peut pas être placé sur la carte.
+            </p>
+          }
+        </div>
+      }
     </div>
   }
 </section>
 
-<!-- Fenêtre d’ajout / modification d’une localisation -->
+<!-- Fenêtre « Ajouter un dossier » (localiser un dossier existant) -->
+@if (dossierFormulaireOuvert()) {
+  <div class="modal">
+    <div class="modal__voile" (click)="fermerDossierFormulaire()" aria-hidden="true"></div>
+    <div class="modal__boite" role="dialog" aria-modal="true" aria-labelledby="t-dossier-localiser">
+      <form [formGroup]="dossierForm" (ngSubmit)="enregistrerDossier()" novalidate>
+        <div class="modal__entete">
+          <h2 id="t-dossier-localiser">Ajouter un dossier</h2>
+          <button type="button" class="modal__fermer" (click)="fermerDossierFormulaire()" aria-label="Fermer">
+            <du-icon name="close" [size]="18" />
+          </button>
+        </div>
+
+        <div class="modal__corps">
+          @if (dossierErreur()) {
+            <div class="erreur" role="alert">
+              <du-icon name="alert" [size]="16" /> {{ dossierErreur() }}
+            </div>
+          }
+
+          <div class="form-grid">
+            <div class="field full">
+              <label for="dossierId">Dossier *</label>
+              <select id="dossierId" class="input" formControlName="dossierId" [class.is-invalid]="dossierInvalide('dossierId')">
+                <option value="">Sélectionner un dossier…</option>
+                @for (d of dossiersNonLocalises(); track d.id) {
+                  <option [value]="d.id">{{ d.reference || ('#' + d.id) }} — {{ natureLabel[d.infos.nature] }}</option>
+                }
+              </select>
+              @if (dossierInvalide('dossierId')) { <span class="error">{{ dossierMessage('dossierId') }}</span> }
+              @if (!dossiersNonLocalises().length) {
+                <span class="muted small">Tous les dossiers sont déjà localisés.</span>
+              }
+            </div>
+
+            <div class="field full">
+              <label for="adresseDossier">Adresse *</label>
+              <input id="adresseDossier" class="input" formControlName="adresse" placeholder="Ex. Rue KA-012, Carrefour Kipe"
+                     [class.is-invalid]="dossierInvalide('adresse')" />
+              @if (dossierInvalide('adresse')) { <span class="error">{{ dossierMessage('adresse') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="quartierDossier">Quartier *</label>
+              <input id="quartierDossier" class="input" formControlName="quartier" placeholder="Ex. Kipe"
+                     [class.is-invalid]="dossierInvalide('quartier')" />
+              @if (dossierInvalide('quartier')) { <span class="error">{{ dossierMessage('quartier') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="arrondissementDossier">Arrondissement *</label>
+              <select id="arrondissementDossier" class="input" formControlName="arrondissement" [class.is-invalid]="dossierInvalide('arrondissement')">
+                <option value="">Sélectionner…</option>
+                @for (x of arrondissements; track x) { <option [value]="x">{{ x }}</option> }
+              </select>
+              @if (dossierInvalide('arrondissement')) { <span class="error">{{ dossierMessage('arrondissement') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="coordXDossier">Coordonnée X</label>
+              <input id="coordXDossier" class="input" formControlName="coordX" placeholder="Ex. 742118"
+                     [class.is-invalid]="dossierInvalide('coordX')" />
+              @if (dossierInvalide('coordX')) { <span class="error">{{ dossierMessage('coordX') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="coordYDossier">Coordonnée Y</label>
+              <input id="coordYDossier" class="input" formControlName="coordY" placeholder="Ex. 1058340"
+                     [class.is-invalid]="dossierInvalide('coordY')" />
+              @if (dossierInvalide('coordY')) { <span class="error">{{ dossierMessage('coordY') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="latitudeDossier">Latitude</label>
+              <input id="latitudeDossier" class="input" formControlName="latitude" placeholder="Ex. -18.9137"
+                     [class.is-invalid]="dossierInvalide('latitude')" />
+              @if (dossierInvalide('latitude')) { <span class="error">{{ dossierMessage('latitude') }}</span> }
+            </div>
+
+            <div class="field">
+              <label for="longitudeDossier">Longitude</label>
+              <input id="longitudeDossier" class="input" formControlName="longitude" placeholder="Ex. 47.5361"
+                     [class.is-invalid]="dossierInvalide('longitude')" />
+              @if (dossierInvalide('longitude')) { <span class="error">{{ dossierMessage('longitude') }}</span> }
+            </div>
+          </div>
+
+          <p class="muted small" style="margin: 0.5rem 0 0;">
+            La latitude et la longitude sont nécessaires pour afficher le dossier sur la carte.
+          </p>
+        </div>
+
+        <div class="modal__pied">
+          <button type="button" class="btn btn--secondary" (click)="fermerDossierFormulaire()">Annuler</button>
+          <button type="submit" class="btn btn--primary" [disabled]="dossierEnCours()">
+            {{ dossierEnCours() ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Fenêtre de modification d’une localisation (référentiel) -->
 @if (formulaireOuvert()) {
   <div class="modal">
     <div class="modal__voile" (click)="fermerFormulaire()" aria-hidden="true"></div>
     <div class="modal__boite" role="dialog" aria-modal="true" aria-labelledby="t-localisation">
       <form [formGroup]="form" (ngSubmit)="enregistrer()" novalidate>
         <div class="modal__entete">
-          <h2 id="t-localisation">{{ editionId() !== null ? 'Modifier une localisation' : 'Ajouter une localisation' }}</h2>
+          <h2 id="t-localisation">Modifier une localisation</h2>
           <button type="button" class="modal__fermer" (click)="fermerFormulaire()" aria-label="Fermer">
             <du-icon name="close" [size]="18" />
           </button>
@@ -186,28 +311,28 @@
 
             <div class="field">
               <label for="latitude">Latitude</label>
-              <input id="latitude" class="input" formControlName="latitude" placeholder="Ex. 9.5654"
+              <input id="latitude" class="input" formControlName="latitude" placeholder="Ex. -18.9137"
                      [class.is-invalid]="invalide('latitude')" />
               @if (invalide('latitude')) { <span class="error">{{ message('latitude') }}</span> }
             </div>
 
             <div class="field">
               <label for="longitude">Longitude</label>
-              <input id="longitude" class="input" formControlName="longitude" placeholder="Ex. -13.6352"
+              <input id="longitude" class="input" formControlName="longitude" placeholder="Ex. 47.5361"
                      [class.is-invalid]="invalide('longitude')" />
               @if (invalide('longitude')) { <span class="error">{{ message('longitude') }}</span> }
             </div>
           </div>
 
           <p class="muted small" style="margin: 0.5rem 0 0;">
-            Les coordonnées sont enregistrées sous forme textuelle (aucune carte interactive).
+            Les coordonnées sont enregistrées sous forme textuelle.
           </p>
         </div>
 
         <div class="modal__pied">
           <button type="button" class="btn btn--secondary" (click)="fermerFormulaire()">Annuler</button>
           <button type="submit" class="btn btn--primary" [disabled]="enCours()">
-            {{ enCours() ? 'Enregistrement…' : (editionId() !== null ? 'Enregistrer les modifications' : 'Ajouter la localisation') }}
+            {{ enCours() ? 'Enregistrement…' : 'Enregistrer les modifications' }}
           </button>
         </div>
       </form>

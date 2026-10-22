@@ -119,7 +119,7 @@ export class DossierApiStore {
 
     this.api.lister(filtres).subscribe({
       next: (reponse) => {
-        this._dossiers.set(reponse.data.map(dossierDepuisApi));
+        this._dossiers.set((reponse.data ?? []).filter((dto) => !!dto).map(dossierDepuisApi));
         this._pagination.set({
           page: reponse.meta.current_page,
           parPage: reponse.meta.per_page,
