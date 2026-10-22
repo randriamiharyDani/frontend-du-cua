@@ -3,6 +3,20 @@
 }
 
 .sidebar {
+  /* Palette partagée avec la topbar : bleu nuit + repère jaune */
+  --sb-bg-1: #10307f;
+  --sb-bg-2: #0f2a6b;
+  --sb-bg-3: #0a1a47;
+  --sb-text: #cfdcff;
+  --sb-text-strong: #fff;
+  --sb-accent: #ffc72c;
+  --sb-on-accent: #13214f;
+  --sb-hover: rgba(255, 255, 255, 0.1);
+  --sb-active: rgba(255, 255, 255, 0.15);
+  --sb-tile: rgba(255, 255, 255, 0.08);
+  --sb-line: rgba(255, 255, 255, 0.14);
+  --sb-pad-x: 0.85rem;
+
   width: 264px;
   flex-shrink: 0;
   position: sticky;
@@ -10,20 +24,24 @@
   height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: 1.25rem 0.85rem 1rem;
-  color: #e0e7ff;
+  padding:
+    1.25rem
+    max(var(--sb-pad-x), env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom))
+    max(var(--sb-pad-x), env(safe-area-inset-left));
+  color: var(--sb-text);
   overflow: hidden;
   isolation: isolate;
   background:
-    radial-gradient(120% 60% at 0% 0%, rgba(129, 140, 248, 0.35) 0%, transparent 55%),
-    radial-gradient(100% 50% at 100% 100%, rgba(99, 102, 241, 0.25) 0%, transparent 60%),
-    linear-gradient(180deg, #312e81 0%, #2e2a8a 55%, #1e1b4b 100%);
+    radial-gradient(120% 60% at 0% 0%, rgba(96, 165, 250, 0.3) 0%, transparent 55%),
+    radial-gradient(100% 45% at 100% 100%, rgba(255, 199, 44, 0.12) 0%, transparent 60%),
+    linear-gradient(180deg, var(--sb-bg-1) 0%, var(--sb-bg-2) 55%, var(--sb-bg-3) 100%);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 4px 0 24px rgba(30, 27, 75, 0.25);
+  box-shadow: 4px 0 24px rgba(10, 26, 71, 0.28);
   transition: width 0.2s ease;
 }
 
-/* Fine texture de grille en filigrane */
+/* Fine texture de grille (plan) en filigrane */
 .sidebar::before {
   content: '';
   position: absolute;
@@ -31,10 +49,11 @@
   z-index: -1;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size: 28px 28px;
-  mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
+          mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
 }
 
 /* ---------- Marque ---------- */
@@ -42,10 +61,10 @@
 .sidebar__brand {
   display: flex;
   align-items: center;
-  gap: 0.8rem;
+  gap: 0.85rem;
   padding: 0 0.4rem 1.2rem;
-  margin-bottom: 1.1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  margin-bottom: 0.9rem;
+  border-bottom: 1px solid var(--sb-line);
   overflow: hidden;
   white-space: nowrap;
 }
@@ -58,13 +77,14 @@
   flex-shrink: 0;
   padding: 6px;
   border-radius: 14px;
-  color: var(--du-primary);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.22);
   box-shadow:
-    0 6px 16px rgba(15, 12, 60, 0.35),
+    0 6px 16px rgba(5, 12, 40, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+          backdrop-filter: blur(6px);
+  transition: width 0.2s ease, height 0.2s ease;
 }
 
 .sidebar__logo img {
@@ -79,25 +99,32 @@
   min-width: 0;
 }
 
+/* Le gabarit utilise <h1> : on neutralise les styles globaux des titres.
+   Même police à empattements que le fond de la topbar. */
+.sidebar__brand h1,
 .sidebar__brand strong {
   display: block;
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 700;
-  line-height: 1.2;
-  letter-spacing: 0.01em;
+  margin: 0;
+  color: var(--sb-text-strong);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.08em;
 }
 
+/* Étiquette : texte jaune sur fond bleu nuit (contraste élevé) */
 .sidebar__brand small {
   display: inline-block;
-  margin-top: 0.25rem;
-  padding: 0.1rem 0.5rem;
+  margin-top: 0.45rem;
+  padding: 0.10rem 0.6rem;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #c7d2fe;
+  background: rgba(255, 199, 44, 0.14);
+  border: 1px solid rgba(255, 199, 44, 0.35);
+  color: var(--sb-accent);
   font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  // font-weight: 700;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
@@ -106,12 +133,18 @@
 .sidebar__nav {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.2rem;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  padding-right: 0.15rem;
+  overscroll-behavior: contain;
+  margin: 0 -0.35rem;
+  padding: 0.75rem 0.35rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  /* fondu haut/bas : indique qu'il reste des liens à faire défiler */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 0.75rem, #000 calc(100% - 0.75rem), transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0, #000 0.75rem, #000 calc(100% - 0.75rem), transparent 100%);
 }
 
 .sidebar__nav::-webkit-scrollbar {
@@ -119,7 +152,7 @@
 }
 
 .sidebar__nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 999px;
 }
 
@@ -128,69 +161,79 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.68rem 0.85rem;
-  border-radius: 12px;
-  color: #c7d2fe;
+  min-height: 2.75rem; /* cible tactile de 44 px */
+  padding: 0.3rem 0.75rem 0.3rem 0.35rem;
+  border-radius: 14px;
+  color: var(--sb-text);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.92rem;
   white-space: nowrap;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease,
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
+/* Tuile d'icône : c'est elle qui porte la couleur d'état */
 .sidebar__nav a du-icon {
+  display: inline-grid;
+  place-items: center;
   flex-shrink: 0;
-  opacity: 0.85;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  width: 2.15rem;
+  height: 2.15rem;
+  border-radius: 10px;
+  background: var(--sb-tile);
+  color: var(--sb-text);
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+}
+
+.sidebar__nav a .sidebar__label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .sidebar__nav a:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  transform: translateX(3px);
+  background: var(--sb-hover);
+  color: var(--sb-text-strong);
 }
 
 .sidebar__nav a:hover du-icon {
-  opacity: 1;
-  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
 }
 
+.sidebar__nav a:active {
+  background: var(--sb-active);
+}
+
+.sidebar__nav a:active du-icon {
+  transform: scale(0.94);
+}
+
+/* Focus clavier : anneau jaune, très visible sur le bleu nuit */
 .sidebar__nav a:focus-visible,
 .sidebar__repli:focus-visible {
-  outline: 2px solid #a5b4fc;
+  outline: 2px solid var(--sb-accent);
   outline-offset: 2px;
 }
 
-/* Élément actif : pastille blanche + barre d'accent */
-.sidebar__nav a.is-active {
-  background: linear-gradient(135deg, #ffffff 0%, #eef2ff 100%);
-  color: var(--du-primary-dark);
+/* Élément actif : fond translucide + liseré + tuile jaune (icône bleu nuit).
+   Le jaune n'apparaît qu'ici dans la navigation : on voit tout de suite où l'on est. */
+.sidebar__nav a.is-active,
+.sidebar__nav a[aria-current="page"] {
+  background: var(--sb-active);
+  color: var(--sb-text-strong);
   font-weight: 700;
-  transform: none;
   box-shadow:
-    0 8px 18px rgba(15, 12, 60, 0.3),
-    0 0 0 1px rgba(255, 255, 255, 0.6);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
+    0 6px 16px rgba(5, 12, 40, 0.3);
 }
 
-.sidebar__nav a.is-active::before {
-  content: '';
-  position: absolute;
-  left: -0.85rem;
-  top: 20%;
-  bottom: 20%;
-  width: 4px;
-  border-radius: 0 4px 4px 0;
-  background: #a5b4fc;
-  box-shadow: 0 0 12px rgba(165, 180, 252, 0.8);
-}
-
-.sidebar__nav a.is-active du-icon {
-  color: var(--du-primary);
-  opacity: 1;
+.sidebar__nav a.is-active du-icon,
+.sidebar__nav a[aria-current="page"] du-icon {
+  background: var(--sb-accent);
+  color: var(--sb-on-accent);
+  box-shadow: 0 2px 8px rgba(255, 199, 44, 0.35);
 }
 
 /* ---------- Pied ---------- */
@@ -198,7 +241,7 @@
 .sidebar__pied {
   display: grid;
   gap: 0.7rem;
-  margin-top: 0.75rem;
+  margin-top: 0.5rem;
 }
 
 .sidebar__footer {
@@ -206,8 +249,8 @@
   padding: 0.8rem 0.5rem 0;
   font-size: 0.72rem;
   letter-spacing: 0.03em;
-  color: #a5b4fc;
-  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  color: #a9bdf0;
+  border-top: 1px solid var(--sb-line);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -218,11 +261,12 @@
   align-items: center;
   gap: 0.6rem;
   width: 100%;
-  padding: 0.6rem 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 10px;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.05);
-  color: #e0e7ff;
+  color: #e6edff;
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
@@ -231,12 +275,17 @@
 }
 
 .sidebar__repli du-icon {
+  flex-shrink: 0;
   transition: transform 0.2s ease;
 }
 
 .sidebar__repli:hover {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.28);
+  background: var(--sb-hover);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.sidebar__repli:active {
+  background: var(--sb-active);
 }
 
 /* ---------- Mode replié (écran large) ---------- */
@@ -251,12 +300,29 @@
   padding-right: 0;
 }
 
+.sidebar--replie .sidebar__logo {
+  width: 48px;
+  height: 56px;
+}
+
 .sidebar--replie .sidebar__titres,
-.sidebar--replie .sidebar__label,
 .sidebar--replie .sidebar__footer {
   display: none;
 }
 
+/* Libellés masqués visuellement mais lus par les lecteurs d'écran */
+.sidebar--replie .sidebar__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Liens et bouton : on ne garde que la tuile, centrée */
 .sidebar--replie .sidebar__nav a,
 .sidebar--replie .sidebar__repli {
   justify-content: center;
@@ -264,12 +330,9 @@
   padding-right: 0;
 }
 
-.sidebar--replie .sidebar__nav a:hover {
-  transform: none;
-}
-
-.sidebar--replie .sidebar__nav a.is-active::before {
-  left: -0.85rem;
+.sidebar--replie .sidebar__nav a du-icon {
+  width: 2.4rem;
+  height: 2.4rem;
 }
 
 .sidebar--replie .sidebar__repli du-icon {
@@ -284,35 +347,64 @@
     z-index: 30;
     left: 0;
     top: 0;
-    width: 270px;
+    width: min(290px, 85vw);
     transform: translateX(-100%);
-    transition: transform 0.2s ease;
+    /* les liens hors écran ne reçoivent plus le focus clavier */
+    visibility: hidden;
+    transition: transform 0.22s ease, visibility 0s linear 0.22s;
   }
 
   .sidebar--replie {
-    width: 270px;
+    width: min(290px, 85vw);
   }
 
   .sidebar--ouvert {
     transform: translateX(0);
-    box-shadow: 0 0 60px rgba(12, 34, 67, 0.45);
+    visibility: visible;
+    transition: transform 0.22s ease, visibility 0s;
+    box-shadow: 0 0 60px rgba(5, 12, 40, 0.5);
+  }
+
+  /* Sur mobile le mode « replié » n'existe pas : on restaure l'affichage complet */
+  .sidebar--replie .sidebar__logo {
+    width: 60px;
+    height: 70px;
   }
 
   .sidebar--replie .sidebar__titres,
-  .sidebar--replie .sidebar__label,
   .sidebar--replie .sidebar__footer {
     display: block;
   }
 
+  .sidebar--replie .sidebar__label {
+    position: static;
+    width: auto;
+    height: auto;
+    margin: 0;
+    overflow: hidden;
+    clip-path: none;
+  }
+
   .sidebar--replie .sidebar__brand {
     justify-content: flex-start;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
   }
 
   .sidebar--replie .sidebar__nav a,
   .sidebar--replie .sidebar__repli {
     justify-content: flex-start;
+    padding-left: 0.35rem;
+    padding-right: 0.75rem;
+  }
+
+  .sidebar--replie .sidebar__repli {
     padding-left: 0.85rem;
-    padding-right: 0.85rem;
+  }
+
+  .sidebar--replie .sidebar__nav a du-icon {
+    width: 2.15rem;
+    height: 2.15rem;
   }
 
   .sidebar--replie .sidebar__repli du-icon {
@@ -326,8 +418,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .sidebar,
+  .sidebar--ouvert,
+  .sidebar__logo,
   .sidebar__nav a,
   .sidebar__nav a du-icon,
+  .sidebar__repli,
   .sidebar__repli du-icon {
     transition: none;
   }
