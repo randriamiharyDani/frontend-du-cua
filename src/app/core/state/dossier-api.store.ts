@@ -211,6 +211,30 @@ export class DossierApiStore {
     );
   }
 
+  /**
+   * Met à jour uniquement la latitude et la longitude d'un dossier
+   * (`PUT /api/dossiers/{id}`). Les autres champs ne sont pas transmis :
+   * la requête est donc partielle et n'altère aucune autre donnée.
+   */
+  modifierCoordonnees(id: number | string, latitude: string, longitude: string): Observable<Dossier> {
+    this._enCours.set(true);
+    this._messageAction.set('');
+    this._erreurAction.set('');
+    return this.api.modifier(id, { latitude, longitude }).pipe(
+      map((reponse) => dossierDepuisApi(reponse.data)),
+      tap(() => {
+        this._messageAction.set('Coordonnées du dossier enregistrées.');
+        this.rechargerListe();
+      }),
+      tap({
+        error: (erreur: unknown) => {
+          this._erreurAction.set(messageErreur(erreur));
+        },
+      }),
+      finalize(() => this._enCours.set(false)),
+    );
+  }
+
   /** Supprime logiquement un dossier (soft delete). */
   supprimer(id: number | string): Observable<{ message?: string }> {
     this._enCours.set(true);

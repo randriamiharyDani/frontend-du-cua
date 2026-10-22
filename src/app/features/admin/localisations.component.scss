@@ -80,3 +80,75 @@
     margin-top: 0.15rem;
   }
 }
+
+// --- Carte en plein écran (bouton « Localiser ») ---
+.carte-plein-ecran {
+  position: fixed;
+  inset: 0;
+  z-index: 900;                 // sous les fenêtres modales (z-index 1000)
+  display: flex;
+  flex-direction: column;
+  background: var(--du-surface, #fff);
+}
+
+.carte-plein-ecran__barre {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1.25rem;
+  border-bottom: 1px solid var(--du-border);
+  background: var(--du-surface);
+  box-shadow: var(--du-shadow-xs);
+}
+
+.carte-plein-ecran__titre {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.carte-plein-ecran__actions {
+  margin-left: auto;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.carte-plein-ecran__corps {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem 1.25rem;
+  overflow: auto;
+}
+
+// Zone de la carte : le conteneur Leaflet est positionné en absolu afin que
+// sa hauteur soit toujours exactement celle de la zone visible.
+.carte-plein-ecran__zone-carte {
+  position: relative;
+  flex: 1;
+  min-height: 320px;
+}
+
+.carte-plein-ecran__carte {
+  position: absolute;
+  inset: 0;
+}
+
+.carte-plein-ecran__pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  font-size: 0.83rem;
+}
+
+// --- Actions de ligne (Localiser / Modifier) ---
+.table td.actions {
+  white-space: nowrap;
+}
