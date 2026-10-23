@@ -32,6 +32,7 @@ const PATHS: Record<string, string> = {
   download: 'M12 3v12M7 10l5 5 5-5M5 21h14',
   upload: 'M12 21V9M7 14l5-5 5 5M5 3h14',
   bell: 'M6 9a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6zM10 20a2 2 0 004 0',
+  refresh: 'M20 11a8 8 0 10-1.5 5.3M20 5v6h-6',
 };
 
 @Component({

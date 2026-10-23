@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["carte-localisation.component.ts"],
-  "sourcesContent": ["\n      :host { display: block; }\n      .carte { height: 100%; min-height: 360px; border-radius: 0.5rem; z-index: 0; }\n    "],
-  "mappings": ";AACM;AAAQ,WAAA;AAAgB;AACxB,CAAA;AAAS,UAAA;AAAc,cAAA;AAAmB,iBAAA;AAAuB,WAAA;AAAY;",
-  "names": []
-}

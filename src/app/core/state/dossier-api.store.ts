@@ -3,7 +3,6 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, catchError, finalize, forkJoin, map, of, switchMap, tap, throwError } from 'rxjs';
 import {
   DocumentDto,
-  DossierDto,
   FiltresDossiers,
   HistoriqueEvenementDto,
   MouvementDto,

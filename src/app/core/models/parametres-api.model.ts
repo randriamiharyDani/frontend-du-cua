@@ -4,6 +4,7 @@ import {
   Parametres,
   PreferencesParametres,
   ProfilParametres,
+  ReferentielsParametres,
 } from './parametres.model';
 
 /**
@@ -36,3 +37,6 @@ export interface PayloadServiceParametre {
   code: ServiceDossier;
   actif: boolean;
 }
+
+/** Référentiels applicatifs retournés par l'API. */
+export type PayloadReferentiels = ReferentielsParametres;

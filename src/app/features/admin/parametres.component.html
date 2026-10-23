@@ -1,10 +1,21 @@
 <du-page-header
   title="Paramètres"
   subtitle="Configuration de l’espace administrateur."
-></du-page-header>
+>
+  <button
+    type="button"
+    class="btn btn--secondary btn--sm"
+    [disabled]="chargement() || enCours()"
+    (click)="chargerPage()"
+  >
+    <du-icon name="refresh" [size]="15" /> Recharger
+  </button>
+</du-page-header>
 
 @if (messageSucces()) {
-  <div class="succes" role="status">{{ messageSucces() }}</div>
+  <div class="succes" role="status">
+    <du-icon name="check" [size]="16" /> {{ messageSucces() }}
+  </div>
 }
 @if (erreurAction()) {
   <div class="erreur" role="alert">
@@ -30,7 +41,7 @@
   <section class="card parametres__section">
     <div class="card__header">
       <h2><du-icon name="user" [size]="18" /> Profil de l’utilisateur</h2>
-      <span class="badge badge--neutral">{{ serviceLabel[formProfil.controls.service.value] }}</span>
+      <span class="badge badge--neutral">{{ libelleService(formProfil.controls.service.value) }}</span>
     </div>
 
     <form [formGroup]="formProfil" (ngSubmit)="enregistrerProfil()" novalidate>
@@ -52,32 +63,45 @@
 
           <div class="field">
             <label for="p-fonction">Fonction</label>
-            <input id="p-fonction" class="input" formControlName="fonction" placeholder="Ex. Administratrice" />
+            <input id="p-fonction" class="input" formControlName="fonction" maxlength="255"
+                   placeholder="Ex. Administratrice" />
+            @if (invalide('profil', 'fonction')) { <span class="error">{{ message('profil', 'fonction') }}</span> }
           </div>
 
           <div class="field">
             <label for="p-service">Service *</label>
             <select id="p-service" class="input" formControlName="service">
-              @for (s of servicesDisponibles; track s) {
-                <option [value]="s">{{ s }} — {{ serviceLabel[s] }}</option>
+              @for (s of services(); track s.code) {
+                <option [value]="s.code">{{ s.code }} — {{ s.libelle }}</option>
               }
             </select>
-            @if (!estPrivilegie()) {
+            @if (invalide('profil', 'service')) {
+              <span class="error">{{ message('profil', 'service') }}</span>
+            } @else if (!estPrivilegie()) {
               <span class="muted small">Seul un administrateur peut modifier votre service.</span>
             }
           </div>
 
           <div class="field">
             <label for="p-tel">Téléphone</label>
-            <input id="p-tel" type="tel" class="input" formControlName="telephone" autocomplete="tel" />
+            <input id="p-tel" type="tel" class="input" formControlName="telephone" autocomplete="tel"
+                   placeholder="+224 00 00 00 00"
+                   [class.is-invalid]="invalide('profil', 'telephone')" />
+            @if (invalide('profil', 'telephone')) {
+              <span class="error">{{ message('profil', 'telephone') }}</span>
+            }
           </div>
         </div>
       </div>
 
       <div class="parametres__pied">
-        <button type="button" class="btn btn--secondary" (click)="annulerProfil()">Annuler</button>
-        <button type="submit" class="btn btn--primary" [disabled]="enCours()">
-          <du-icon name="check" [size]="16" /> Enregistrer
+        <button type="button" class="btn btn--secondary" [disabled]="formProfil.pristine" (click)="annulerProfil()">
+          Annuler
+        </button>
+        <button type="submit" class="btn btn--primary"
+                [disabled]="enCours() || formProfil.pristine">
+          <du-icon name="check" [size]="16" />
+          {{ sectionEnCours() === 'profil' ? 'Enregistrement…' : 'Enregistrer' }}
         </button>
       </div>
     </form>
@@ -87,6 +111,7 @@
   <section class="card parametres__section">
     <div class="card__header">
       <h2><du-icon name="eye" [size]="18" /> Préférences d’affichage</h2>
+      <span class="muted small">Préférences personnelles</span>
     </div>
 
     <form [formGroup]="formPreferences" (ngSubmit)="enregistrerPreferences()" novalidate>
@@ -95,17 +120,25 @@
           <div class="field">
             <label for="pref-langue">Langue de l’interface</label>
             <select id="pref-langue" class="input" formControlName="langue">
-              <option value="fr">Français</option>
+              @for (l of referentiels().langues; track l.code) {
+                <option [value]="l.code">{{ l.libelle }}</option>
+              }
             </select>
+            @if (invalide('preferences', 'langue')) {
+              <span class="error">{{ message('preferences', 'langue') }}</span>
+            }
           </div>
 
           <div class="field">
             <label for="pref-date">Format des dates</label>
             <select id="pref-date" class="input" formControlName="formatDate">
-              @for (f of formatsDate; track f) {
-                <option [value]="f">{{ formatDateExemple(f) }}</option>
+              @for (f of referentiels().formatsDate; track f.code) {
+                <option [value]="f.code">{{ libelleReferentiel(f) }}</option>
               }
             </select>
+            @if (invalide('preferences', 'formatDate')) {
+              <span class="error">{{ message('preferences', 'formatDate') }}</span>
+            }
           </div>
 
           <div class="field">
@@ -131,12 +164,21 @@
             </div>
           </div>
         </div>
+
+        <p class="muted small parametres__note">
+          Ces préférences sont enregistrées côté serveur, dans votre compte.
+        </p>
       </div>
 
       <div class="parametres__pied">
-        <button type="button" class="btn btn--secondary" (click)="annulerPreferences()">Annuler</button>
-        <button type="submit" class="btn btn--primary" [disabled]="enCours()">
-          <du-icon name="check" [size]="16" /> Enregistrer
+        <button type="button" class="btn btn--secondary" [disabled]="formPreferences.pristine"
+                (click)="annulerPreferences()">
+          Annuler
+        </button>
+        <button type="submit" class="btn btn--primary"
+                [disabled]="enCours() || formPreferences.pristine">
+          <du-icon name="check" [size]="16" />
+          {{ sectionEnCours() === 'preferences' ? 'Enregistrement…' : 'Enregistrer' }}
         </button>
       </div>
     </form>
@@ -147,6 +189,7 @@
     <section class="card parametres__section">
       <div class="card__header">
         <h2><du-icon name="building" [size]="18" /> Informations générales de l’application</h2>
+        <span class="muted small">Paramètre global</span>
       </div>
 
       <form [formGroup]="formApplication" (ngSubmit)="enregistrerApplication()" novalidate>
@@ -154,7 +197,7 @@
           <div class="form-grid">
             <div class="field full">
               <label for="app-nom">Nom de l’application *</label>
-              <input id="app-nom" class="input" formControlName="nomApplication"
+              <input id="app-nom" class="input" formControlName="nomApplication" maxlength="255"
                      [class.is-invalid]="invalide('application', 'nomApplication')" />
               @if (invalide('application', 'nomApplication')) {
                 <span class="error">{{ message('application', 'nomApplication') }}</span>
@@ -163,7 +206,7 @@
 
             <div class="field">
               <label for="app-entite">Entité *</label>
-              <input id="app-entite" class="input" formControlName="entite"
+              <input id="app-entite" class="input" formControlName="entite" maxlength="255"
                      [class.is-invalid]="invalide('application', 'entite')" />
               @if (invalide('application', 'entite')) {
                 <span class="error">{{ message('application', 'entite') }}</span>
@@ -172,7 +215,7 @@
 
             <div class="field">
               <label for="app-sigle">Sigle *</label>
-              <input id="app-sigle" class="input" formControlName="sigle"
+              <input id="app-sigle" class="input" formControlName="sigle" maxlength="50"
                      [class.is-invalid]="invalide('application', 'sigle')" />
               @if (invalide('application', 'sigle')) {
                 <span class="error">{{ message('application', 'sigle') }}</span>
@@ -181,7 +224,7 @@
 
             <div class="field">
               <label for="app-email">E-mail de contact</label>
-              <input id="app-email" type="email" class="input" formControlName="emailContact"
+              <input id="app-email" type="email" class="input" formControlName="emailContact" maxlength="255"
                      [class.is-invalid]="invalide('application', 'emailContact')" />
               @if (invalide('application', 'emailContact')) {
                 <span class="error">{{ message('application', 'emailContact') }}</span>
@@ -190,20 +233,34 @@
 
             <div class="field">
               <label for="app-tel">Téléphone de contact</label>
-              <input id="app-tel" type="tel" class="input" formControlName="telephoneContact" />
+              <input id="app-tel" type="tel" class="input" formControlName="telephoneContact" maxlength="50"
+                     placeholder="+224 00 00 00 00"
+                     [class.is-invalid]="invalide('application', 'telephoneContact')" />
+              @if (invalide('application', 'telephoneContact')) {
+                <span class="error">{{ message('application', 'telephoneContact') }}</span>
+              }
             </div>
 
             <div class="field full">
               <label for="app-adresse">Adresse</label>
-              <input id="app-adresse" class="input" formControlName="adresse" />
+              <input id="app-adresse" class="input" formControlName="adresse" maxlength="255"
+                     [class.is-invalid]="invalide('application', 'adresse')" />
+              @if (invalide('application', 'adresse')) {
+                <span class="error">{{ message('application', 'adresse') }}</span>
+              }
             </div>
           </div>
         </div>
 
         <div class="parametres__pied">
-          <button type="button" class="btn btn--secondary" (click)="annulerApplication()">Annuler</button>
-          <button type="submit" class="btn btn--primary" [disabled]="enCours()">
-            <du-icon name="check" [size]="16" /> Enregistrer
+          <button type="button" class="btn btn--secondary" [disabled]="formApplication.pristine"
+                  (click)="annulerApplication()">
+            Annuler
+          </button>
+          <button type="submit" class="btn btn--primary"
+                  [disabled]="enCours() || formApplication.pristine">
+            <du-icon name="check" [size]="16" />
+            {{ sectionEnCours() === 'application' ? 'Enregistrement…' : 'Enregistrer' }}
           </button>
         </div>
       </form>
@@ -213,12 +270,12 @@
     <section class="card parametres__section">
       <div class="card__header">
         <h2><du-icon name="users" [size]="18" /> Services disponibles</h2>
-        <span class="muted small">DU, DIS et SCAD</span>
+        <span class="muted small">{{ codesServices() }}</span>
       </div>
 
       <div class="card__body">
         <ul class="services">
-          @for (s of parametres().services; track s.code) {
+          @for (s of services(); track s.code) {
             <li class="service-item">
               <span class="service-item__code">{{ s.code }}</span>
               <div class="service-item__infos">
@@ -228,7 +285,8 @@
               <span class="badge" [class.badge--success]="s.actif" [class.badge--neutral]="!s.actif">
                 {{ s.actif ? 'Actif' : 'Inactif' }}
               </span>
-              <button type="button" class="btn btn--secondary btn--sm" [disabled]="enCours()" (click)="basculerService(s.code)">
+              <button type="button" class="btn btn--secondary btn--sm"
+                      [disabled]="enCours()" (click)="basculerService(s.code)">
                 {{ s.actif ? 'Désactiver' : 'Activer' }}
               </button>
             </li>
@@ -253,40 +311,40 @@
       <div class="referentiel">
         <h3>Types d’infraction</h3>
         <ul class="chips">
-          @for (t of types; track t) { <li class="chip">{{ typeLabel[t] }}</li> }
+          @for (t of referentiels().types; track t.code) { <li class="chip">{{ t.libelle }}</li> }
         </ul>
       </div>
 
       <div class="referentiel">
         <h3>Statuts des dossiers</h3>
         <ul class="chips">
-          @for (s of statuts; track s) { <li class="chip">{{ statutLabel[s] }}</li> }
+          @for (s of referentiels().statuts; track s.code) { <li class="chip">{{ s.libelle }}</li> }
         </ul>
       </div>
 
       <div class="referentiel">
         <h3>Natures</h3>
         <ul class="chips">
-          @for (n of natures; track n) { <li class="chip">{{ natureLabel[n] }}</li> }
+          @for (n of referentiels().natures; track n.code) { <li class="chip">{{ n.libelle }}</li> }
         </ul>
       </div>
 
       <div class="referentiel">
         <h3>Priorités</h3>
         <ul class="chips">
-          @for (p of priorites; track p) { <li class="chip">{{ prioriteLabel[p] }}</li> }
+          @for (p of referentiels().priorites; track p.code) { <li class="chip">{{ p.libelle }}</li> }
         </ul>
       </div>
 
       <div class="referentiel">
         <h3>Étapes de traitement</h3>
         <ul class="chips">
-          @for (e of etapes; track e) { <li class="chip">{{ etapeLabel[e] }}</li> }
+          @for (e of referentiels().etapes; track e.code) { <li class="chip">{{ e.libelle }}</li> }
         </ul>
       </div>
 
       <p class="muted small referentiel__note">
-        Ces listes sont fixes et ne peuvent pas être modifiées depuis cette page.
+        Ces référentiels sont fournis par l’API et ne sont pas modifiables depuis cette page.
       </p>
     </div>
   </section>

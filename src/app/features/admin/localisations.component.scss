@@ -1,3 +1,14 @@
+// --- Compteur de résultats ---
+.compteur {
+  margin-left: auto;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1d4ed8;
+  background: rgba(59, 130, 246, 0.12);
+}
+
 // --- Layout liste + carte ---
 .localises {
   display: grid;
@@ -16,10 +27,40 @@
   }
 }
 
+// Liste : hauteur automatique (plus de max-height ni de scroll vertical)
 .localises__liste {
   min-width: 0;                       // important pour le grid
-  max-height: 440px;
-  overflow: auto;
+  height: auto;
+  overflow-x: auto;
+  overflow-y: visible;
+  border: 1px solid var(--du-border, #e5e7eb);
+  border-radius: 12px;
+  background: var(--du-surface, #fff);
+
+  thead th {
+    background: var(--du-surface, #fff);
+    box-shadow: 0 1px 0 var(--du-border, #e5e7eb);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  td,
+  th {
+    padding: 0.65rem 0.85rem;
+    vertical-align: middle;
+  }
+
+  .cell-ref strong {
+    font-weight: 600;
+  }
+
+  .cell-loc {
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 .localises__carte {
@@ -43,6 +84,11 @@
 // --- Table cliquable ---
 .table--cliquable tbody tr {
   cursor: pointer;
+  transition: background 0.15s ease;
+
+  &:nth-child(even) td {
+    background: rgba(0, 0, 0, 0.015);
+  }
 
   &:hover td,
   &:focus-visible td {
@@ -51,12 +97,106 @@
 
   &.is-selected td {
     background: rgba(59, 130, 246, 0.16);
+
+    &:first-child {
+      box-shadow: inset 3px 0 0 #3b82f6;
+    }
   }
 
   &:focus-visible {
     outline: 2px solid #3b82f6;
     outline-offset: -2px;
   }
+}
+
+// --- Pastille coordonnées ---
+.chip-coord {
+  display: inline-block;
+  padding: 0.12rem 0.5rem;
+  border-radius: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.78rem;
+  background: rgba(100, 116, 139, 0.12);
+  color: inherit;
+}
+
+// --- Pagination ---
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  flex-wrap: wrap;
+  padding: 0.7rem 0.85rem;
+  border-top: 1px solid var(--du-border, #e5e7eb);
+  background: var(--du-surface, #fff);
+}
+
+.pagination__info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.pagination__taille {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  select {
+    width: auto;
+    min-width: 4rem;
+    padding: 0.2rem 0.5rem;
+  }
+}
+
+.pagination__boutons {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.pagination__btn {
+  min-width: 2rem;
+  height: 2rem;
+  padding: 0 0.55rem;
+  border: 1px solid var(--du-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--du-surface, #fff);
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+
+  &:hover:not(:disabled):not(.is-active) {
+    background: rgba(59, 130, 246, 0.08);
+    border-color: #3b82f6;
+  }
+
+  &.is-active {
+    background: #3b82f6;
+    border-color: #3b82f6;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+}
+
+.pagination__ellipse {
+  padding: 0 0.25rem;
+  color: var(--du-muted, #64748b);
 }
 
 // --- En-tête de la carte ---
@@ -151,4 +291,16 @@
 // --- Actions de ligne (Localiser / Modifier) ---
 .table td.actions {
   white-space: nowrap;
+  text-align: right;
+
+  .btn + .btn {
+    margin-left: 0.4rem;
+  }
+}
+
+// Boutons compacts (icône seule) sur petits écrans
+@media (max-width: 900px) {
+  .table td.actions .btn-label {
+    display: none;
+  }
 }

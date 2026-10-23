@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal,untracked,effect } from '@angular/core';
 import { AbstractControl, NonNullableFormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { ARRONDISSEMENTS, Dossier, DossierFormValue, NATURE_LABEL, NatureDossier } from '../../core/models/dossier.model';
 import { dossierDepuisApi } from '../../core/mappers/dossier.mapper';
@@ -11,6 +11,7 @@ import { CarteLocalisationComponent, PointCarte } from '../../shared/ui/carte-lo
 import { IconComponent } from '../../shared/ui/icon.component';
 import { LoaderComponent } from '../../shared/ui/loader.component';
 import { PageHeaderComponent } from '../../shared/ui/page-header.component';
+
 
 /** Champ facultatif : n’accepte que des chiffres, signes + / - et point décimal. */
 function coordonneeValide(control: AbstractControl): ValidationErrors | null {
@@ -90,6 +91,11 @@ export class LocalisationsComponent implements OnInit {
 
   protected readonly arrondissements = ARRONDISSEMENTS;
   protected readonly natureLabel = NATURE_LABEL;
+
+
+  readonly page = signal(1);
+  readonly taillePage = signal(10);
+  readonly tailles = [5, 10, 20, 50];
 
   // --- Messages / état d’action ---
   protected readonly enCours = this.store.enCours;
@@ -643,4 +649,57 @@ export class LocalisationsComponent implements OnInit {
     this.coordonneesFormulaireOuvert.set(false);
     this.carteOuverte.set(false);
   }
+
+
+  /** Nombre total de pages de la liste des dossiers localisés. */
+  readonly totalPages = computed(() =>
+    Math.max(1, Math.ceil(this.dossiersFiltres().length / this.taillePage())),
+  );
+
+  readonly pageCourante = computed(() => Math.min(this.page(), this.totalPages()));
+
+readonly dossiersPage = computed(() => {
+  const t = this.taillePage();
+  const debut = (this.pageCourante() - 1) * t;
+  return this.dossiersFiltres().slice(debut, debut + t);
+});
+
+readonly debutPage = computed(() =>
+  this.dossiersFiltres().length ? (this.pageCourante() - 1) * this.taillePage() + 1 : 0
+);
+
+readonly finPage = computed(() =>
+  Math.min(this.pageCourante() * this.taillePage(), this.dossiersFiltres().length)
+);
+
+// Numéros affichés (null = « … »)
+readonly pagesAffichees = computed<(number | null)[]>(() => {
+  const total = this.totalPages();
+  const cur = this.pageCourante();
+  const set = new Set<number>([1, total, cur - 1, cur, cur + 1]);
+  const nums = [...set].filter((n) => n >= 1 && n <= total).sort((a, b) => a - b);
+  const res: (number | null)[] = [];
+  nums.forEach((n, i) => {
+    if (i > 0 && n - nums[i - 1] > 1) res.push(null);
+    res.push(n);
+  });
+  return res;
+});
+
+// Retour page 1 quand un filtre change
+private readonly resetPage = effect(() => {
+  this.recherche();
+  this.arrondissement();
+  this.coordonneesFiltre();
+  untracked(() => this.page.set(1));
+});
+
+allerPage(n: number): void {
+  this.page.set(Math.min(Math.max(1, n), this.totalPages()));
+}
+
+setTaille(v: string): void {
+  this.taillePage.set(Number(v));
+  this.page.set(1);
+}
 }

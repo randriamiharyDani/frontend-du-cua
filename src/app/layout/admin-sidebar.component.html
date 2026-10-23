@@ -4,12 +4,14 @@
       <img src="images/logo_CUA.svg" alt="" />
     </span>
     <div class="sidebar__titres">
-      <h1>CUA</h1>
-      <small>Espace administrateur</small>
+      <span class="sidebar__surtitre">Commune Urbaine d'Antananarivo</span>
+      <h1>Direction de l'Urbanisme</h1>
     </div>
   </div>
 
   <nav class="sidebar__nav">
+      <small>Espace administrateur</small>
+
     @for (item of menusVisibles(); track item.path) {
       <a
         [routerLink]="item.path"

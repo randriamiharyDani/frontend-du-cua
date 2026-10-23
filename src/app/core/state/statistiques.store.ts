@@ -1,4 +1,3 @@
-import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { DossierApiService } from '../services/dossier-api.service';

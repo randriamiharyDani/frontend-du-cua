@@ -64,7 +64,7 @@
     <span class="filtres-card__icone"><du-icon name="pin" [size]="16" /></span>
     <h2>Dossiers localisés</h2>
     @if (dossiersLocalises().length) {
-      <span class="muted small">{{ dossiersFiltres().length }} sur {{ dossiersLocalises().length }}</span>
+      <span class="compteur">{{ dossiersFiltres().length }} sur {{ dossiersLocalises().length }}</span>
     }
   </div>
   @if (chargementDossiers()) {
@@ -102,7 +102,7 @@
             </tr>
           </thead>
           <tbody>
-            @for (d of dossiersFiltres(); track d.id) {
+            @for (d of dossiersPage(); track d.id) {
               <tr
                 tabindex="0"
                 [class.is-selected]="d.id === selectionId()"
@@ -110,7 +110,7 @@
                 (click)="choisir(d.id)"
                 (keydown.enter)="choisir(d.id)"
               >
-                <td class="nowrap"><strong>{{ d.reference }}</strong></td>
+                <td class="nowrap cell-ref"><strong>{{ d.reference }}</strong></td>
                 <td>
                   @if (d.natureCode) {
                     <span class="badge badge--info">{{ natureLabel[d.natureCode] }}</span>
@@ -118,22 +118,68 @@
                     —
                   }
                 </td>
-                <td>{{ d.localisation || '—' }}</td>
-                <td class="hide-lg nowrap mono">{{ d.coordonnees || '—' }}</td>
+                <td class="cell-loc">{{ d.localisation || '—' }}</td>
+                <td class="hide-lg nowrap">
+                  @if (d.coordonnees) {
+                    <span class="chip-coord">{{ d.coordonnees }}</span>
+                  } @else {
+                    —
+                  }
+                </td>
                 <td class="actions">
                   <button type="button" class="btn btn--secondary btn--sm"
+                          title="Localiser" aria-label="Localiser"
                           (click)="localiser(d.id, $event)">
-                    <du-icon name="pin" [size]="14" /> Localiser
+                    <du-icon name="pin" [size]="14" /> <span class="btn-label">Localiser</span>
                   </button>
                   <button type="button" class="btn btn--secondary btn--sm"
+                          title="Modifier" aria-label="Modifier"
                           (click)="ouvrirModificationCoordonnees(d.id, $event)">
-                    <du-icon name="edit" [size]="14" /> Modifier
+                    <du-icon name="edit" [size]="14" /> <span class="btn-label">Modifier</span>
                   </button>
                 </td>
               </tr>
             }
           </tbody>
         </table>
+
+        <!-- Pagination -->
+        <nav class="pagination" aria-label="Pagination des dossiers">
+          <div class="pagination__info">
+            <span class="muted small">
+              {{ debutPage() }}–{{ finPage() }} sur {{ dossiersFiltres().length }}
+            </span>
+            <label class="pagination__taille">
+              <span class="muted small">Par page</span>
+              <select #t class="input input--sm" [value]="taillePage()" (change)="setTaille(t.value)">
+                @for (n of tailles; track n) { <option [value]="n">{{ n }}</option> }
+              </select>
+            </label>
+          </div>
+
+          <div class="pagination__boutons">
+            <button type="button" class="pagination__btn"
+                    [disabled]="pageCourante() === 1"
+                    (click)="allerPage(pageCourante() - 1)"
+                    aria-label="Page précédente">‹</button>
+
+            @for (p of pagesAffichees(); track $index) {
+              @if (p === null) {
+                <span class="pagination__ellipse">…</span>
+              } @else {
+                <button type="button" class="pagination__btn"
+                        [class.is-active]="p === pageCourante()"
+                        [attr.aria-current]="p === pageCourante() ? 'page' : null"
+                        (click)="allerPage(p)">{{ p }}</button>
+              }
+            }
+
+            <button type="button" class="pagination__btn"
+                    [disabled]="pageCourante() === totalPages()"
+                    (click)="allerPage(pageCourante() + 1)"
+                    aria-label="Page suivante">›</button>
+          </div>
+        </nav>
       </div>
 
       @if (dossierSelectionne(); as s) {

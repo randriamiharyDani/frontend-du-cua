@@ -2,13 +2,15 @@
   display: contents;
 }
 
-/* ========== Barre : bleu nuit → bleu royal, filet jaune en bas ========== */
+/* ========== Barre : fond blanc, filet jaune en bas ========== */
 .topbar {
   --topbar-h: 62px;
+  --topbar-bg: #fff; /* #fff ou transparent */
+  --topbar-fg: #13214f; /* texte et icônes : bleu nuit */
   --topbar-bg-1: #0a1a47;
   --topbar-bg-2: #10307f;
   --topbar-bg-3: #1d4ed8;
-  --topbar-focus: #ffc72c; /* anneau de focus jaune : très visible sur fond bleu */
+  --topbar-focus: #10307f; /* anneau de focus bleu : visible sur fond clair */
   position: sticky;
   top: 0;
   z-index: 10;
@@ -18,16 +20,9 @@
   gap: 0.6rem;
   min-height: var(--topbar-h);
   padding: 0.5rem max(1.75rem, env(safe-area-inset-right)) 0.5rem max(1.75rem, env(safe-area-inset-left));
-  background: linear-gradient(115deg, var(--topbar-bg-1) 0%, var(--topbar-bg-2) 38%, var(--topbar-bg-3) 68%, var(--topbar-bg-2) 100%);
-  background-size: 200% 100%;
+  background: var(--topbar-bg);
   /* filet jaune : le repère de la marque, un seul endroit */
-  box-shadow: inset 0 -3px 0 var(--du-accent, #ffc72c), 0 2px 14px rgba(10, 26, 71, 0.28);
-  animation: topbar-fond 60s ease-in-out infinite alternate;
-}
-
-@keyframes topbar-fond {
-  from { background-position: 0% 50%; }
-  to   { background-position: 100% 50%; }
+  box-shadow: inset 0 -3px 0 var(--du-accent, #ffc72c), 0 2px 14px rgba(10, 26, 71, 0.12);
 }
 
 /* --- Texte de fond animé (lent, discret) --- */
@@ -59,31 +54,31 @@
   will-change: background-position;
 }
 
-.topbar::before {
-  content: "Direction de";
-  left: 0;
-  right: 50%;
-  justify-content: flex-end;
-  padding-right: 0.75rem;
-  // background-image: url("/images/img1.jpg");
-  background-color: #ffc72c;
-  animation: topbar-texte 60s ease-in-out infinite alternate;
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 25%);
-          mask-image: linear-gradient(to right, transparent 0%, #000 25%);
-}
+// .topbar::before {
+//   content: "Direction de";
+//   left: 0;
+//   right: 50%;
+//   justify-content: flex-end;
+//   padding-right: 0.75rem;
+//   // background-image: url("/images/img1.jpg");
+//   background-color: #ffc72c;
+//   animation: topbar-texte 60s ease-in-out infinite alternate;
+//   -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 25%);
+//           mask-image: linear-gradient(to right, transparent 0%, #000 25%);
+// }
 
-.topbar::after {
-  content: "l'urbanisme";
-  left: 50%;
-  right: 0;
-  justify-content: flex-start;
-  padding-left: 0.75rem;
-  // background-image: url("/images/img1.jpg");
-  background-color: #ffc72c;
-  animation: topbar-texte-inverse 60s ease-in-out infinite alternate;
-  -webkit-mask-image: linear-gradient(to left, transparent 0%, #000 25%);
-          mask-image: linear-gradient(to left, transparent 0%, #000 25%);
-}
+// .topbar::after {
+//   content: "l'urbanisme";
+//   left: 50%;
+//   right: 0;
+//   justify-content: flex-start;
+//   padding-left: 0.75rem;
+//   // background-image: url("/images/img1.jpg");
+//   background-color: #ffc72c;
+//   animation: topbar-texte-inverse 60s ease-in-out infinite alternate;
+//   -webkit-mask-image: linear-gradient(to left, transparent 0%, #000 25%);
+//           mask-image: linear-gradient(to left, transparent 0%, #000 25%);
+// }
 
 @keyframes topbar-texte {
   from { background-position: 0% 50%; }
@@ -121,8 +116,7 @@
   font-size: clamp(0.95rem, 0.6rem + 0.9vw, 1.15rem);
   font-weight: 700;
   letter-spacing: -0.015em;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+  color: var(--topbar-fg);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -138,17 +132,17 @@
   border: 0;
   border-radius: 12px;
   background: transparent;
-  color: #fff;
+  color: var(--topbar-fg);
   cursor: pointer;
   transition: background 0.2s ease, transform 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.topbar__btn:hover  { background: rgba(255, 255, 255, 0.16); }
-.topbar__btn:active { background: rgba(255, 255, 255, 0.26); transform: scale(0.95); }
+.topbar__btn:hover  { background: rgba(16, 48, 127, 0.08); }
+.topbar__btn:active { background: rgba(16, 48, 127, 0.16); transform: scale(0.95); }
 
 .topbar__btn[aria-expanded="true"] {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(16, 48, 127, 0.12);
 }
 
 .topbar__btn--menu {
@@ -192,14 +186,15 @@
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
-  background: var(--du-accent, #ffc72c);
+  background:  #ff1313;
   color: var(--du-on-accent, #13214f);
   font-size: 0.68rem;
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  border: 2px solid var(--topbar-bg-2);
+  border: 2px solid #fff;
   pointer-events: none;
+  color : white;
 }
 
 .cloche__panneau {
@@ -351,10 +346,10 @@
   gap: 0.6rem;
   min-height: 2.75rem;
   padding: 0.3rem 0.6rem 0.3rem 0.3rem;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(16, 48, 127, 0.18);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  background: rgba(16, 48, 127, 0.05);
+  color: var(--topbar-fg);
   font: inherit;
   cursor: pointer;
   text-align: left;
@@ -362,7 +357,7 @@
 }
 
 .topbar__user:hover {
-  background: rgba(255, 255, 255, 0.24);
+  background: rgba(16, 48, 127, 0.1);
 }
 
 .topbar__user:active {
@@ -370,7 +365,7 @@
 }
 
 .topbar__user[aria-expanded="true"] {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(16, 48, 127, 0.14);
 }
 
 /* Avatar jaune, initiales bleu nuit */
@@ -385,7 +380,7 @@
   color: var(--du-on-accent, #13214f);
   font-size: 0.82rem;
   font-weight: 800;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.55);
+  box-shadow: 0 0 0 2px rgba(16, 48, 127, 0.18);
 }
 
 .topbar__identite {
@@ -396,13 +391,13 @@
   display: block;
   font-size: 0.88rem;
   line-height: 1.2;
-  color: #fff;
+  color: var(--topbar-fg);
   white-space: nowrap;
 }
 
 .topbar__identite small {
   display: block;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(19, 33, 79, 0.7);
   font-size: 0.76rem;
   max-width: 200px;
   white-space: nowrap;
@@ -499,8 +494,7 @@
   }
 
   .topbar {
-    background: linear-gradient(90deg, var(--topbar-bg-1) 0%, var(--topbar-bg-2) 55%, #1a43b8 100%);
-    background-size: auto;
+    background: var(--topbar-bg);
     animation: none;
   }
 
@@ -519,7 +513,6 @@
 
   .topbar__titre {
     max-width: 50vw;
-    text-shadow: none;
   }
 
   .topbar__btn--menu {

@@ -3,7 +3,7 @@ import { ServiceDossier } from './dossier.model';
 /** Format d’affichage des dates proposé dans les préférences. */
 export type FormatDate = 'dd/MM/yyyy' | 'dd-MM-yyyy' | 'yyyy-MM-dd';
 
-/** Profil de l’utilisateur connecté (données de démonstration). */
+/** Profil de l’utilisateur connecté (table `users`). */
 export interface ProfilParametres {
   nom: string;
   email: string;
@@ -12,16 +12,16 @@ export interface ProfilParametres {
   telephone: string;
 }
 
-/** Préférences d’affichage de l’espace administrateur. */
+/** Préférences d’affichage personnelles de l’espace administrateur. */
 export interface PreferencesParametres {
-  langue: 'fr';
+  langue: string;
   formatDate: FormatDate;
   elementsParPage: number;
   afficherPriorites: boolean;
   notificationsEmail: boolean;
 }
 
-/** Informations générales de l’application. */
+/** Informations générales de l’application (paramètre global). */
 export interface ApplicationParametres {
   nomApplication: string;
   entite: string;
@@ -39,22 +39,53 @@ export interface ServiceParametre {
   actif: boolean;
 }
 
-/** Ensemble des paramètres conservés localement (stockage navigateur). */
+/** Entrée de référentiel fournie par l’API Laravel. */
+export interface ReferentielItem {
+  code: string;
+  libelle: string;
+  /** Exemple rendu sur une date réelle (formats de date uniquement). */
+  exemple?: string;
+}
+
+/**
+ * Référentiels applicatifs fournis par l’API Laravel (types d’infraction,
+ * statuts, natures, priorités, étapes, formats de date, langues).
+ */
+export interface ReferentielsParametres {
+  types: ReferentielItem[];
+  statuts: ReferentielItem[];
+  natures: ReferentielItem[];
+  priorites: ReferentielItem[];
+  etapes: ReferentielItem[];
+  interventions: ReferentielItem[];
+  formatsDate: ReferentielItem[];
+  langues: ReferentielItem[];
+}
+
+/** État complet des paramètres renvoyé par l’API. */
 export interface Parametres {
   profil: ProfilParametres;
   preferences: PreferencesParametres;
   application: ApplicationParametres;
   services: ServiceParametre[];
+  referentiels: ReferentielsParametres;
 }
 
-/** Valeurs par défaut — servent aussi de base à la réinitialisation. */
+/**
+ * Valeurs par défaut — état neutre avant la réponse de l’API.
+ *
+ * Elles reprennent les valeurs par défaut du serveur (`ParametresDefaut`)
+ * et ne contiennent aucune donnée de démonstration : le profil et les
+ * informations de l’application restent vides tant que l’API n’a pas
+ * répondu.
+ */
 export const PARAMETRES_DEFAUT: Parametres = {
   profil: {
-    nom: 'Aminata Diallo',
-    email: 'aminata.diallo@du.gouv',
+    nom: '',
+    email: '',
     service: 'DU',
-    fonction: 'Administratrice',
-    telephone: '+224 34 00 000 00',
+    fonction: '',
+    telephone: '',
   },
   preferences: {
     langue: 'fr',
@@ -64,37 +95,25 @@ export const PARAMETRES_DEFAUT: Parametres = {
     notificationsEmail: false,
   },
   application: {
-    nomApplication: 'Gestion des constructions illicites',
-    entite: 'Direction de l’Urbanisme',
-    sigle: 'DU',
-    emailContact: 'contact@du.gouv',
-    telephoneContact: '+224 20 00 000 00',
-    adresse: 'Conakry — Guinée',
+    nomApplication: '',
+    entite: '',
+    sigle: '',
+    emailContact: '',
+    telephoneContact: '',
+    adresse: '',
   },
-  services: [
-    {
-      code: 'DU',
-      libelle: 'Direction de l’Urbanisme',
-      description: 'Instruction des dossiers, décisions et suivi des constructions illicites.',
-      actif: true,
-    },
-    {
-      code: 'DIS',
-      libelle: 'division inspection et suivi',
-      description: 'Équipements et infrastructures sociales rattachés aux dossiers.',
-      actif: true,
-    },
-    {
-      code: 'SCAD',
-      libelle: 'Service de Coordination des activités et doléances',
-      description: 'Références foncières, plan cadastral et parcelles.',
-      actif: true,
-    },
-  ],
+  services: [],
+  referentiels: {
+    types: [],
+    statuts: [],
+    natures: [],
+    priorites: [],
+    etapes: [],
+    interventions: [],
+    formatsDate: [],
+    langues: [],
+  },
 };
-
-/** Clé de stockage local utilisée pour la démonstration. */
-export const CLE_STOCKAGE_PARAMETRES = 'du.parametres.v1';
 
 /** Copie indépendante des paramètres par défaut. */
 export function parametresParDefaut(): Parametres {
