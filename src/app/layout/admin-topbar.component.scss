@@ -27,6 +27,7 @@
           backdrop-filter: blur(14px) saturate(1.2);
   /* filet fin en bas + ombre très douce */
   box-shadow: inset 0 -1px 0 var(--topbar-line), 0 4px 24px rgba(20, 60, 56, 0.06);
+      border-bottom: 2px solid var( --du-accent);
 }
 
 /* --- Texte de fond animé (lent, discret) --- */
