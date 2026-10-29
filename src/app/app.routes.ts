@@ -4,6 +4,7 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { DossierListComponent } from './features/dossiers/dossier-list.component';
 import { DossierDetailComponent } from './features/dossiers/dossier-detail.component';
 import { DossierFormComponent } from './features/dossiers/dossier-form.component';
+import { HistoriqueComponent } from './features/historique/historique.component';
 import { LoginComponent } from './features/auth/login.component';
 import { MouvementsComponent } from './features/admin/mouvements.component';
 import { LocalisationsComponent } from './features/admin/localisations.component';
@@ -32,6 +33,7 @@ export const routes: Routes = [
         component: DossierFormComponent,
         title: 'Modifier dossier — DU',
       },
+      { path: 'historique', component: HistoriqueComponent, title: 'Historique — DU' },
       { path: 'mouvements', component: MouvementsComponent, title: 'Mouvements — DU' },
       { path: 'localisations', component: LocalisationsComponent, title: 'Localisations — DU' },
       { path: 'documents', component: DocumentsComponent, title: 'Documents — DU' },

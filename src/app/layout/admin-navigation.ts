@@ -25,6 +25,7 @@ export const ADMIN_NAV_ITEMS: AdminNavItem[] = [
   { path: '/admin/dashboard', label: 'Tableau de bord', description: 'Vue d’ensemble de l’activité', icon: 'dashboard', exact: true },
   { path: '/admin/dossiers', label: 'Dossiers', description: 'Constructions illicites suivies', icon: 'folder' },
   { path: '/admin/mouvements', label: 'Mouvements', description: 'Entrées, sorties et transferts', icon: 'swap' },
+  { path: '/admin/historique', label: 'Historique', description: 'Dossiers clôturés', icon: 'clock' },
   { path: '/admin/localisations', label: 'Localisations', description: 'Quartiers et arrondissements', icon: 'pin' },
   { path: '/admin/documents', label: 'Documents', description: 'Pièces jointes des dossiers', icon: 'file' },
   { path: '/admin/utilisateurs', label: 'Utilisateurs', description: 'Agents et habilitations', icon: 'users', adminSystemeUniquement: true },

@@ -1,0 +1,208 @@
+<du-page-header
+  title="Historique"
+  subtitle="Tous les dossiers clôturés enregistrés dans la base de données"
+>
+  <a routerLink="/admin/dossiers" class="btn btn--secondary">
+    <du-icon name="folder" [size]="16" /> Tous les dossiers
+  </a>
+</du-page-header>
+
+<section class="card filtres-card">
+  <div class="filtres-card__entete">
+    <span class="filtres-card__icone"><du-icon name="filter" [size]="16" /></span>
+    <h2>Filtres de recherche</h2>
+  </div>
+  <div class="filtres-card__corps">
+    <div class="filtres">
+      <div class="field champ-recherche">
+        <label for="recherche">Recherche</label>
+        <input
+          #q
+          id="recherche"
+          class="input"
+          type="search"
+          placeholder="N° dossier, contrevenant, référence ou lieu…"
+          [value]="recherche()"
+          (input)="setRecherche(q.value)"
+          (keyup.enter)="rechercher()"
+        />
+      </div>
+      <div class="field">
+        <label for="service">Service</label>
+        <select #s id="service" class="input" [value]="service()" (change)="setService(s.value)">
+          <option value="">Tous</option>
+          @for (code of services; track code) {
+            <option [value]="code">{{ code }}</option>
+          }
+        </select>
+      </div>
+      <div class="field">
+        <label for="du">Date d’entrée — du</label>
+        <input #d1 id="du" type="date" class="input" [value]="du()" (change)="setDu(d1.value)" />
+      </div>
+      <div class="field">
+        <label for="au">Date d’entrée — au</label>
+        <input #d2 id="au" type="date" class="input" [value]="au()" (change)="setAu(d2.value)" />
+      </div>
+      <div class="filtres__actions">
+        <button
+          type="button"
+          class="btn btn--primary"
+          [disabled]="plageInvalide()"
+          (click)="rechercher()"
+        >
+          <du-icon name="search" [size]="15" /> Rechercher
+        </button>
+        <button
+          type="button"
+          class="btn btn--secondary"
+          [disabled]="!filtresActifs()"
+          (click)="reinitialiser()"
+        >
+          Réinitialiser
+        </button>
+      </div>
+    </div>
+
+    @if (plageInvalide()) {
+      <p class="plage-erreur" role="alert">
+        La date « du » doit être antérieure ou égale à la date « au ».
+      </p>
+    } @else {
+      <p class="muted small filtre-note">
+        Seuls les dossiers au statut « Clôturé » sont affichés. La période porte sur la date
+        d’entrée du dossier.
+      </p>
+    }
+  </div>
+</section>
+
+<section class="card">
+  <div class="card__header">
+    <h2>Dossiers clôturés</h2>
+    @if (!chargement() && !erreur()) {
+      <span class="badge badge--success">{{ total() }} dossier(s)</span>
+    }
+  </div>
+
+  @if (chargement()) {
+    <du-loader label="Chargement de l’historique…" [plein]="true" />
+  } @else if (erreur()) {
+    <div class="empty-state">
+      <du-icon name="close" [size]="28" />
+      <p>
+        <strong>{{ erreur() }}</strong>
+      </p>
+      <button type="button" class="btn btn--secondary btn--sm" (click)="rechercher()">
+        Réessayer
+      </button>
+    </div>
+  } @else if (lignes().length) {
+    <div class="table-wrap">
+      <table class="table table--historique">
+        <thead>
+          <tr>
+            <th>N° dossier</th>
+            <th>Date d’entrée</th>
+            <th>Nature</th>
+            <th>Contrevenant</th>
+            <th>Objet</th>
+            <th class="hide-lg">Localisation</th>
+            <th>Service</th>
+            <th class="hide-lg">Dernière mise à jour</th>
+            <th><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ligne of lignes(); track ligne.dossier.id) {
+            <tr>
+              <td class="ref" data-label="N° dossier">
+                <a [routerLink]="['/admin/dossiers', ligne.dossier.id]">{{
+                  reference(ligne.dossier)
+                }}</a>
+              </td>
+              <td class="nowrap" data-label="Date d’entrée">
+                {{
+                  ligne.dossier.infos.dateEntree
+                    ? (ligne.dossier.infos.dateEntree | date: 'dd/MM/yyyy')
+                    : '—'
+                }}
+              </td>
+              <td data-label="Nature">{{ natureLabel[ligne.dossier.infos.nature] }}</td>
+              <td data-label="Contrevenant">
+                {{ nomContrevenant(ligne.dossier.contrevenant) || '—' }}
+              </td>
+              <td class="objet" data-label="Objet">
+                {{ ligne.dossier.complements.objet || '—' }}
+              </td>
+              <td class="hide-lg localisation" data-label="Localisation">
+                {{
+                  ligne.dossier.localisation.adresse ||
+                    ligne.dossier.localisation.localisation ||
+                    '—'
+                }}
+              </td>
+              <td data-label="Service">
+                <span class="badge badge--neutral" [title]="serviceLabel[ligne.dossier.service]">{{
+                  ligne.dossier.service
+                }}</span>
+              </td>
+              <td class="nowrap hide-lg" data-label="Dernière mise à jour">
+                {{ ligne.miseAJour ? (ligne.miseAJour | date: 'dd/MM/yyyy HH:mm') : '—' }}
+              </td>
+              <td class="actions">
+                <a
+                  [routerLink]="['/admin/dossiers', ligne.dossier.id]"
+                  class="btn btn--secondary btn--sm"
+                >
+                  <du-icon name="eye" [size]="15" /> Consulter
+                </a>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination">
+      <span class="muted small">
+        {{ total() }} dossier(s) clôturé(s) — page {{ page() }} sur {{ dernierPage() }}
+      </span>
+      <div class="pagination__nav">
+        <button
+          type="button"
+          class="btn btn--secondary btn--sm"
+          [disabled]="page() <= 1"
+          (click)="allerA(page() - 1)"
+        >
+          Précédent
+        </button>
+        <button
+          type="button"
+          class="btn btn--secondary btn--sm"
+          [disabled]="page() >= dernierPage()"
+          (click)="allerA(page() + 1)"
+        >
+          Suivant
+        </button>
+      </div>
+    </div>
+  } @else {
+    <div class="empty-state">
+      <du-icon name="clock" [size]="28" />
+      <p><strong>Aucun dossier clôturé trouvé.</strong></p>
+      <p class="muted small">
+        @if (filtresActifs()) {
+          Modifiez la recherche ou réinitialisez les filtres.
+        } @else {
+          Aucun dossier n’a encore été clôturé dans la base de données.
+        }
+      </p>
+      @if (filtresActifs()) {
+        <button type="button" class="btn btn--secondary btn--sm" (click)="reinitialiser()">
+          Réinitialiser les filtres
+        </button>
+      }
+    </div>
+  }
+</section>

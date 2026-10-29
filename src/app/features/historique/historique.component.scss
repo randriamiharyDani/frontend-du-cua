@@ -1,0 +1,90 @@
+.filtre-note {
+  margin: 0.5rem 0 0;
+}
+
+.plage-erreur {
+  margin: 0.5rem 0 0;
+  color: var(--du-danger-text);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.table--historique .ref a {
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.table--historique .ref a:hover {
+  text-decoration: underline;
+}
+
+.table--historique .objet {
+  min-width: 180px;
+  max-width: 280px;
+  overflow-wrap: anywhere;
+}
+
+.table--historique .localisation {
+  max-width: 240px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 680px) {
+  .table--historique thead {
+    display: none;
+  }
+
+  .table--historique,
+  .table--historique tbody,
+  .table--historique tr,
+  .table--historique td {
+    display: block;
+    width: 100%;
+  }
+
+  .table--historique tbody tr {
+    padding: 0.5rem 0;
+    border-bottom: 2px solid var(--du-border);
+  }
+
+  .table--historique td {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.3rem 1rem;
+    border-bottom: 0;
+    text-align: right;
+  }
+
+  .table--historique td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    color: var(--du-muted);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-align: left;
+    text-transform: uppercase;
+  }
+
+  .table--historique td.objet,
+  .table--historique td.localisation {
+    max-width: none;
+  }
+
+  .table--historique td.hide-lg {
+    display: none;
+  }
+
+  .table--historique td.actions {
+    justify-content: flex-end;
+    padding-top: 0.6rem;
+    padding-bottom: 0.9rem;
+  }
+
+  .table--historique td.actions::before {
+    display: none;
+  }
+}
