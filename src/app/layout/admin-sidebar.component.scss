@@ -2,19 +2,27 @@
   display: contents;
 }
 
+/* ==========================================================================
+   Sidebar « Purity » — claire, aérée
+   - fond blanc translucide : le halo menthe de la page transparaît
+   - chaque icône vit dans une petite tuile blanche à ombre douce
+   - lien actif = carte blanche qui se détache + tuile sarcelle, icône blanche
+   ========================================================================== */
+
 .sidebar {
-  /* Palette partagée avec la topbar : bleu nuit + repère jaune */
-  --sb-bg-1: #10307f;
-  --sb-bg-2: #0f2a6b;
-  --sb-bg-3: #0a1a47;
-  --sb-text: #cfdcff;
-  --sb-text-strong: #fff;
-  --sb-accent: #ffc72c;
-  --sb-on-accent: #13214f;
-  --sb-hover: rgba(255, 255, 255, 0.1);
-  --sb-active: rgba(255, 255, 255, 0.15);
-  --sb-tile: rgba(255, 255, 255, 0.08);
-  --sb-line: rgba(255, 255, 255, 0.14);
+  --sb-bg: rgba(255, 255, 255, 0.72);
+  --sb-text: #3d4f4d;          /* contraste ≈ 9:1 sur blanc */
+  --sb-text-soft: #647775;     /* ≈ 4,8:1 */
+  --sb-text-strong: #1f2d2c;
+  --sb-primary: #0d8074;       /* tuile active : icône blanche ≈ 4,8:1 */
+  --sb-primary-light: #17a597;
+  --sb-accent: #4fd1c5;        /* repère menthe (décoratif) */
+  --sb-on-accent: #0b3b36;
+  --sb-hover: rgba(13, 128, 116, 0.07);
+  --sb-press: rgba(13, 128, 116, 0.13);
+  --sb-line: #e6eeed;
+  --sb-card: #fff;
+  --sb-card-shadow: 0 7px 23px rgba(20, 60, 56, 0.1);
   --sb-pad-x: 0.85rem;
 
   width: 264px;
@@ -32,28 +40,12 @@
   color: var(--sb-text);
   overflow: hidden;
   isolation: isolate;
-  background:
-    radial-gradient(120% 60% at 0% 0%, rgba(96, 165, 250, 0.3) 0%, transparent 55%),
-    radial-gradient(100% 45% at 100% 100%, rgba(255, 199, 44, 0.12) 0%, transparent 60%),
-    linear-gradient(180deg, var(--sb-bg-1) 0%, var(--sb-bg-2) 55%, var(--sb-bg-3) 100%);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 4px 0 24px rgba(10, 26, 71, 0.28);
+  background: var(--sb-bg);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+          backdrop-filter: blur(14px) saturate(1.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 40px rgba(20, 60, 56, 0.07);
   transition: width 0.2s ease;
-}
-
-/* Fine texture de grille (plan) en filigrane */
-.sidebar::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 28px 28px;
-  -webkit-mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
-          mask-image: linear-gradient(180deg, #000 0%, transparent 70%);
 }
 
 /* ---------- Marque ---------- */
@@ -65,20 +57,18 @@
   gap: 0.8rem;
   padding: 0 0.3rem 1.15rem;
   margin-bottom: 0.9rem;
-  border-bottom: 1px solid var(--sb-line);
   overflow: hidden;
 }
 
-/* Filet jaune sous la marque */
+/* Filet dégradé menthe sous la marque (remplace la ligne pleine) */
 .sidebar__brand::after {
   content: '';
   position: absolute;
-  left: 0.3rem;
-  bottom: -1px;
-  width: 44px;
-  height: 2px;
-  border-radius: 999px;
-  background: var(--sb-accent);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--sb-accent) 20%, var(--sb-accent) 80%, transparent);
 }
 
 .sidebar__logo {
@@ -88,14 +78,9 @@
   height: 64px;
   flex-shrink: 0;
   padding: 6px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  box-shadow:
-    0 6px 16px rgba(5, 12, 40, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
-  -webkit-backdrop-filter: blur(6px);
-          backdrop-filter: blur(6px);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: var(--sb-card-shadow);
   transition: width 0.2s ease, height 0.2s ease;
 }
 
@@ -104,7 +89,6 @@
   height: 100%;
   object-fit: contain;
   display: block;
-  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
 }
 
 .sidebar__titres {
@@ -118,7 +102,7 @@
 /* Surtitre : institution */
 .sidebar__surtitre {
   display: block;
-  color: #8fb0ff;
+  color: var(--sb-text-soft);
   font-size: 0.6rem;
   font-weight: 600;
   line-height: 1.25;
@@ -126,8 +110,7 @@
   text-transform: uppercase;
 }
 
-/* Le gabarit utilise <h1> : on neutralise les styles globaux des titres.
-   Même police à empattements que le fond de la topbar. */
+/* Le gabarit utilise <h1> : on neutralise les styles globaux des titres. */
 .sidebar__brand h1,
 .sidebar__brand strong {
   display: block;
@@ -142,28 +125,44 @@
   text-wrap: balance;
 }
 
-/* Étiquette : texte jaune sur fond bleu nuit (contraste élevé) */
+/* Étiquette : texte sarcelle foncé sur fond menthe clair */
 .sidebar__nav small {
-    padding: 0.12rem 0.6rem 0.12rem 0.5rem;
-    border-radius: 999px;
-    background: rgba(255, 199, 44, 0.14);
-    border: 1px solid rgba(255, 199, 44, 0.35);
-    color: var(--sb-accent);
-    font-size: 0.64rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    white-space: nowrap;
-    text-align: center;
-    margin-bottom: 17px;;
-}
+  display: inline-block;
+  max-width: 100%;
+  padding: 0.12rem 0.6rem 0.12rem 0.5rem;
+  border-radius: 999px;
+  background: #d9f5f1;
+  border: 1px solid rgba(13, 128, 116, 0.25);
+  color: #0b6b61;
+  font-size: clamp(0.58rem, 0.55rem + 0.15vw, 0.64rem);
+  font-weight: 700;
+  line-height: 1.3;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 17px;
 
+  // Tablette
+  @media (max-width: 1024px) {
+    padding: 0.1rem 0.5rem;
+    margin-bottom: 12px;
+  }
+
+  // Mobile
+  @media (max-width: 640px) {
+    padding: 0.08rem 0.45rem;
+    font-size: 0.58rem;
+    margin-bottom: 10px;
+  }
+}
 .sidebar__brand small::before {
   content: '';
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--sb-accent);
-  box-shadow: 0 0 6px rgba(255, 199, 44, 0.7);
+  background: var(--sb-primary);
 }
 
 /* ---------- Navigation ---------- */
@@ -171,7 +170,7 @@
 .sidebar__nav {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.3rem;
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -179,7 +178,7 @@
   margin: 0 -0.35rem;
   padding: 0.75rem 0.35rem;
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  scrollbar-color: rgba(13, 128, 116, 0.25) transparent;
   /* fondu haut/bas : indique qu'il reste des liens à faire défiler */
   -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 0.75rem, #000 calc(100% - 0.75rem), transparent 100%);
           mask-image: linear-gradient(to bottom, transparent 0, #000 0.75rem, #000 calc(100% - 0.75rem), transparent 100%);
@@ -190,7 +189,7 @@
 }
 
 .sidebar__nav::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(13, 128, 116, 0.25);
   border-radius: 999px;
 }
 
@@ -199,50 +198,36 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  min-height: 2.75rem; /* cible tactile de 44 px */
-  padding: 0.3rem 0.75rem 0.3rem 0.35rem;
-  border-radius: 14px;
+  min-height: 3rem; /* cible tactile > 44 px */
+  padding: 0.35rem 0.75rem 0.35rem 0.5rem;
+  border-radius: 15px;
   color: var(--sb-text);
   text-decoration: none;
-  font-weight: 500;
-  font-size: 0.92rem;
+  font-weight: 600;
+  font-size: 0.9rem;
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
-  transition: background-color 0.15s ease, color 0.15s ease;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
-/* Barre d'état à gauche (visible uniquement sur l'élément actif) */
-.sidebar__nav a::before {
-  content: '';
-  position: absolute;
-  left: -0.2rem;
-  top: 50%;
-  width: 3px;
-  height: 0;
-  border-radius: 999px;
-  background: var(--sb-accent);
-  transform: translateY(-50%);
-  transition: height 0.18s ease;
-}
-
-/* Tuile d'icône : c'est elle qui porte la couleur d'état */
+/* Tuile d'icône : blanche, ombre douce, pictogramme sarcelle */
 .sidebar__nav a du-icon {
   display: inline-grid;
   place-items: center;
   flex-shrink: 0;
   width: 2.15rem;
   height: 2.15rem;
-  border-radius: 10px;
-  background: var(--sb-tile);
-  color: var(--sb-text);
-  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  border-radius: 12px;
+  background: #fff;
+  color: var(--sb-primary);
+  box-shadow: 0 3px 10px rgba(20, 60, 56, 0.08);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .sidebar__nav a .sidebar__label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  transition: transform 0.15s ease;
 }
 
 .sidebar__nav a:hover {
@@ -250,52 +235,35 @@
   color: var(--sb-text-strong);
 }
 
-.sidebar__nav a:hover du-icon {
-  background: rgba(255, 255, 255, 0.16);
-  color: #fff;
-}
-
-.sidebar__nav a:hover .sidebar__label {
-  transform: translateX(2px);
-}
-
 .sidebar__nav a:active {
-  background: var(--sb-active);
+  background: var(--sb-press);
 }
 
 .sidebar__nav a:active du-icon {
   transform: scale(0.94);
 }
 
-/* Focus clavier : anneau jaune, très visible sur le bleu nuit */
+/* Focus clavier : anneau sarcelle, très visible sur fond clair */
 .sidebar__nav a:focus-visible,
 .sidebar__repli:focus-visible {
-  outline: 2px solid var(--sb-accent);
+  outline: 2px solid var(--sb-primary);
   outline-offset: 2px;
 }
 
-/* Élément actif : fond translucide + liseré + barre + tuile jaune (icône bleu nuit).
-   Le jaune n'apparaît qu'ici dans la navigation : on voit tout de suite où l'on est. */
+/* Élément actif : carte blanche en relief + tuile sarcelle (icône blanche) */
 .sidebar__nav a.is-active,
 .sidebar__nav a[aria-current="page"] {
-  background: var(--sb-active);
+  background: var(--sb-card);
   color: var(--sb-text-strong);
   font-weight: 700;
-  box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.22),
-    0 6px 16px rgba(5, 12, 40, 0.3);
-}
-
-.sidebar__nav a.is-active::before,
-.sidebar__nav a[aria-current="page"]::before {
-  height: 1.4rem;
+  box-shadow: var(--sb-card-shadow);
 }
 
 .sidebar__nav a.is-active du-icon,
 .sidebar__nav a[aria-current="page"] du-icon {
-  background: var(--sb-accent);
-  color: var(--sb-on-accent);
-  box-shadow: 0 2px 8px rgba(255, 199, 44, 0.35);
+  background: linear-gradient(135deg, var(--sb-primary-light), var(--sb-primary));
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(13, 128, 116, 0.35);
 }
 
 /* ---------- Pied ---------- */
@@ -312,9 +280,9 @@
   font-size: 0.7rem;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #a9bdf0;
+  color: var(--sb-text-soft);
   border-top: 1px solid var(--sb-line);
-  white-space: nowrap;
+  text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -326,29 +294,32 @@
   width: 100%;
   min-height: 2.5rem;
   padding: 0.5rem 0.85rem;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  color: #e6edff;
+  border: 1px solid var(--sb-line);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--sb-text);
   font: inherit;
   font-size: 0.85rem;
+  font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
+  box-shadow: 0 3px 10px rgba(20, 60, 56, 0.05);
   transition: background-color 0.15s ease, border-color 0.15s ease;
 }
 
 .sidebar__repli du-icon {
   flex-shrink: 0;
+  color: var(--sb-primary);
   transition: transform 0.2s ease;
 }
 
 .sidebar__repli:hover {
   background: var(--sb-hover);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: rgba(13, 128, 116, 0.3);
 }
 
 .sidebar__repli:active {
-  background: var(--sb-active);
+  background: var(--sb-press);
 }
 
 /* ---------- Mode replié (écran large) ---------- */
@@ -361,11 +332,6 @@
   justify-content: center;
   padding-left: 0;
   padding-right: 0;
-}
-
-.sidebar--replie .sidebar__brand::after {
-  left: 50%;
-  transform: translateX(-50%);
 }
 
 .sidebar--replie .sidebar__logo {
@@ -390,7 +356,7 @@
   white-space: nowrap;
 }
 
-/* Liens et bouton : on ne garde que la tuile, centrée */
+/* Liens et bouton : on ne garde que l'icône, centrée */
 .sidebar--replie .sidebar__nav a,
 .sidebar--replie .sidebar__repli {
   justify-content: center;
@@ -417,6 +383,8 @@
     top: 0;
     width: min(290px, 85vw);
     transform: translateX(-100%);
+    /* fond opaque : il recouvre le contenu */
+    background: #f8fbfb;
     /* les liens hors écran ne reçoivent plus le focus clavier */
     visibility: hidden;
     transition: transform 0.22s ease, visibility 0s linear 0.22s;
@@ -430,7 +398,7 @@
     transform: translateX(0);
     visibility: visible;
     transition: transform 0.22s ease, visibility 0s;
-    box-shadow: 0 0 60px rgba(5, 12, 40, 0.5);
+    box-shadow: 0 0 60px rgba(12, 33, 32, 0.3);
   }
 
   /* Sur mobile le mode « replié » n'existe pas : on restaure l'affichage complet */
@@ -462,15 +430,10 @@
     padding-right: 0.3rem;
   }
 
-  .sidebar--replie .sidebar__brand::after {
-    left: 0.3rem;
-    transform: none;
-  }
-
   .sidebar--replie .sidebar__nav a,
   .sidebar--replie .sidebar__repli {
     justify-content: flex-start;
-    padding-left: 0.35rem;
+    padding-left: 0.5rem;
     padding-right: 0.75rem;
   }
 
@@ -497,9 +460,7 @@
   .sidebar--ouvert,
   .sidebar__logo,
   .sidebar__nav a,
-  .sidebar__nav a::before,
   .sidebar__nav a du-icon,
-  .sidebar__nav a .sidebar__label,
   .sidebar__repli,
   .sidebar__repli du-icon {
     transition: none;

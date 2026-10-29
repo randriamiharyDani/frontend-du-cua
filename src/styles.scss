@@ -1,12 +1,16 @@
 /* ==========================================================================
    Direction de l’Urbanisme — Système de design global
-   Espace administrateur · Thème bleu royal + jaune signal
+   Espace administrateur · Thème « Purity » : clair, aéré, sarcelle menthe
 
-   Règle d’or du thème :
-   - le bleu porte l’information (texte, liens, boutons, focus)
-   - le jaune est le repère (barre active, pastille, avatar, bouton d’action
-     principal). Il n’est JAMAIS utilisé comme couleur de texte sur fond clair
-     (contraste insuffisant) : sur fond jaune, le texte est toujours bleu nuit.
+   Règles du thème :
+   - fond très clair avec un halo menthe en haut à gauche, cartes blanches
+     aux grands rayons et aux ombres très douces
+   - la sarcelle #0D8074 porte l’information (texte, liens, boutons, focus) ;
+     la menthe #4FD1C5 est le repère décoratif (tuiles, filets, pastilles) :
+     elle n’est jamais utilisée pour du texte sur fond clair (contraste faible)
+   - cartes sombres (.card--sombre) pour les graphiques, comme dans la maquette
+   - états : Succès #22C55E · Alerte #F97316 · Erreur #EF4444 · Info ardoise ;
+     un état n’est jamais porté par la couleur seule : icône ou libellé
    ========================================================================== */
 
 /* --------------------------------------------------------------------------
@@ -19,15 +23,15 @@ $bp-md: 900px;
 $bp-lg: 1200px;
 
 // Couleurs utilisées dans rgba() (SCSS ne sait pas faire rgba(var(--x)))
-$bleu: #1d4ed8;
-$bleu-ciel: #38bdf8;
-$bleu-clair: #60a5fa;
-$jaune: #ffc72c;
+$teal: #0d8074;
+$menthe: #4fd1c5;
+$menthe-claire: #99f6e4;
+$aqua: #7ee8dc;
 
 // Fond animé
-$fond-1: #f8faff;
-$fond-2: #f0f4fc;
-$fond-3: #e7eefb;
+$fond-1: #f6fbfa;
+$fond-2: #eef7f6;
+$fond-3: #e4f2f0;
 
 @mixin bp-down($max) {
   @media (max-width: $max) { @content; }
@@ -61,21 +65,21 @@ $fond-3: #e7eefb;
   color: $color;
 }
 
-// Variantes d’état (une seule définition, utilisée par badges et bandeaux)
+// Variantes d’état : fond, bordure, filet, texte, icône
 $alertes: (
-  'demo-note': (var(--du-warning-soft), #f0dcb4, var(--du-warning), #7a4d0c),
-  'succes':    (var(--du-success-soft), #bfe3d1, var(--du-success), #14603c),
-  'erreur':    (var(--du-danger-soft),  #f3c1c1, var(--du-danger),  #9a2f24),
-  'info':      (var(--du-info-soft),    #c9d8fa, var(--du-info),    #1e3a8a),
+  'demo-note': (var(--du-warning-soft), #fdd8b4, var(--du-warning), #9a3412, '⚠'),
+  'succes':    (var(--du-success-soft), #b8ecca, var(--du-success), #166534, '✓'),
+  'erreur':    (var(--du-danger-soft),  #fbc7c7, var(--du-danger),  #991b1b, '✕'),
+  'info':      (var(--du-info-soft),    #d6dce6, var(--du-info),    #334155, 'ℹ'),
 );
 
 $badges: (
-  'neutral': (#eaeff7, #3f4f6d),
+  'neutral': (#e8f0ef, #3d4f4d),
   'primary': (var(--du-primary-soft), var(--du-primary-active)),
-  'info':    (var(--du-info-soft), #1e3a8a),
-  'warning': (var(--du-warning-soft), #7a4d0c),
-  'danger':  (var(--du-danger-soft), #9a2f24),
-  'success': (var(--du-success-soft), #14603c),
+  'info':    (var(--du-info-soft), #334155),
+  'warning': (var(--du-warning-soft), #9a3412),
+  'danger':  (var(--du-danger-soft), #991b1b),
+  'success': (var(--du-success-soft), #166534),
   'accent':  (var(--du-accent), var(--du-on-accent)),
 );
 
@@ -85,52 +89,60 @@ $badges: (
 :root {
   color-scheme: light;
 
-  /* Bleu (marque) */
-  --du-primary: #{$bleu};
-  --du-primary-dark: #1e3a8a;
-  --du-primary-active: #172554;
-  --du-primary-solid: #{$bleu};     /* fonds pleins avec texte blanc */
-  --du-primary-soft: #e4ecff;
-  --du-primary-soft-2: #f2f6ff;
-  --du-navy: #0f2a6b;               /* barres : sidebar, topbar */
-  --du-navy-deep: #0a1a47;
+  /* Sarcelle (marque) */
+  --du-primary: #{$teal};            /* texte blanc dessus ≈ 4,8:1 */
+  --du-primary-dark: #0b6b61;
+  --du-primary-active: #0a5a52;
+  --du-primary-solid: #{$teal};
+  --du-primary-soft: #d9f5f1;
+  --du-primary-soft-2: #f0fbf9;
+  --du-navy: #12302e;               /* cartes sombres */
+  --du-navy-deep: #0c2120;
 
-  /* Jaune (repère) */
-  --du-accent: #{$jaune};
-  --du-accent-strong: #f2b300;
-  --du-accent-soft: #fff4cc;
-  --du-on-accent: #13214f;          /* texte sur fond jaune : contraste ≈ 10:1 */
+  /* Menthe (repère décoratif) */
+  --du-accent: #{$menthe};
+  --du-accent-strong: #38b2a6;
+  --du-accent-soft: #d5f5f1;
+  --du-on-accent: #0b3b36;          /* texte sur fond menthe : contraste ≈ 8:1 */
 
-  /* Neutres (bleutés) */
-  --du-bg: #f3f6fc;
+  /* Neutres (légèrement verts) */
+  --du-bg: #f4f8f8;
   --du-surface: #ffffff;
-  --du-surface-2: #f7f9fd;
-  --du-border: #e2e8f4;
-  --du-border-strong: #cfd9ec;
-  --du-text: #14203f;
-  --du-text-soft: #2f3d5e;
-  --du-muted: #5b6a88;
+  --du-surface-2: #f8fbfb;
+  --du-border: #e6eeed;
+  --du-border-strong: #d3e0df;
+  --du-text: #1f2d2c;
+  --du-text-soft: #3d4f4d;
+  --du-muted: #647775;
 
-  /* États */
-  --du-success: #16794c;
-  --du-success-soft: #e4f4ec;
-  --du-danger: #c0392b;
-  --du-danger-soft: #fbe9e7;
-  --du-warning: #b7791f;
-  --du-warning-soft: #fbf1de;
-  --du-info: #{$bleu};
-  --du-info-soft: #e8f0ff;
+  /* États : teinte vive (filets, pastilles, icônes) + fond doux */
+  --du-success: #22c55e;
+  --du-success-soft: #e8f9ee;
+  --du-warning: #f97316;
+  --du-warning-soft: #fff0e2;
+  --du-danger: #ef4444;
+  --du-danger-soft: #fdeceb;
+  --du-info: #64748b;
+  --du-info-soft: #f1f4f8;
 
-  /* Rayons, ombres, mouvement */
-  --du-radius-sm: 8px;
-  --du-radius: 12px;
-  --du-radius-lg: 16px;
-  --du-shadow-xs: 0 1px 2px rgba(15, 30, 80, 0.05);
-  --du-shadow: 0 1px 2px rgba(15, 30, 80, 0.05), 0 1px 3px rgba(15, 30, 80, 0.07);
-  --du-shadow-md: 0 4px 14px rgba(15, 30, 80, 0.09);
-  --du-shadow-lg: 0 18px 45px rgba(29, 78, 216, 0.18);
-  --du-ring: 0 0 0 3px rgba(29, 78, 216, 0.3);
-  --du-ring-danger: 0 0 0 3px rgba(220, 38, 38, 0.2);
+  /* États : variantes pleines et texte sur fond clair */
+  --du-danger-solid: #dc2626;
+  --du-danger-solid-hover: #b91c1c;
+  --du-success-text: #166534;
+  --du-warning-text: #9a3412;
+  --du-danger-text: #b91c1c;
+  --du-info-text: #334155;
+
+  /* Rayons généreux, ombres très douces */
+  --du-radius-sm: 12px;
+  --du-radius: 16px;
+  --du-radius-lg: 20px;
+  --du-shadow-xs: 0 1px 2px rgba(20, 60, 56, 0.05);
+  --du-shadow: 0 4px 24px rgba(20, 60, 56, 0.06);
+  --du-shadow-md: 0 10px 30px rgba(20, 60, 56, 0.1);
+  --du-shadow-lg: 0 24px 60px rgba(12, 33, 32, 0.22);
+  --du-ring: 0 0 0 3px rgba(13, 128, 116, 0.3);
+  --du-ring-danger: 0 0 0 3px rgba(239, 68, 68, 0.28);
   --du-transition: 0.17s ease;
 
   /* Espacements et cibles */
@@ -177,7 +189,7 @@ body {
 }
 
 /* --------------------------------------------------------------------------
-   Fond animé : plan d’urbanisme bleu clair, halo jaune
+   Fond animé : plan d’urbanisme lilas, halo rosé
    1. halos pastel qui dérivent lentement
    2. quadrillage de plan (fin + repère tous les 160 px) qui défile en boucle
       (la distance parcourue = la période du motif : boucle sans à-coup)
@@ -193,25 +205,16 @@ body::after {
 body::before {
   inset: -10%;
   background:
-    radial-gradient(circle 540px at 12% 18%, rgba($bleu-clair, 0.26), transparent 70%),
-    radial-gradient(circle 560px at 88% 12%, rgba($bleu-ciel, 0.2), transparent 70%),
-    radial-gradient(circle 500px at 80% 88%, rgba($jaune, 0.24), transparent 70%),
-    radial-gradient(circle 480px at 16% 86%, rgba($bleu, 0.14), transparent 70%),
-    linear-gradient(160deg, $fond-1, $fond-2 55%, $fond-3);
+    radial-gradient(circle 700px at 8% 6%, rgba($menthe, 0.38), transparent 70%),
+    radial-gradient(circle 520px at 92% 10%, rgba($menthe-claire, 0.3), transparent 70%),
+    radial-gradient(circle 560px at 85% 92%, rgba($aqua, 0.14), transparent 70%),
+    linear-gradient(180deg, $fond-1, $fond-2 60%, $fond-3);
   will-change: transform;
-  animation: fond-derive 48s ease-in-out infinite alternate;
+  animation: fond-derive 60s ease-in-out infinite alternate;
 }
 
 body::after {
-  inset: -160px;
-  background-image:
-    linear-gradient(rgba($bleu, 0.085) 1px, transparent 1px),
-    linear-gradient(90deg, rgba($bleu, 0.085) 1px, transparent 1px),
-    linear-gradient(rgba($bleu, 0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba($bleu, 0.04) 1px, transparent 1px);
-  background-size: 160px 160px, 160px 160px, 32px 32px, 32px 32px;
-  will-change: transform;
-  animation: fond-plan 140s linear infinite;
+  display: none; /* pas de quadrillage : fond épuré */
 }
 
 @keyframes fond-derive {
@@ -277,24 +280,24 @@ a {
   border-radius: 6px;
 }
 
-/* Sélection de texte : surlignage jaune, texte bleu nuit */
+/* Sélection de texte : surlignage lilas, texte violet nuit */
 ::selection {
-  background: #ffe58a;
+  background: #ccfbf1;
   color: var(--du-on-accent);
 }
 
 /* Barres de défilement discrètes */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #bccae6 transparent;
+  scrollbar-color: #c5d8d6 transparent;
 }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-thumb {
-  background: #bccae6;
+  background: #c5d8d6;
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
-  &:hover { background: #9fb2d6; background-clip: content-box; }
+  &:hover { background: #9bb8b5; background-clip: content-box; }
 }
 
 /* --------------------------------------------------------------------------
@@ -397,16 +400,16 @@ a {
 .btn--primary {
   background: var(--du-primary);
   color: #fff;
-  box-shadow: 0 1px 2px rgba($bleu, 0.35);
+  box-shadow: 0 1px 2px rgba($teal, 0.35);
   &:hover { background: var(--du-primary-dark); color: #fff; box-shadow: var(--du-shadow-md); }
   &:active:not([disabled]) { background: var(--du-primary-active); }
 }
 
-/* Action principale de la page : jaune, texte bleu nuit (à utiliser une fois par écran) */
+/* Action principale de la page : lilas rosé, texte violet nuit (une fois par écran) */
 .btn--accent {
   background: var(--du-accent);
   color: var(--du-on-accent);
-  box-shadow: 0 1px 2px rgba(19, 33, 79, 0.18);
+  box-shadow: 0 1px 2px rgba(11, 59, 54, 0.18);
   &:hover { background: var(--du-accent-strong); color: var(--du-on-accent); box-shadow: var(--du-shadow-md); }
 }
 
@@ -424,11 +427,12 @@ a {
   &:hover { background: var(--du-primary-soft); }
 }
 
+/* Rouge plein un cran plus sombre que #EF4444 : le texte blanc reste lisible */
 .btn--danger {
-  background: var(--du-danger);
+  background: var(--du-danger-solid);
   color: #fff;
   box-shadow: 0 1px 2px rgba(220, 38, 38, 0.3);
-  &:hover { background: #a93226; color: #fff; }
+  &:hover { background: var(--du-danger-solid-hover); color: #fff; }
   @include focus-ring(var(--du-ring-danger));
 }
 
@@ -461,8 +465,8 @@ a {
     color: var(--du-muted);
     letter-spacing: 0.01em;
   }
-  .req   { color: var(--du-danger); margin-left: 2px; }
-  .error { color: var(--du-danger); font-size: 0.78rem; font-weight: 500; }
+  .req   { color: var(--du-danger-text); margin-left: 2px; }
+  .error { color: var(--du-danger-text); font-size: 0.78rem; font-weight: 500; }
   .hint  { font-size: 0.78rem; color: var(--du-muted); }
 }
 
@@ -475,13 +479,13 @@ a {
   background: #fff;
   @include transition(border-color, box-shadow, background-color);
 
-  &:hover:not(:disabled) { border-color: #a9bbdc; }
+  &:hover:not(:disabled) { border-color: #9fc0bc; }
   &:focus {
     outline: none;
     border-color: var(--du-primary);
     box-shadow: var(--du-ring);
   }
-  &::placeholder { color: #75839f; }
+  &::placeholder { color: #6f8481; }
   &:disabled,
   &[readonly] {
     background: var(--du-surface-2);
@@ -495,7 +499,7 @@ select.input {
   cursor: pointer;
   appearance: none;
   padding-right: 2.2rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%235b6a88' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='%23647775' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 7.5 5 5 5-5'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.7rem center;
   background-size: 1rem;
@@ -543,8 +547,8 @@ input[type='radio'] { accent-color: var(--du-primary); }
     text-transform: uppercase;
     letter-spacing: 0.06em;
     font-weight: 700;
-    color: #46587d;
-    background: #eaf0fb;
+    color: #4b6360;
+    background: #eef6f5;
     padding: 0.7rem 1rem;
     border-bottom: 2px solid var(--du-border-strong);
     white-space: nowrap;
@@ -556,7 +560,7 @@ input[type='radio'] { accent-color: var(--du-primary); }
   }
   tbody tr {
     transition: background-color 0.15s ease;
-    &:nth-child(even) td { background: #fafcff; }
+    &:nth-child(even) td { background: #fafdfd; }
     &:hover td { background: var(--du-primary-soft-2); }
     &:last-child td { border-bottom: 0; }
   }
@@ -586,8 +590,26 @@ input[type='radio'] { accent-color: var(--du-primary); }
   }
 }
 
+/* Pastille de couleur vive devant le libellé : l’état se lit aussi par le texte */
+@each $nom, $var in (
+  'success': --du-success,
+  'warning': --du-warning,
+  'danger':  --du-danger,
+  'info':    --du-info
+) {
+  .badge--#{$nom}::before {
+    content: '';
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(#{$var});
+    flex: 0 0 auto;
+  }
+}
+
 /* --------------------------------------------------------------------------
    10. Bandeaux (démonstration / succès / erreur / info), depuis $alertes
+       Chaque bandeau a une icône : l’état ne dépend jamais de la couleur seule
    -------------------------------------------------------------------------- */
 %alerte {
   display: flex;
@@ -610,6 +632,13 @@ input[type='radio'] { accent-color: var(--du-primary); }
   .#{$nom} {
     @extend %alerte;
     @include alerte(nth($c, 1), nth($c, 2), nth($c, 3), nth($c, 4));
+
+    &::before {
+      content: nth($c, 5);
+      flex: 0 0 auto;
+      font-weight: 700;
+      line-height: 1;
+    }
   }
 }
 
@@ -657,7 +686,7 @@ input[type='radio'] { accent-color: var(--du-primary); }
     height: 1.95rem;
     flex: 0 0 auto;
     border-radius: 9px;
-    background: var(--du-accent);        /* repère jaune */
+    background: var(--du-accent);        /* repère lilas */
     color: var(--du-on-accent);
   }
   &__corps { padding: 1.2rem 1.4rem; }
@@ -717,7 +746,7 @@ input[type='radio'] { accent-color: var(--du-primary); }
     color: var(--du-primary);
     background: var(--du-primary-soft);
     border-radius: 16px;
-    box-shadow: inset 0 -3px 0 var(--du-accent); /* filet jaune : repère de la marque */
+    box-shadow: inset 0 -3px 0 var(--du-accent); /* filet lilas : repère de la marque */
   }
   p { margin: 0; }
   strong { color: var(--du-text); font-size: 1rem; }
@@ -738,7 +767,7 @@ input[type='radio'] { accent-color: var(--du-primary); }
   &__voile {
     position: absolute;
     inset: 0;
-    background: rgba(10, 26, 71, 0.5);
+    background: rgba(12, 33, 32, 0.5);
     backdrop-filter: blur(3px);
   }
   &__boite {
@@ -800,6 +829,50 @@ input[type='radio'] { accent-color: var(--du-primary); }
 }
 
 /* --------------------------------------------------------------------------
+   14 bis. Composants « Purity » : carte sombre, carte héros, tuile chiffrée
+   -------------------------------------------------------------------------- */
+.card--sombre {
+  background: linear-gradient(160deg, #1a403d, var(--du-navy) 60%, var(--du-navy-deep));
+  border-color: transparent;
+  color: #d3e6e3;
+  h2, h3 { color: #fff; }
+  .muted { color: #9fbdb9; }
+}
+
+.card--hero {
+  background: linear-gradient(135deg, #4fd1c5, #14a89a 60%, #0d8074);
+  border-color: transparent;
+  color: var(--du-on-accent);
+  h2, h3 { color: var(--du-on-accent); }
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.1rem 1.4rem;
+  background: var(--du-surface);
+  border-radius: var(--du-radius-lg);
+  box-shadow: var(--du-shadow);
+
+  &__label { font-size: 0.8rem; font-weight: 600; color: var(--du-muted); }
+  &__value { font-size: 1.35rem; font-weight: 800; color: var(--du-text); letter-spacing: -0.02em; }
+  &__delta { margin-left: 0.4rem; font-size: 0.8rem; font-weight: 700; color: var(--du-success-text); }
+  &__delta--down { color: var(--du-danger-text); }
+  &__icon {
+    display: grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 auto;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #4fd1c5, #0d8074);
+    color: #fff;
+  }
+}
+
+/* --------------------------------------------------------------------------
    15. Compatibilité : anciens noms utilisés dans les pages existantes
    -------------------------------------------------------------------------- */
 .etat {
@@ -821,7 +894,7 @@ input[type='radio'] { accent-color: var(--du-primary); }
   border-radius: 50%;
   border: 3px solid var(--du-border-strong);
   border-top-color: var(--du-primary);
-  border-right-color: var(--du-accent);  /* petit repère jaune qui tourne */
+  border-right-color: var(--du-accent);  /* petit repère lilas qui tourne */
   animation: du-spin 0.8s linear infinite;
 }
 @keyframes du-spin { to { transform: rotate(360deg); } }
@@ -884,7 +957,7 @@ hr,
 .skeleton {
   position: relative;
   overflow: hidden;
-  background: #e6ecf6;
+  background: #e7efee;
   border-radius: 8px;
   min-height: 1rem;
   color: transparent !important;
@@ -935,7 +1008,7 @@ hr,
 
   body { background: #fff; font-size: 12px; }
   .shell__page { max-width: none; padding: 0; }
-  .card { box-shadow: none; border-color: #cfd9ec; break-inside: avoid; }
+  .card { box-shadow: none; border-color: #d3e0df; break-inside: avoid; }
   .table th { position: static; }
   .table tbody tr:nth-child(even) td { background: #fff; }
   a { color: inherit; text-decoration: none; }

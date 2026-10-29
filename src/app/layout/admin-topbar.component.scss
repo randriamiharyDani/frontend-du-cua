@@ -2,15 +2,17 @@
   display: contents;
 }
 
-/* ========== Barre : fond blanc, filet jaune en bas ========== */
+/* ========== Barre « Purity » : verre blanc, filet fin en bas ========== */
 .topbar {
   --topbar-h: 62px;
-  --topbar-bg: #fff; /* #fff ou transparent */
-  --topbar-fg: #13214f; /* texte et icônes : bleu nuit */
-  --topbar-bg-1: #0a1a47;
-  --topbar-bg-2: #10307f;
-  --topbar-bg-3: #1d4ed8;
-  --topbar-focus: #10307f; /* anneau de focus bleu : visible sur fond clair */
+  --topbar-bg: rgba(255, 255, 255, 0.72); /* verre : le halo menthe de la page transparaît */
+  --topbar-fg: #1f2d2c; /* texte et icônes : vert-noir */
+  --topbar-bg-1: #0a2624;
+  --topbar-bg-2: #0f3b38;
+  --topbar-bg-3: #0f766e;
+  --topbar-focus: #0d8074; /* anneau de focus sarcelle : visible sur fond clair */
+  --topbar-line: #e6eeed; /* filet fin du bas : même teinte que les séparateurs de la sidebar (--sb-line) */
+  --topbar-tint: 13, 128, 116; /* sarcelle en RGB, pour les fonds translucides */
   position: sticky;
   top: 0;
   z-index: 10;
@@ -21,8 +23,10 @@
   min-height: var(--topbar-h);
   padding: 0.5rem max(1.75rem, env(safe-area-inset-right)) 0.5rem max(1.75rem, env(safe-area-inset-left));
   background: var(--topbar-bg);
-  /* filet jaune : le repère de la marque, un seul endroit */
-  box-shadow: inset 0 -3px 0 var(--du-accent, #ffc72c), 0 2px 14px rgba(10, 26, 71, 0.12);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+          backdrop-filter: blur(14px) saturate(1.2);
+  /* filet fin en bas + ombre très douce */
+  box-shadow: inset 0 -1px 0 var(--topbar-line), 0 4px 24px rgba(20, 60, 56, 0.06);
 }
 
 /* --- Texte de fond animé (lent, discret) --- */
@@ -30,7 +34,7 @@
 .topbar::after {
   position: absolute;
   top: 0;
-  bottom: 3px; /* ne recouvre pas le filet jaune */
+  bottom: 1px; /* ne recouvre pas le filet */
   z-index: -1;
   display: flex;
   align-items: center;
@@ -61,7 +65,7 @@
 //   justify-content: flex-end;
 //   padding-right: 0.75rem;
 //   // background-image: url("/images/img1.jpg");
-//   background-color: #ffc72c;
+//   background-color: #4fd1c5;
 //   animation: topbar-texte 60s ease-in-out infinite alternate;
 //   -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 25%);
 //           mask-image: linear-gradient(to right, transparent 0%, #000 25%);
@@ -74,7 +78,7 @@
 //   justify-content: flex-start;
 //   padding-left: 0.75rem;
 //   // background-image: url("/images/img1.jpg");
-//   background-color: #ffc72c;
+//   background-color: #4fd1c5;
 //   animation: topbar-texte-inverse 60s ease-in-out infinite alternate;
 //   -webkit-mask-image: linear-gradient(to left, transparent 0%, #000 25%);
 //           mask-image: linear-gradient(to left, transparent 0%, #000 25%);
@@ -138,11 +142,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.topbar__btn:hover  { background: rgba(16, 48, 127, 0.08); }
-.topbar__btn:active { background: rgba(16, 48, 127, 0.16); transform: scale(0.95); }
+.topbar__btn:hover  { background: rgba(var(--topbar-tint), 0.08); }
+.topbar__btn:active { background: rgba(var(--topbar-tint), 0.16); transform: scale(0.95); }
 
 .topbar__btn[aria-expanded="true"] {
-  background: rgba(16, 48, 127, 0.12);
+  background: rgba(var(--topbar-tint), 0.12);
 }
 
 .topbar__btn--menu {
@@ -175,7 +179,8 @@
   position: relative;
 }
 
-/* Pastille jaune, texte bleu nuit : lisible de loin, dans la charte */
+/* Pastille rouge, chiffre blanc : lisible de loin.
+   Rouge plein #DC2626 (et non #EF4444) pour que le blanc reste lisible. */
 .cloche__compteur {
   position: absolute;
   top: -2px;
@@ -186,15 +191,14 @@
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
-  background:  #ff1313;
-  color: var(--du-on-accent, #13214f);
+  background: var(--du-danger-solid, #dc2626);
+  color: #fff;
   font-size: 0.68rem;
   font-weight: 800;
   line-height: 1;
   font-variant-numeric: tabular-nums;
   border: 2px solid #fff;
   pointer-events: none;
-  color : white;
 }
 
 .cloche__panneau {
@@ -210,7 +214,7 @@
   background: var(--du-surface, #fff);
   border: 1px solid var(--du-border);
   border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(10, 26, 71, 0.22);
+  box-shadow: 0 12px 32px rgba(20, 60, 56, 0.16);
   overflow: hidden;
   transform-origin: top right;
   animation: panneau-ouvrir 0.16s ease-out;
@@ -276,8 +280,8 @@
   border: 0;
   border-radius: 8px;
   background: var(--du-primary-soft-2);
-  /* non lue : barre jaune à gauche (repère non colorimétrique en plus du fond) */
-  box-shadow: inset 4px 0 0 var(--du-accent, #ffc72c);
+  /* non lue : barre menthe à gauche (repère non colorimétrique en plus du fond) */
+  box-shadow: inset 4px 0 0 var(--du-accent, #4fd1c5);
   font: inherit;
   text-align: left;
   cursor: pointer;
@@ -346,9 +350,9 @@
   gap: 0.6rem;
   min-height: 2.75rem;
   padding: 0.3rem 0.6rem 0.3rem 0.3rem;
-  border: 1px solid rgba(16, 48, 127, 0.18);
+  border: 1px solid rgba(var(--topbar-tint), 0.2);
   border-radius: 999px;
-  background: rgba(16, 48, 127, 0.05);
+  background: rgba(var(--topbar-tint), 0.05);
   color: var(--topbar-fg);
   font: inherit;
   cursor: pointer;
@@ -357,7 +361,7 @@
 }
 
 .topbar__user:hover {
-  background: rgba(16, 48, 127, 0.1);
+  background: rgba(var(--topbar-tint), 0.1);
 }
 
 .topbar__user:active {
@@ -365,10 +369,10 @@
 }
 
 .topbar__user[aria-expanded="true"] {
-  background: rgba(16, 48, 127, 0.14);
+  background: rgba(var(--topbar-tint), 0.14);
 }
 
-/* Avatar jaune, initiales bleu nuit */
+/* Avatar menthe, initiales vert sombre */
 .topbar__avatar {
   display: grid;
   place-items: center;
@@ -376,11 +380,11 @@
   height: 38px;
   flex-shrink: 0;
   border-radius: 50%;
-  background: var(--du-accent, #ffc72c);
-  color: var(--du-on-accent, #13214f);
+  background: var(--du-accent, #4fd1c5);
+  color: var(--du-on-accent, #0b3b36);
   font-size: 0.82rem;
   font-weight: 800;
-  box-shadow: 0 0 0 2px rgba(16, 48, 127, 0.18);
+  box-shadow: 0 0 0 2px rgba(var(--topbar-tint), 0.2);
 }
 
 .topbar__identite {
@@ -397,7 +401,7 @@
 
 .topbar__identite small {
   display: block;
-  color: rgba(19, 33, 79, 0.7);
+  color: rgba(31, 45, 44, 0.72);
   font-size: 0.76rem;
   max-width: 200px;
   white-space: nowrap;
@@ -422,7 +426,7 @@
   background: var(--du-surface, #fff);
   border: 1px solid var(--du-border);
   border-radius: 12px;
-  box-shadow: 0 12px 32px rgba(10, 26, 71, 0.22);
+  box-shadow: 0 12px 32px rgba(20, 60, 56, 0.16);
   transform-origin: top right;
   animation: panneau-ouvrir 0.16s ease-out;
 }
