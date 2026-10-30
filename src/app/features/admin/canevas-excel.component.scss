@@ -6,22 +6,37 @@
 }
 
 .canevas {
+  /* Largeurs pilotées ici (ou surchargées par colonne, voir plus bas) */
+  --col-w: 12rem;        /* colonnes normales */
+  --col-fixe-w: 14rem;   /* première colonne figée */
+  --nb-cols: 1;          /* à renseigner depuis le template (voir plus bas) */
+
   border-collapse: separate;
   border-spacing: 0;
-  width: max-content;
+  table-layout: fixed; /* les largeurs sont respectées, plus de "auto" */
+  /* largeur totale = 1re colonne + (n-1) colonnes ; au minimum le conteneur */
+  width: calc(var(--col-fixe-w) + (var(--nb-cols) - 1) * var(--col-w));
   min-width: 100%;
   font-size: 0.82rem;
 }
 
 .canevas th,
 .canevas td {
+  width: var(--col-w);
   padding: 0.55rem 0.75rem;
   border-bottom: 1px solid var(--du-border);
   border-right: 1px solid var(--du-border);
   text-align: left;
   vertical-align: top;
+  /* texte coupé proprement : le contenu complet reste dans l'attribut title */
   white-space: nowrap;
-  max-width: 16rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Pour laisser le texte passer à la ligne dans certaines colonnes */
+.canevas .cell-multiligne {
+  white-space: normal;
   overflow-wrap: anywhere;
 }
 
@@ -30,17 +45,16 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  background: #eef2f8;
+  background: #eef6f5;
   color: var(--du-primary-dark);
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
   font-weight: 700;
-  white-space: nowrap;
 }
 
 .canevas tbody tr:nth-child(even) td {
-  background: #f9fbfd;
+  background: #fafdfd;
 }
 .canevas tbody tr:hover td {
   background: var(--du-primary-soft);
@@ -51,15 +65,16 @@
   position: sticky;
   left: 0;
   z-index: 1;
+  width: var(--col-fixe-w);
   background: #fff;
   font-weight: 600;
 }
 .canevas thead .col-fixe {
   z-index: 3;
-  background: #eef2f8;
+  background: #eef6f5;
 }
 .canevas tbody tr:nth-child(even) .col-fixe {
-  background: #f9fbfd;
+  background: #fafdfd;
 }
 .canevas tbody tr:hover .col-fixe {
   background: var(--du-primary-soft);
@@ -94,14 +109,14 @@
 .compteur {
   padding: 0.2rem 0.65rem;
   border-radius: 999px;
-  background: #eef1f6;
-  color: #475569;
+  background: #e8f0ef;
+  color: #3d4f4d;
   font-size: 0.8rem;
   font-weight: 600;
 }
-.compteur--ok { background: var(--du-success-soft, #dff3e8); color: #14603c; }
-.compteur--warn { background: var(--du-warning-soft, #f7edd6); color: #8a5a12; }
-.compteur--err { background: var(--du-danger-soft, #fbeaea); color: #9b2c2c; }
+.compteur--ok   { background: var(--du-success-soft); color: #166534; }
+.compteur--warn { background: var(--du-warning-soft); color: #9a3412; }
+.compteur--err  { background: var(--du-danger-soft);  color: #991b1b; }
 .rapport__table {
   margin-top: 0.9rem;
   max-height: 22rem;

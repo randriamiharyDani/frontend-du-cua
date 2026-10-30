@@ -1,61 +1,73 @@
 {
-  "hash": "44d49f81",
-  "configHash": "25f889a2",
-  "lockfileHash": "23aa3041",
-  "browserHash": "4be0b04a",
+  "hash": "6a1a6138",
+  "configHash": "21e5c950",
+  "lockfileHash": "d8bb0e48",
+  "browserHash": "8859fd86",
   "optimized": {
     "@angular/common": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/common.mjs",
       "file": "@angular_common.js",
-      "fileHash": "fe1920de",
+      "fileHash": "df3e8e85",
       "needsInterop": false
     },
     "@angular/common/http": {
       "src": "../../../../../../node_modules/@angular/common/fesm2022/http.mjs",
       "file": "@angular_common_http.js",
-      "fileHash": "34a1086c",
+      "fileHash": "45f434eb",
       "needsInterop": false
     },
     "@angular/core": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/core.mjs",
       "file": "@angular_core.js",
-      "fileHash": "ec81423f",
+      "fileHash": "cbbc32e8",
       "needsInterop": false
     },
     "@angular/core/rxjs-interop": {
       "src": "../../../../../../node_modules/@angular/core/fesm2022/rxjs-interop.mjs",
       "file": "@angular_core_rxjs-interop.js",
-      "fileHash": "d49a2883",
+      "fileHash": "2ca64aef",
       "needsInterop": false
     },
     "@angular/forms": {
       "src": "../../../../../../node_modules/@angular/forms/fesm2022/forms.mjs",
       "file": "@angular_forms.js",
-      "fileHash": "8324c6b6",
+      "fileHash": "b9551ef3",
       "needsInterop": false
     },
     "@angular/platform-browser": {
       "src": "../../../../../../node_modules/@angular/platform-browser/fesm2022/platform-browser.mjs",
       "file": "@angular_platform-browser.js",
-      "fileHash": "3e906259",
+      "fileHash": "ce3fcd45",
       "needsInterop": false
     },
     "@angular/router": {
       "src": "../../../../../../node_modules/@angular/router/fesm2022/router.mjs",
       "file": "@angular_router.js",
-      "fileHash": "83a1ec2c",
+      "fileHash": "6e9cba65",
+      "needsInterop": false
+    },
+    "jspdf-autotable": {
+      "src": "../../../../../../node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.mjs",
+      "file": "jspdf-autotable.js",
+      "fileHash": "8e7a895d",
+      "needsInterop": false
+    },
+    "jspdf": {
+      "src": "../../../../../../node_modules/jspdf/dist/jspdf.es.min.js",
+      "file": "jspdf.js",
+      "fileHash": "8099920d",
       "needsInterop": false
     },
     "leaflet": {
       "src": "../../../../../../node_modules/leaflet/dist/leaflet-src.js",
       "file": "leaflet.js",
-      "fileHash": "052d9b53",
+      "fileHash": "ca595742",
       "needsInterop": true
     },
     "rxjs": {
       "src": "../../../../../../node_modules/rxjs/dist/esm5/index.js",
       "file": "rxjs.js",
-      "fileHash": "857afbd6",
+      "fileHash": "15d74c10",
       "needsInterop": false
     }
   },
@@ -80,12 +92,32 @@
       "file": "esm5-DYNb5pjm.js",
       "isDynamicEntry": false
     },
+    "html2canvas-DKMf-DQb": {
+      "file": "html2canvas-DKMf-DQb.js",
+      "isDynamicEntry": true
+    },
     "http-BZVSjuW_": {
       "file": "http-BZVSjuW_.js",
       "isDynamicEntry": false
     },
+    "index.es-D3Gq_sa7": {
+      "file": "index.es-D3Gq_sa7.js",
+      "isDynamicEntry": true
+    },
     "platform-browser-tjTxnB68": {
       "file": "platform-browser-tjTxnB68.js",
+      "isDynamicEntry": false
+    },
+    "purify.es-BSEqxv49": {
+      "file": "purify.es-BSEqxv49.js",
+      "isDynamicEntry": true
+    },
+    "rolldown-runtime-BPOCksWG": {
+      "file": "rolldown-runtime-BPOCksWG.js",
+      "isDynamicEntry": false
+    },
+    "typeof-KEtdrNHU": {
+      "file": "typeof-KEtdrNHU.js",
       "isDynamicEntry": false
     }
   }

@@ -1,4 +1,4 @@
-import { Bi as signal, Ft as assertInInjectionContext, G as Injector, O as DestroyRef, _ as untracked, bn as effect, c as computed, di as promiseWithResolvers, l as encapsulateResourceError, m as resource, qt as assertNotInReactiveContext, st as PendingTasks, u as getOutputDestroyRef, ut as RuntimeError, v as require_operators, xr as inject } from "./_resource-chunk-CY0xNRjm.js";
+import { Bi as signal, Ft as assertInInjectionContext, G as Injector, O as DestroyRef, _ as untracked, bn as effect, c as computed, di as promiseWithResolvers, l as encapsulateResourceError, m as resource, qt as assertNotInReactiveContext, st as PendingTasks, u as getOutputDestroyRef, ut as RuntimeError, v as require_operators, xr as inject } from "./_resource-chunk-Btb6ZwC5.js";
 import { t as require_cjs } from "./rxjs.js";
 //#region node_modules/@angular/core/fesm2022/rxjs-interop.mjs
 var import_cjs = require_cjs();

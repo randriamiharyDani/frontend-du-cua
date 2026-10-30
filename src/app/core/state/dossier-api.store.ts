@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, catchError, finalize, forkJoin, map, of, switchMap, tap, throwError } from 'rxjs';
+import { EMPTY, Observable, catchError, expand, finalize, forkJoin, map, of, reduce, switchMap, tap, throwError } from 'rxjs';
 import {
   DocumentDto,
   FiltresDossiers,
@@ -135,6 +135,31 @@ export class DossierApiStore {
         this._chargementListe.set(false);
       },
     });
+  }
+
+  /**
+   * Charge TOUS les dossiers correspondant aux filtres, toutes pages
+   * confondues (`per_page=100`), sans modifier la liste affichée. Utilisé
+   * notamment par l'export PDF.
+   */
+  chargerTout(filtres: FiltresDossiers): Observable<Dossier[]> {
+    const base: FiltresDossiers = { ...filtres, per_page: 100 };
+
+    return this.api.lister({ ...base, page: 1 }).pipe(
+      expand((reponse) => {
+        const page = reponse.meta.current_page;
+        const dernierPage = reponse.meta.last_page ?? page;
+        return page < dernierPage
+          ? this.api.lister({ ...base, page: page + 1 })
+          : EMPTY;
+      }),
+      reduce((tous: Dossier[], reponse) => {
+        const page = (reponse.data ?? [])
+          .filter((dto) => !!dto)
+          .map(dossierDepuisApi);
+        return [...tous, ...page];
+      }, []),
+    );
   }
 
   /** Charge le détail complet (dossier, workflow, transferts, historique, documents). */

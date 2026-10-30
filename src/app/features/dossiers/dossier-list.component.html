@@ -1,6 +1,56 @@
 <du-page-header title="Gestion des dossiers" subtitle="Constructions illicites">
+  <div #exportPdf class="export-pdf">
+    <button
+      type="button"
+      class="btn btn--secondary"
+      [disabled]="exportEnCours()"
+      [attr.aria-busy]="exportEnCours()"
+      [attr.aria-expanded]="menuExportOuvert()"
+      aria-haspopup="dialog"
+      aria-controls="export-pdf-panneau"
+      (click)="basculerMenuExport()"
+    >
+      <du-icon name="download" [size]="16" />
+      {{ exportEnCours() ? 'Export en cours…' : 'Exporter en PDF' }}
+    </button>
+    <span class="sr-only" aria-live="polite">{{ exportEnCours() ? 'Export en cours' : '' }}</span>
+
+    @if (menuExportOuvert()) {
+      <div id="export-pdf-panneau" class="export-pdf__panneau" role="dialog" aria-label="Exporter en PDF">
+        <div class="field">
+          <label for="date-reference">Date de référence</label>
+          <input
+            #ref
+            id="date-reference"
+            type="date"
+            class="input"
+            [value]="dateReference()"
+            [disabled]="exportEnCours()"
+            (change)="setDateReference(ref.value)"
+          />
+        </div>
+        <div class="export-pdf__options" role="menu" aria-label="Période d’export">
+          @for (p of periodes; track p.valeur) {
+            <button
+              type="button"
+              class="export-pdf__option"
+              role="menuitem"
+              [disabled]="exportEnCours()"
+              (click)="exporter(p.valeur)"
+            >
+              {{ p.libelle }}
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </div>
   <a routerLink="/admin/dossiers/nouveau" class="btn btn--primary"><du-icon name="plus" [size]="16" /> Nouveau dossier</a>
 </du-page-header>
+
+@if (erreurExport()) {
+  <p class="export-pdf__erreur" role="alert">{{ erreurExport() }}</p>
+}
 
 <section class="card filtres-card">
   <div class="filtres-card__entete">

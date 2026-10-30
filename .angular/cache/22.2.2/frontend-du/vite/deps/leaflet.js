@@ -1,6 +1,4 @@
-//#region \0rolldown/runtime.js
-var __commonJSMin = (cb, mod) => () => (mod || (cb((mod = { exports: {} }).exports, mod), cb = null), mod.exports);
-//#endregion
+import { t as __commonJSMin } from "./rolldown-runtime-BPOCksWG.js";
 //#region node_modules/leaflet/dist/leaflet-src.js
 var require_leaflet_src = /* @__PURE__ */ __commonJSMin(((exports, module) => {
 	/* @preserve

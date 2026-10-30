@@ -257,6 +257,7 @@
   color: var(--sb-text-strong);
   font-weight: 700;
   box-shadow: var(--sb-card-shadow);
+  border: 1px solid var(--sb-accent);
 }
 
 .sidebar__nav a.is-active du-icon,

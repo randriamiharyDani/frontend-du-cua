@@ -17,7 +17,89 @@ td.actions .btn + .btn {
   margin-left: 0.4rem;
 }
 
+.export-pdf {
+  position: relative;
+  display: inline-flex;
+}
+
+.export-pdf__panneau {
+  position: absolute;
+  top: calc(100% + 0.45rem);
+  right: 0;
+  z-index: 30;
+  width: 240px;
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  background: var(--du-surface);
+  border: 1px solid var(--du-border-strong);
+  border-radius: var(--du-radius-sm);
+  box-shadow: var(--du-shadow-md);
+}
+
+.export-pdf__options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.export-pdf__option {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--du-text);
+  font: inherit;
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color var(--du-transition), color var(--du-transition);
+
+  &:hover:not([disabled]),
+  &:focus-visible {
+    background: var(--du-primary-soft);
+    color: var(--du-primary-dark);
+    outline: none;
+  }
+
+  &:focus-visible {
+    box-shadow: var(--du-ring);
+  }
+
+  &[disabled] {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
+.export-pdf__erreur {
+  margin: -0.6rem 0 1rem;
+  padding: 0.65rem 0.9rem;
+  border: 1px solid #fbc7c7;
+  border-radius: var(--du-radius-sm);
+  background: var(--du-danger-soft);
+  color: var(--du-danger-text);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
 @media (max-width: 640px) {
+  .export-pdf {
+    flex: 1 1 auto;
+  }
+
+  .export-pdf > .btn {
+    width: 100%;
+  }
+
+  .export-pdf__panneau {
+    left: 0;
+    right: auto;
+    width: min(100%, 260px);
+  }
+
   /* Tableau → cartes sur mobile : chaque ligne devient un bloc lisible. */
   .table--dossiers thead {
     display: none;
