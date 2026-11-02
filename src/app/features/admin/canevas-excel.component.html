@@ -21,6 +21,10 @@
   (change)="onFichierImport($event)"
 />
 
+<p class="muted small">
+  Import .xlsx ou .csv : tous les champs sont facultatifs, les cellules vides sont acceptées.
+</p>
+
 @if (message()) {
   <div class="succes" role="status">{{ message() }}</div>
 }
