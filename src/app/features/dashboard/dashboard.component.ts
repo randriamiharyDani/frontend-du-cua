@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   ETAPE_LABEL,
@@ -66,9 +66,32 @@ const COULEUR_SERVICE: Record<ServiceDossier, string> = {
   SCAD: '#16794c',
 };
 
+const COULEUR_MOUVEMENT: Record<string, string> = {
+  envoye: '#b7791f',
+  recu: '#16794c',
+  retourne: '#c0392b',
+};
+
+type Granularite = 'mois' | 'trimestre' | 'semestre';
+type TypeGraphe = 'courbe' | 'histogramme';
+
+/** Regroupements glissants calculés à partir de la série mensuelle réelle. */
+const GRANULARITES: { cle: Granularite; label: string; taille: number }[] = [
+  { cle: 'mois', label: 'Mois', taille: 1 },
+  { cle: 'trimestre', label: '3 mois', taille: 3 },
+  { cle: 'semestre', label: '6 mois', taille: 6 },
+];
+
+/** Géométrie du graphique SVG d'évolution. */
+const GW = 600;
+const GH = 220;
+const GPX = 28;
+const GPT = 16;
+const GPB = 32;
+
 /**
  * Tableau de bord — DONNÉES RÉELLES (API Laravel `GET /api/statistiques`).
- * Affiche : cartes indicateurs, répartition par nature/statut/étape/service,
+ * Affiche : statistiques avancées, cartes indicateurs, répartition par nature/statut/étape/service,
  * évolution mensuelle, transferts et derniers dossiers.
  * Gère les états chargement, erreur et absence de données.
  */
@@ -204,6 +227,127 @@ export class DashboardComponent implements OnInit, OnDestroy {
     })),
   );
 
+  // --- Statistiques avancées (100 % données de GET /api/statistiques) ---
+  protected readonly granularites = GRANULARITES;
+  protected readonly granularite = signal<Granularite>('mois');
+  protected readonly typeGraphe = signal<TypeGraphe>('courbe');
+  protected readonly survol = signal<number | null>(null);
+
+  /** « Traités » = dossiers pris en charge ou clôturés (en cours + clôturés). */
+  protected readonly traites = computed(() => this.enCours() + this.clotures());
+  protected readonly total12Mois = computed(() => this.evolution().reduce((a, p) => a + p.total, 0));
+
+  private part(n: number): number {
+    const t = this.totalActifs();
+    return t ? Math.round((n / t) * 1000) / 10 : 0;
+  }
+
+  /** KPI : reçus, traités, en attente, clôturés. */
+  protected readonly kpis = computed(() => [
+    { cle: 'recus', label: 'Reçus', total: this.totalActifs(), part: 100, couleur: '#143a6b', note: 'Tous les dossiers' },
+    { cle: 'traites', label: 'Traités', total: this.traites(), part: this.part(this.traites()), couleur: COULEUR_STATUT.en_cours, note: 'En cours + clôturés' },
+    { cle: 'attente', label: 'En attente', total: this.enAttente(), part: this.part(this.enAttente()), couleur: COULEUR_STATUT.en_attente, note: 'Traités, en attente de validation' },
+    { cle: 'clotures', label: 'Clôturés', total: this.clotures(), part: this.part(this.clotures()), couleur: COULEUR_STATUT.cloture, note: 'Dossiers terminés' },
+  ]);
+
+  /** Indicateurs de performance (jauges). */
+  protected readonly indicateurs = computed(() => {
+    const t = this.totalActifs();
+    return [
+      { cle: 'cloture', label: 'Taux de clôture', pct: this.part(this.clotures()), detail: `${this.clotures()} / ${t} dossiers`, couleur: COULEUR_STATUT.cloture },
+      { cle: 'prise', label: 'Taux de prise en charge', pct: this.part(this.traites()), detail: `${this.traites()} / ${t} dossiers`, couleur: COULEUR_STATUT.en_cours },
+      { cle: 'attente', label: "Taux d'attente", pct: this.part(this.enAttente()), detail: `${this.enAttente()} / ${t} dossiers`, couleur: COULEUR_STATUT.en_attente },
+      { cle: 'recents', label: `Créés sur ${this.periodeRecente()} j`, pct: this.part(this.recents()), detail: `${this.recents()} / ${t} dossiers`, couleur: '#143a6b' },
+    ];
+  });
+
+  protected readonly segmentsStatut = computed(() =>
+    this.parStatut().map((s) => ({ ...s, pct: this.part(s.total), couleur: COULEUR_STATUT[s.cle as StatutDossier] })),
+  );
+  protected readonly servicesPart = computed(() =>
+    this.parService().map((sv) => ({ ...sv, pct: this.part(sv.total), couleur: COULEUR_SERVICE[sv.cle as ServiceDossier] })),
+  );
+
+  /** Série d'évolution regroupée par blocs complets, en partant du mois le plus récent. */
+  protected readonly serie = computed(() => {
+    const taille = GRANULARITES.find((g) => g.cle === this.granularite())?.taille ?? 1;
+    const ev = this.evolution();
+    const blocs: { label: string; total: number }[] = [];
+    for (let fin = ev.length; fin - taille >= 0; fin -= taille) {
+      const bloc = ev.slice(fin - taille, fin);
+      blocs.unshift({
+        label:
+          taille === 1
+            ? this.formatPeriode(bloc[0].periode)
+            : `${this.formatPeriode(bloc[0].periode)}–${this.formatPeriode(bloc[taille - 1].periode)}`,
+        total: bloc.reduce((a, p) => a + p.total, 0),
+      });
+    }
+    return blocs;
+  });
+
+  /** Géométrie SVG (courbe, aire, barres). */
+  protected readonly graphe = computed(() => {
+    const s = this.serie();
+    const n = s.length;
+    const max = Math.max(1, ...s.map((p) => p.total));
+    const zone = (GW - 2 * GPX) / Math.max(n, 1);
+    const base = GH - GPB;
+    const pts = s.map((p, i) => ({
+      i,
+      label: p.label,
+      total: p.total,
+      x: GPX + (i + 0.5) * zone,
+      y: base - (p.total / max) * (base - GPT),
+    }));
+    const ligne = pts.map((p, i) => `${i ? 'L' : 'M'}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
+    const aire = n ? `${ligne} L${pts[n - 1].x.toFixed(1)},${base} L${pts[0].x.toFixed(1)},${base} Z` : '';
+    return { pts, ligne, aire, base, zone, largeurBarre: Math.min(34, zone * 0.6), largeur: GW, hauteur: GH, px: GPX };
+  });
+
+  protected readonly pointActif = computed(() => {
+    const pts = this.graphe().pts;
+    return pts[this.survol() ?? pts.length - 1] ?? null;
+  });
+
+  /** Variation en % du point actif par rapport au précédent (null si non calculable). */
+  protected readonly variationActive = computed(() => {
+    const pts = this.graphe().pts;
+    const i = this.survol() ?? pts.length - 1;
+    return i > 0 ? this.variation(pts[i - 1].total, pts[i].total) : null;
+  });
+
+  /** Variation entre les deux dernières périodes de la série. */
+  protected readonly variationPeriode = computed(() => {
+    const s = this.serie();
+    return s.length > 1 ? this.variation(s[s.length - 2].total, s[s.length - 1].total) : null;
+  });
+
+  /** Transferts : flux départ → arrivée sur les derniers mouvements renvoyés par l'API. */
+  protected readonly fluxTransferts = computed(() => {
+    const map = new Map<string, { depart: string; arrivee: string; total: number }>();
+    for (const m of this.derniersMouvements()) {
+      const depart = m.service_depart || '—';
+      const arrivee = m.service_arrivee || '—';
+      const cle = `${depart}→${arrivee}`;
+      const e = map.get(cle) ?? { depart, arrivee, total: 0 };
+      e.total++;
+      map.set(cle, e);
+    }
+    const liste = [...map.values()].sort((a, b) => b.total - a.total);
+    const max = Math.max(1, ...liste.map((e) => e.total));
+    return liste.map((e) => ({ ...e, pct: Math.round((e.total / max) * 100) }));
+  });
+  protected readonly etatsTransferts = computed(() => {
+    const l = this.derniersMouvements();
+    return Object.keys(MOUVEMENT_STATE_LABEL).map((cle) => ({
+      cle,
+      label: MOUVEMENT_STATE_LABEL[cle],
+      total: l.filter((m) => (m.state as string) === cle).length,
+      couleur: COULEUR_MOUVEMENT[cle],
+    }));
+  });
+
   /** Aucune donnée chargée pour l'instant. */
   protected readonly aucuneDonnee = computed(
     () => !this.chargement() && !this.erreur() && this.stats() !== null && this.totalActifs() === 0,
@@ -225,5 +369,22 @@ export class DashboardComponent implements OnInit, OnDestroy {
   protected formatPeriode(periode: string): string {
     const [, m] = periode.split('-');
     return m ? `${m}/${periode.slice(2, 4)}` : periode;
+  }
+
+  /** Variation en % (null si la période précédente est à 0 : non calculable). */
+  private variation(precedent: number, courant: number): { valeur: number } | null {
+    return precedent === 0 ? null : { valeur: Math.round(((courant - precedent) / precedent) * 1000) / 10 };
+  }
+
+  protected formatPct(n: number): string {
+    return `${n.toLocaleString('fr-FR', { maximumFractionDigits: 1 })} %`;
+  }
+
+  protected formatDelta(n: number): string {
+    return `${n > 0 ? '+' : ''}${this.formatPct(n)}`;
+  }
+
+  protected fleche(n: number): string {
+    return n > 0 ? '▲' : n < 0 ? '▼' : '■';
   }
 }

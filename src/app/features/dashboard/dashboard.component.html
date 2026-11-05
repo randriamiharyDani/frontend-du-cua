@@ -26,6 +26,195 @@
     }
   </p>
 
+  <!-- ===== Statistiques avancées (nouvelle section) ===== -->
+  @if (!aucuneDonnee()) {
+    <section class="analytics" aria-label="Statistiques avancées">
+      <header class="analytics__entete">
+        <h2>Statistiques avancées</h2>
+        <span class="muted">Données réelles · {{ totalActifs() }} dossier(s)</span>
+      </header>
+
+      <!-- KPI -->
+      <div class="an-kpis">
+        @for (k of kpis(); track k.cle) {
+          <article class="an-kpi" [style.--c]="k.couleur">
+            <span class="an-kpi__label">{{ k.label }}</span>
+            <strong class="an-kpi__valeur">{{ k.total }}</strong>
+            <span class="an-kpi__part">{{ formatPct(k.part) }}</span>
+            <div class="an-kpi__bar"><span [style.width.%]="k.part"></span></div>
+            <small class="muted">{{ k.note }}</small>
+          </article>
+        }
+      </div>
+
+      <div class="an-grille an-grille--2">
+        <!-- Évolution interactive -->
+        <section class="an-card" aria-labelledby="an-evo">
+          <div class="an-card__entete">
+            <h3 id="an-evo">Évolution des créations</h3>
+            <div class="an-controles">
+              <div class="an-segment" role="group" aria-label="Période">
+                @for (g of granularites; track g.cle) {
+                  <button type="button" [class.is-actif]="granularite() === g.cle" (click)="granularite.set(g.cle); survol.set(null)">{{ g.label }}</button>
+                }
+              </div>
+              <div class="an-segment" role="group" aria-label="Type de graphique">
+                <button type="button" [class.is-actif]="typeGraphe() === 'courbe'" (click)="typeGraphe.set('courbe')">Courbe</button>
+                <button type="button" [class.is-actif]="typeGraphe() === 'histogramme'" (click)="typeGraphe.set('histogramme')">Histogramme</button>
+              </div>
+            </div>
+          </div>
+
+          @if (serie().length) {
+            @if (graphe(); as g) {
+              @if (pointActif(); as pa) {
+                <div class="an-readout" aria-live="polite">
+                  <span class="muted">{{ pa.label }}</span>
+                  <strong>{{ pa.total }}</strong> <span>dossier(s)</span>
+                  @if (variationActive(); as v) {
+                    <span class="an-delta" [class.is-up]="v.valeur > 0" [class.is-down]="v.valeur < 0">{{ fleche(v.valeur) }} {{ formatDelta(v.valeur) }}</span>
+                  } @else {
+                    <span class="muted">variation n/d</span>
+                  }
+                </div>
+              }
+              <svg class="an-chart" [attr.viewBox]="'0 0 ' + g.largeur + ' ' + g.hauteur" role="img" aria-label="Évolution des dossiers créés par période">
+                <defs>
+                  <linearGradient id="an-grad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#143a6b" stop-opacity="0.28" />
+                    <stop offset="100%" stop-color="#143a6b" stop-opacity="0" />
+                  </linearGradient>
+                </defs>
+                <line class="an-chart__base" [attr.x1]="g.px" [attr.x2]="g.largeur - g.px" [attr.y1]="g.base" [attr.y2]="g.base" />
+                @if (typeGraphe() === 'courbe') {
+                  <path class="an-chart__aire" [attr.d]="g.aire" fill="url(#an-grad)" />
+                  <path class="an-chart__ligne" [attr.d]="g.ligne" pathLength="1" />
+                }
+                @for (p of g.pts; track p.i) {
+                  @if (typeGraphe() === 'histogramme') {
+                    <rect class="an-chart__barre" [class.is-actif]="pointActif()?.i === p.i"
+                          [attr.x]="p.x - g.largeurBarre / 2" [attr.y]="p.y"
+                          [attr.width]="g.largeurBarre" [attr.height]="g.base - p.y" rx="3" />
+                  } @else {
+                    <circle class="an-chart__point" [class.is-actif]="pointActif()?.i === p.i" [attr.cx]="p.x" [attr.cy]="p.y" r="4.5" />
+                  }
+                  <text class="an-chart__axe" [attr.x]="p.x" [attr.y]="g.hauteur - 12" text-anchor="middle">{{ p.label }}</text>
+                  <rect class="an-chart__zone" tabindex="0"
+                        [attr.x]="p.x - g.zone / 2" y="0" [attr.width]="g.zone" [attr.height]="g.base"
+                        [attr.aria-label]="p.label + ' : ' + p.total + ' dossier(s)'"
+                        (mouseenter)="survol.set(p.i)" (focus)="survol.set(p.i)"
+                        (mouseleave)="survol.set(null)" (blur)="survol.set(null)" />
+                }
+              </svg>
+              <p class="an-note muted">
+                Total sur 12 mois : <strong>{{ total12Mois() }}</strong>.
+                La dernière période peut être en cours : sa variation est provisoire.
+              </p>
+            }
+          } @else {
+            <p class="muted">Pas encore de données sur la période.</p>
+          }
+        </section>
+
+        <!-- Indicateurs de performance -->
+        <section class="an-card" aria-labelledby="an-perf">
+          <div class="an-card__entete"><h3 id="an-perf">Indicateurs de performance</h3></div>
+          <ul class="an-gauges">
+            @for (i of indicateurs(); track i.cle) {
+              <li class="an-gauge">
+                <div class="an-gauge__cercle">
+                  <svg viewBox="0 0 44 44" aria-hidden="true">
+                    <circle class="an-gauge__fond" cx="22" cy="22" r="18" pathLength="100" />
+                    <circle class="an-gauge__val" cx="22" cy="22" r="18" pathLength="100"
+                            transform="rotate(-90 22 22)"
+                            [attr.stroke-dasharray]="i.pct + ' 100'" [style.stroke]="i.couleur" />
+                  </svg>
+                  <span class="an-gauge__pct">{{ formatPct(i.pct) }}</span>
+                </div>
+                <div>
+                  <strong>{{ i.label }}</strong>
+                  <small class="muted">{{ i.detail }}</small>
+                </div>
+              </li>
+            }
+          </ul>
+        </section>
+      </div>
+
+      <div class="an-grille an-grille--3">
+        <!-- Statut -->
+        <section class="an-card" aria-labelledby="an-statut">
+          <div class="an-card__entete"><h3 id="an-statut">Répartition par statut</h3></div>
+          <div class="an-stack" role="img" aria-label="Répartition par statut">
+            @for (sg of segmentsStatut(); track sg.cle) {
+              @if (sg.total > 0) {
+                <span class="an-stack__seg" [style.flex-grow]="sg.total" [style.background]="sg.couleur"
+                      [title]="sg.label + ' : ' + sg.total + ' (' + formatPct(sg.pct) + ')'"></span>
+              }
+            }
+          </div>
+          <ul class="an-legende">
+            @for (sg of segmentsStatut(); track sg.cle) {
+              <li><i [style.background]="sg.couleur"></i><span>{{ sg.label }}</span><strong>{{ sg.total }}</strong><span class="muted">{{ formatPct(sg.pct) }}</span></li>
+            }
+          </ul>
+        </section>
+
+        <!-- Service (portée globale uniquement) -->
+        <section class="an-card" aria-labelledby="an-service">
+          <div class="an-card__entete"><h3 id="an-service">Répartition par service</h3></div>
+          @if (s.portee.global) {
+            <ul class="an-rings">
+              @for (sv of servicesPart(); track sv.cle) {
+                <li class="an-ring" [title]="sv.label + ' : ' + sv.total + ' dossier(s)'">
+                  <div class="an-gauge__cercle an-gauge__cercle--sm">
+                    <svg viewBox="0 0 44 44" aria-hidden="true">
+                      <circle class="an-gauge__fond" cx="22" cy="22" r="18" pathLength="100" />
+                      <circle class="an-gauge__val" cx="22" cy="22" r="18" pathLength="100"
+                              transform="rotate(-90 22 22)"
+                              [attr.stroke-dasharray]="sv.pct + ' 100'" [style.stroke]="sv.couleur" />
+                    </svg>
+                    <span class="an-gauge__pct">{{ formatPct(sv.pct) }}</span>
+                  </div>
+                  <strong>{{ sv.cle }}</strong>
+                  <small class="muted">{{ sv.total }} dossier(s)</small>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="muted">Vous voyez uniquement le service {{ s.portee.service }} : {{ totalActifs() }} dossier(s).</p>
+          }
+        </section>
+
+        <!-- Transferts -->
+        <section class="an-card" aria-labelledby="an-transferts">
+          <div class="an-card__entete"><h3 id="an-transferts">Transferts entre services</h3></div>
+          <p class="an-note">
+            <strong>{{ transfertsEnAttente() }}</strong> en attente de réception.
+            <span class="muted">Détail ci-dessous : {{ derniersMouvements().length }} derniers transferts.</span>
+          </p>
+          @if (derniersMouvements().length) {
+            <ul class="an-chips">
+              @for (e of etatsTransferts(); track e.cle) {
+                <li [style.--c]="e.couleur"><i></i>{{ e.label }} <strong>{{ e.total }}</strong></li>
+              }
+            </ul>
+            <ul class="an-flux">
+              @for (f of fluxTransferts(); track f.depart + f.arrivee) {
+                <li>
+                  <div class="an-flux__ligne"><span>{{ f.depart }} → {{ f.arrivee }}</span><strong>{{ f.total }}</strong></div>
+                  <div class="an-flux__bar"><span [style.width.%]="f.pct"></span></div>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p class="muted">Aucun transfert récent.</p>
+          }
+        </section>
+      </div>
+    </section>
+  }
+
   <!-- Cartes indicateurs -->
   <section class="stats" aria-label="Indicateurs clés">
     <du-stat-card label="Dossiers actifs" [value]="totalActifs()" icon="folder" />
@@ -154,7 +343,7 @@
       </aside>
     </div>
 
-    <!-- Derniers transferts -->
+    <!-- Graphiques statistiques -->
     <section class="graphiques" aria-label="Graphiques statistiques">
       <h2 class="graphiques__titre">Graphiques statistiques <span class="muted">— données réelles</span></h2>
       <div class="graphiques__grille">
